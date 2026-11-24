@@ -48,7 +48,7 @@ jobs:
       - name: Build and Run Checks
         run: |
           chmod +x gradlew
-          ./gradlew --continue --stacktrace --warning-mode all \
+          ./gradlew --no-configuration-cache --continue --stacktrace --warning-mode all \
             lintDebug \
             testDebugUnitTest \
             assembleDebug
