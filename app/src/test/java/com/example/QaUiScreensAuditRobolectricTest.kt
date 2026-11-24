@@ -26,7 +26,9 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.example.core.designsystem.DolilTheme
+import com.example.data.local.DriveLinkState
 import com.example.data.local.LocalUserPreferences
+import com.example.data.local.NamespaceHelper
 import com.example.domain.model.AppLanguage
 import com.example.domain.model.DeedConflict
 import com.example.domain.model.DeedRecord
@@ -466,6 +468,12 @@ class QaUiScreensAuditRobolectricTest {
                                 preferences = LocalUserPreferences(language = AppLanguage.EN, themeMode = ThemeMode.LIGHT),
                                 pendingSyncCount = 2,
                                 adminUsers = listOf(supervisor),
+                                driveLinkState = DriveLinkState(
+                                    firebaseUid = adminUser.userId,
+                                    accountNamespaceId = NamespaceHelper.computeAccountNamespaceId(adminUser.userId),
+                                    driveSubjectId = "qa-drive-subject",
+                                    driveEmail = "qa-drive@example.com"
+                                ),
                                 onLanguageChange = {},
                                 onThemeChange = {},
                                 onDynamicColorChange = {},
@@ -534,8 +542,9 @@ class QaUiScreensAuditRobolectricTest {
         // 5: Profile Settings (Sync Now + Admin role chip + Sign Out confirmation)
         screenMode = 5
         composeRule.waitForIdle()
+        // This scenario verifies Sync Now, so model an actually connected Drive account.
         composeRule.onNodeWithTag("profile_screen").performScrollToNode(hasTestTag("profile_sync_now_button"))
-        composeRule.onNodeWithTag("profile_sync_now_button").performClick()
+        composeRule.onNodeWithTag("profile_sync_now_button").assertIsDisplayed().performClick()
         assertTrue(synced)
 
         composeRule.onNodeWithTag("profile_screen").performScrollToNode(hasTestTag("admin_office_dropdown_qa-sup-1"))
