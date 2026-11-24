@@ -417,6 +417,8 @@ class QaUiScreensAuditRobolectricTest {
         var signedOut = false
         var conflictAction = ""
         var assignedRole: UserRole? = null
+        var assignedOfficeId = ""
+        var assignedOfficeName = ""
 
         val archivedDeed = makeDeed("qa-arch-1", "555/2026", status = DeedStatus.SOFT_DELETED)
 
@@ -478,7 +480,11 @@ class QaUiScreensAuditRobolectricTest {
                                 onThemeChange = {},
                                 onDynamicColorChange = {},
                                 onUpdateProfileNamePhone = { _, _ -> },
-                                onAssignUserRole = { _, role, _, _ -> assignedRole = role },
+                                onAssignUserRole = { _, role, officeId, officeName ->
+                                    assignedRole = role
+                                    assignedOfficeId = officeId
+                                    assignedOfficeName = officeName
+                                },
                                 onSyncNow = { synced = true },
                                 onReplayProductTour = {},
                                 onOpenUserGuide = {},
@@ -539,7 +545,7 @@ class QaUiScreensAuditRobolectricTest {
         // Inspect the unmerged tree for the tooltip's internal badge test tag.
         composeRule.onNodeWithTag("tour_step_badge", useUnmergedTree = true).assertIsDisplayed()
 
-        // 5: Profile Settings (Sync Now + Admin role chip + Sign Out confirmation)
+        // 5: Profile Settings (Sync Now + Admin office assignment dropdown + Sign Out confirmation)
         screenMode = 5
         composeRule.waitForIdle()
         // This scenario verifies Sync Now, so model an actually connected Drive account.
@@ -548,8 +554,12 @@ class QaUiScreensAuditRobolectricTest {
         assertTrue(synced)
 
         composeRule.onNodeWithTag("profile_screen").performScrollToNode(hasTestTag("admin_office_dropdown_qa-sup-1"))
-        composeRule.onNodeWithText("Office Data Entry").performClick()
-        assertEquals(UserRole.OFFICE_DATA_ENTRY, assignedRole)
+        composeRule.onNodeWithTag("admin_office_dropdown_qa-sup-1").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Fatulla Sub-Registry Office").performClick()
+        assertEquals(UserRole.OFFICE_SUPERVISOR, assignedRole)
+        assertEquals("office_fatulla", assignedOfficeId)
+        assertEquals("Fatulla Sub-Registry Office", assignedOfficeName)
 
         composeRule.onNodeWithTag("profile_screen").performScrollToNode(hasTestTag("profile_sign_out_button"))
         composeRule.onNodeWithTag("profile_sign_out_button").performClick()
