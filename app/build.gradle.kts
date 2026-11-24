@@ -73,6 +73,15 @@ android {
     }
   }
   testOptions {
+    managedDevices {
+      localDevices {
+        create("ciPixelApi36") {
+          device = "Pixel 2"
+          apiLevel = 36
+          systemImageSource = "google"
+        }
+      }
+    }
     unitTests {
       isIncludeAndroidResources = true
       all {
