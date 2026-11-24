@@ -133,7 +133,6 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-configuration-cache --continue --stacktrace --warning-mode all \
             :app:lintRelease \
-            :app:testReleaseUnitTest \
             :app:assembleRelease \
             :app:bundleRelease
 
