@@ -369,18 +369,25 @@ class AuthDriveSyncAndSettingsTest {
         }
 
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("access_login_button").assertIsDisplayed()
-        composeRule.onNodeWithTag("access_guest_button").assertIsDisplayed()
-        composeRule.onNodeWithTag("access_mode_register").performClick()
+        // These controls live in a vertically scrollable screen; bring each into the viewport
+        // before asserting visibility or interacting with it.
+        composeRule.onNodeWithTag("access_login_button").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("access_guest_button").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("access_mode_register").performScrollTo().performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithTag("auth_fullname_input").assertIsDisplayed().performTextInput("Test User")
-        composeRule.onNodeWithTag("auth_email_input").assertIsDisplayed().performTextInput("invalid")
-        composeRule.onNodeWithTag("auth_password_input").assertIsDisplayed().performTextInput("abc")
-        composeRule.onNodeWithTag("auth_confirm_password_input").assertIsDisplayed().performTextInput("xyz")
-        composeRule.onNodeWithTag("access_email_submit_button").assertIsDisplayed().performClick()
+        // Keep the test selectors aligned with the production test tags on AccessSelectionScreen.
+        composeRule.onNodeWithTag("access_fullname_input").performScrollTo().assertIsDisplayed()
+            .performTextInput("Test User")
+        composeRule.onNodeWithTag("access_email_input").performScrollTo().assertIsDisplayed()
+            .performTextInput("invalid")
+        composeRule.onNodeWithTag("access_password_input").performScrollTo().assertIsDisplayed()
+            .performTextInput("abc")
+        composeRule.onNodeWithTag("access_confirm_password_input").performScrollTo().assertIsDisplayed()
+            .performTextInput("xyz")
+        composeRule.onNodeWithTag("access_email_submit_button").performScrollTo().assertIsDisplayed().performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("error_banner").assertIsDisplayed()
+        composeRule.onNodeWithTag("error_banner").performScrollTo().assertIsDisplayed()
     }
 
     // -------------------------------------------------------------------------

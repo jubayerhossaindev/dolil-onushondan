@@ -527,7 +527,9 @@ class QaUiScreensAuditRobolectricTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("product_tour_overlay").assertIsDisplayed()
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("tour_step_badge").assertIsDisplayed()
+        // The overlay's full-screen clickable scrim merges descendant semantics by design.
+        // Inspect the unmerged tree for the tooltip's internal badge test tag.
+        composeRule.onNodeWithTag("tour_step_badge", useUnmergedTree = true).assertIsDisplayed()
 
         // 5: Profile Settings (Sync Now + Admin role chip + Sign Out confirmation)
         screenMode = 5
