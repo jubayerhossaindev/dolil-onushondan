@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dolil_primary">#FF27364B</color>
+    <color name="dolil_primary_dark">#FF172638</color>
+    <color name="dolil_secondary">#FF735A32</color>
+    <color name="dolil_accent_gold">#FFC69A45</color>
+    <color name="dolil_parchment">#FFE9DDBF</color>
+    <color name="dolil_background">#FFF6F0DF</color>
+    <color name="dolil_surface">#FFFFFDF7</color>
+    <color name="dolil_dark_background">#FF171A1D</color>
+    <color name="dolil_dark_surface">#FF1C2023</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

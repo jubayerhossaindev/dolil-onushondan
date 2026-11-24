@@ -1,0 +1,1148 @@
+# Dolil Onusondhan — Google Cloud OAuth Verification, Firebase Authentication, Google Drive Authorization & Google Play Production Readiness
+
+## Master Research, Audit, Implementation & Verification Prompt
+
+তুমি এখন **Dolil Onusondhan (দলিল অনুসন্ধান)** Android application-এর Senior Android Engineer, Google Cloud OAuth Specialist, Firebase Authentication Engineer, Google Drive API Engineer, Android Security Engineer এবং Google Play Compliance Specialist হিসেবে কাজ করবে।
+
+আমার লক্ষ্য হলো অ্যাপটিকে এমনভাবে প্রস্তুত করা, যাতে সাধারণ ব্যবহারকারীরা নিজেদের Google Account ব্যবহার করে নিরাপদে Sign In করতে পারেন, নিজের Google Drive-এ ব্যক্তিগত backup রাখতে পারেন এবং ভবিষ্যতে Google OAuth verification ও Google Play Store production release-এর জন্য প্রয়োজনীয় technical এবং policy requirements পূরণ করা যায়।
+
+এটি শুধু একটি documentation task নয়। তোমাকে প্রথমে গভীর গবেষণা করতে হবে, তারপর বর্তমান project audit করতে হবে, এরপর অনুমোদিত scope-এর মধ্যে বাস্তব implementation, configuration, testing এবং verification সম্পন্ন করতে হবে।
+
+**তোমার কাজের মূলনীতি: Research First → Audit → Gap Analysis → Implementation → Real Testing → Evidence → Final Handover।**
+
+---
+
+# PHASE 0 — বাধ্যতামূলক Deep Research
+
+কোনো কোড পরিবর্তন করার আগে বর্তমান Google ও Android official documentation থেকে গভীর গবেষণা করো।
+
+## 0.1 Research Sources
+
+প্রথমে নিচের official documentation পর্যালোচনা করো:
+
+### Google OAuth & Identity
+
+1. Google OAuth 2.0 Production Readiness:
+   https://developers.google.com/identity/protocols/oauth2/production-readiness
+
+2. OAuth App Verification:
+   https://developers.google.com/identity/protocols/oauth2/production-readiness/overview
+
+3. OAuth Verification Requirements:
+   https://support.google.com/cloud/answer/13464321
+
+4. OAuth Verification Submission:
+   https://developers.google.com/identity/verification/authentication-verification
+
+5. OAuth Policies:
+   https://developers.google.com/identity/protocols/oauth2/policies
+
+6. OAuth Scopes:
+   https://developers.google.com/identity/protocols/oauth2/scopes
+
+### Google Drive API
+
+1. Drive API Authorization Scopes:
+   https://developers.google.com/workspace/drive/api/guides/api-specific-auth
+
+2. Drive API Documentation:
+   https://developers.google.com/workspace/drive/api/guides/about-sdk
+
+3. Drive API Files:
+   https://developers.google.com/workspace/drive/api/reference/rest/v3/files
+
+4. Drive API Error Handling:
+   https://developers.google.com/workspace/drive/api/guides/handle-errors
+
+### Firebase Authentication
+
+1. Firebase Android Authentication:
+   https://firebase.google.com/docs/auth/android/start
+
+2. Firebase Google Sign-In:
+   https://firebase.google.com/docs/auth/android/google-signin
+
+3. Android Credential Manager:
+   https://developer.android.com/identity/sign-in/credential-manager
+
+### Google AuthorizationClient
+
+https://developers.google.com/android/reference/com/google/android/gms/auth/api/identity/AuthorizationClient
+
+### Google Play Store Compliance
+
+1. User Data Policy:
+   https://support.google.com/googleplay/android-developer/answer/10144311
+
+2. Account Deletion Requirements:
+   https://support.google.com/googleplay/android-developer/answer/13327111
+
+3. Target API Requirements:
+   https://support.google.com/googleplay/android-developer/answer/11926878
+
+4. Personal Developer Account Testing Requirements:
+   https://support.google.com/googleplay/android-developer/answer/14151465
+
+5. Google Play Developer Policies:
+   https://play.google.com/about/developer-content-policy/
+
+## 0.2 Research Requirements
+
+প্রতিটি গুরুত্বপূর্ণ বিষয় নিয়ে যাচাই করো:
+
+- ২০২৬ সালের বর্তমান OAuth verification requirements কী?
+- Google Cloud-এর OAuth app production publishing এবং verification-এর পার্থক্য কী?
+- Brand verification এবং sensitive/restricted scope verification-এর পার্থক্য কী?
+- `drive.file` scope-এর সঠিক classification কী?
+- `drive.file` ব্যবহার করে app-created folders, backups, commits এবং manifest পরিচালনা করা সম্ভব কি না?
+- Google Drive backup/sync application-এর জন্য অতিরিক্ত কোনো verification requirement আছে কি না?
+- Firebase Google Sign-In এবং Drive Authorization-এর মধ্যে কোন কোন token এবং credential আলাদা রাখতে হবে?
+- Android Credential Manager এবং Google Play services AuthorizationClient-এর বর্তমান recommended integration কী?
+- OAuth consent screen-এর জন্য কী কী তথ্য ও public URLs প্রয়োজন?
+- Privacy Policy-তে Google user data ব্যবহারের কী কী তথ্য প্রকাশ করতে হবে?
+- Google Play Data Safety form-এ কী কী disclosure প্রয়োজন?
+- Account deletion-এর ক্ষেত্রে কোন data মুছতে হবে?
+- Play Store-এ নতুন Android app প্রকাশের জন্য বর্তমান target API level কী?
+- নতুন Personal developer account হলে closed testing-এর নিয়ম কী?
+
+শুধু blog, Medium article, পুরোনো Stack Overflow উত্তর বা AI-generated তথ্যের উপর নির্ভর করবে না।
+
+প্রথম পছন্দ হবে official Google documentation। প্রয়োজন হলে নির্ভরযোগ্য secondary source ব্যবহার করো, তবে official policy-এর সঙ্গে মিলিয়ে নেবে।
+
+### গুরুত্বপূর্ণ নিয়ম
+
+প্রতিটি গুরুত্বপূর্ণ technical বা policy সিদ্ধান্তের পাশে দাও:
+
+- সিদ্ধান্তটি কী?
+- কেন প্রয়োজন?
+- Official source URL।
+- Documentation-এর প্রাসঙ্গিক তথ্য।
+- বর্তমান project-এ এর প্রভাব।
+- কোনো অনিশ্চয়তা বা policy ambiguity থাকলে সেটি।
+
+পুরোনো documentation ও বর্তমান documentation-এর মধ্যে পার্থক্য থাকলে বর্তমান official documentation অনুসরণ করবে।
+
+Research শেষ না হওয়া পর্যন্ত implementation শুরু করবে না।
+
+---
+
+# PHASE 1 — Project Audit
+
+প্রথমে বর্তমান সম্পূর্ণ project inspect করবে।
+
+কোনো code, feature, screen, database, configuration, workflow, test বা documentation পরিবর্তনের আগে project-এর বর্তমান architecture বুঝবে।
+
+## 1.1 Project Inspection
+
+নিচের বিষয়গুলো পরীক্ষা করো:
+
+- Project directory structure।
+- Android application architecture।
+- Kotlin/Java implementation।
+- Gradle configuration।
+- Android Gradle Plugin version।
+- Kotlin version।
+- Compile SDK ও Target SDK।
+- Minimum SDK।
+- Firebase configuration।
+- `google-services.json`।
+- Firebase Authentication implementation।
+- Google Sign-In implementation।
+- Credential Manager implementation।
+- Google Drive API integration।
+- AuthorizationClient implementation।
+- Room database schemas।
+- DAO ও Repository layer।
+- WorkManager integration।
+- Backup/Restore implementation।
+- Settings screen।
+- Account management UI।
+- Privacy Policy ও Terms of Service।
+- Manifest permissions।
+- ProGuard/R8 configuration।
+- Debug এবং release signing configuration।
+- Existing unit ও instrumentation tests।
+
+## 1.2 Preserve Existing Project
+
+অত্যন্ত গুরুত্বপূর্ণ:
+
+1. বিদ্যমান কোনো feature মুছে ফেলবে না।
+2. Existing code অপ্রয়োজনে rewrite করবে না।
+3. Existing architecture অপ্রয়োজনে পরিবর্তন করবে না।
+4. Existing UI/UX design নষ্ট করবে না।
+5. Existing Room database-এর data migration compatibility বজায় রাখবে।
+6. Existing authentication workflow নষ্ট করবে না।
+7. Existing backup/restore workflow নষ্ট করবে না।
+8. Existing test বা documentation মুছে ফেলবে না।
+9. Existing package name বা application ID পরিবর্তন করবে না।
+10. Existing signing configuration পরিবর্তন করবে না।
+
+শুধু অনুমোদিত scope-এর মধ্যে প্রয়োজনীয় পরিবর্তন করবে।
+
+কোনো architectural conflict থাকলে implementation-এর আগে কারণ ও সমাধান নির্ধারণ করবে।
+
+## 1.3 Initial Audit Report
+
+`docs/release/INITIAL_AUDIT_REPORT.md` তৈরি করো।
+
+এখানে উল্লেখ করবে:
+
+- Existing implementation।
+- Already working components।
+- Missing components।
+- Incorrect configurations।
+- Security risks।
+- OAuth readiness।
+- Firebase readiness।
+- Drive API readiness।
+- Play Store readiness।
+- Required code changes।
+- Required Google Console configuration।
+- Required developer-owned resources।
+
+প্রতিটি বিষয়কে নিচের status দিয়ে শ্রেণিবদ্ধ করবে:
+
+- PASS
+- PARTIAL
+- FAIL
+- NOT CONFIGURED
+- BLOCKED
+- NOT APPLICABLE
+
+কোনো কিছু যাচাই করতে না পারলে PASS বলবে না।
+
+---
+
+# PHASE 2 — Google Cloud OAuth Architecture
+
+## 2.1 Separate Authentication and Authorization
+
+দুটি workflow সম্পূর্ণ আলাদা রাখতে হবে।
+
+### Workflow A: Firebase Authentication
+
+Firebase ব্যবহার হবে শুধু authentication lifecycle-এর জন্য।
+
+সমর্থন করতে হবে:
+
+- Email/password registration।
+- Email/password login।
+- Google Sign-In।
+- Password reset।
+- Email verification।
+- Session management।
+- User UID retrieval।
+- Re-authentication।
+- Logout।
+- Account deletion।
+
+Google Sign-In-এর জন্য Android Credential Manager ব্যবহার করবে।
+
+Google Sign-In-এর মাধ্যমে পাওয়া credential Firebase Authentication-এ authenticate করবে।
+
+`default_web_client_id` সঠিকভাবে configure করবে এবং Firebase-এর official implementation অনুসরণ করবে।
+
+### Workflow B: Google Drive Authorization
+
+Drive authorization-এর জন্য Google Play services `AuthorizationClient` ব্যবহার করবে।
+
+Firebase Google Sign-In-এর ID token কখনো Google Drive access token হিসেবে ব্যবহার করবে না।
+
+Drive-এর token আলাদাভাবে request, manage এবং clear করতে হবে।
+
+Firebase authentication এবং Drive authorization-এর lifecycle স্বাধীন থাকবে।
+
+ব্যবহারকারী Firebase-এ login করলেও Drive authorization না দিলে অ্যাপের local functionality বন্ধ করা যাবে না।
+
+ব্যবহারকারী Drive disconnect করলেও Firebase account logout হয়ে যাবে না।
+
+## 2.2 OAuth Clients
+
+বর্তমান project configuration audit করে প্রয়োজন অনুযায়ী নিচের OAuth client configuration যাচাই করো:
+
+1. Android OAuth Client:
+   - Exact application package name।
+   - Debug SHA-1।
+   - Release SHA-1।
+   - প্রয়োজনীয় certificate fingerprints।
+   - Firebase-এর সঙ্গে correct linkage।
+
+2. Web OAuth Client:
+   - Firebase Credential Manager integration-এর জন্য।
+   - `default_web_client_id` সঠিক হতে হবে।
+   - Firebase configuration-এর সঙ্গে মিলতে হবে।
+
+3. Production এবং Testing Configuration:
+   - Google-এর বর্তমান guidance অনুযায়ী testing এবং production project আলাদা রাখা প্রয়োজন কি না যাচাই করবে।
+   - প্রয়োজন হলে আলাদা project configuration তৈরি করার নির্দেশনা ও checklist তৈরি করবে।
+   - কোনো live production project-এর existing OAuth client অযথা পরিবর্তন করবে না।
+
+কোনো Client ID বা fingerprint অনুমান করে তৈরি করবে না।
+
+বাস্তব configuration থেকে যাচাই করবে।
+
+## 2.3 OAuth Scope Minimization
+
+প্রকল্পের Drive backup requirement অনুযায়ী সর্বনিম্ন প্রয়োজনীয় scope ব্যবহার করবে।
+
+প্রথমে যাচাই করবে:
+
+`https://www.googleapis.com/auth/drive.file`
+
+এটি বর্তমান Google documentation অনুযায়ী non-sensitive scope।
+
+নিচের broad scopes অপ্রয়োজনে কখনো যোগ করবে না:
+
+`https://www.googleapis.com/auth/drive`
+
+`https://www.googleapis.com/auth/drive.readonly`
+
+`https://www.googleapis.com/auth/drive.metadata`
+
+অতিরিক্ত scope কোনো কারণে অপরিহার্য হলে:
+
+1. কেন প্রয়োজন তা ব্যাখ্যা করবে।
+2. Official scope classification যাচাই করবে।
+3. Alternative implementation খুঁজবে।
+4. Sensitive/restricted verification-এর সম্ভাব্য প্রভাব জানাবে।
+5. আমার অনুমোদন ছাড়া অতিরিক্ত broad scope যোগ করবে না।
+
+প্রকৃত implementation এবং Drive backup architecture দিয়ে প্রমাণ করবে `drive.file` দিয়ে প্রয়োজনীয় কাজ সম্পন্ন হচ্ছে।
+
+শুধু verification সহজ করার জন্য মিথ্যা বা অসম্পূর্ণ disclosure ব্যবহার করবে না।
+
+## 2.4 Google Cloud OAuth Branding
+
+নিচের তথ্য configure করার প্রস্তুতি তৈরি করবে:
+
+- App Name: Dolil Onusondhan
+- Application description।
+- App logo।
+- Support email।
+- Developer contact email।
+- Homepage URL।
+- Privacy Policy URL।
+- Terms of Service URL।
+- Authorized domain।
+- OAuth consent screen information।
+- Required OAuth scopes।
+- Audience।
+- Publishing status।
+
+যে URL বা domain বাস্তবে নেই, সেটি বানিয়ে বসাবে না।
+
+প্রয়োজনীয় domain আমার মালিকানাধীন কি না যাচাই করার জন্য checklist দেবে।
+
+Homepage-এ শুধু login page রাখা যাবে না। অ্যাপের পরিচয়, কাজ, ব্যবহার, backup ও privacy practices পরিষ্কারভাবে বর্ণনা করতে হবে।
+
+---
+
+# PHASE 3 — OAuth Verification Preparation
+
+Google-এর verification requirement অনুযায়ী সম্পূর্ণ প্রস্তুতি তৈরি করবে।
+
+## 3.1 Verification Category
+
+আমার অ্যাপের ক্ষেত্রে আলাদাভাবে যাচাই করবে:
+
+1. OAuth app publishing status।
+2. External/Internal audience।
+3. Brand verification requirement।
+4. Non-sensitive scope verification।
+5. Sensitive scope verification।
+6. Restricted scope verification।
+7. Additional security assessment requirement।
+8. Unverified app warning।
+9. Testing user restrictions।
+10. Production publishing requirement।
+
+কোনো verification requirement আছে কি না তা শুধু scope-এর নাম দেখে অনুমান করবে না। বর্তমান Google documentation এবং actual Cloud Console configuration দেখে সিদ্ধান্ত নেবে।
+
+বিশেষভাবে মনে রাখবে:
+
+`drive.file` non-sensitive হওয়ার কারণে broad Drive scope-গুলোর মতো restricted-scope verification স্বয়ংক্রিয়ভাবে প্রযোজ্য ধরে নেওয়া যাবে না।
+
+তবে production branding verification এবং অন্য প্রযোজ্য requirements আলাদাভাবে যাচাই করবে।
+
+## 3.2 Google Verification Documents
+
+প্রয়োজনীয় document তৈরি করবে:
+
+- `GOOGLE_OAUTH_SETUP.md`
+- `GOOGLE_OAUTH_VERIFICATION_GUIDE.md`
+- `GOOGLE_OAUTH_VERIFICATION_CHECKLIST.md`
+- `GOOGLE_OAUTH_SCOPE_JUSTIFICATION.md`
+- `GOOGLE_OAUTH_DEMO_SCRIPT_BN.md`
+- `GOOGLE_OAUTH_REVIEWER_GUIDE.md`
+
+### Scope Justification
+
+প্রতিটি scope-এর জন্য লিখবে:
+
+- Scope URI।
+- Official classification।
+- কেন প্রয়োজন।
+- কোন feature ব্যবহার করে।
+- কী ধরনের data access করে।
+- Data কীভাবে process হয়।
+- Data কোথায় থাকে।
+- কেন কম permission যথেষ্ট নয়।
+- User consent কোথায় নেওয়া হয়।
+
+যে scope ব্যবহার হচ্ছে না সেটিকে list-এ দেখাবে না।
+
+### Demo Script
+
+Google reviewer-এর জন্য একটি বাস্তব demonstration script তৈরি করো।
+
+এতে দেখাবে:
+
+1. অ্যাপ কী কাজ করে।
+2. User registration/login।
+3. Google Sign-In।
+4. Drive account connection।
+5. Permission consent।
+6. Backup creation।
+7. Restore operation।
+8. Backup disconnect।
+9. Access revocation।
+10. User data deletion।
+11. Privacy disclosure।
+
+Demo-তে শুধুমাত্র বাস্তবে implemented feature দেখাবে।
+
+কোনো fake screen বা simulated successful backup দেখানো যাবে না।
+
+---
+
+# PHASE 4 — Firebase Authentication Security
+
+Firebase strictly authentication-only থাকবে।
+
+নিষিদ্ধ:
+
+- Firestore business data storage।
+- Realtime Database business data storage।
+- Firebase Storage-এ deed files রাখা।
+- Firebase-এ local records upload করা।
+- Firebase-এ backup snapshots রাখা।
+- Firebase-এ sync queue রাখা।
+- Firebase-এ audit logs রাখা।
+
+Room থাকবে authoritative local database।
+
+Firebase UID হবে local data ownership-এর authentication identity।
+
+ব্যবহারকারীর account change হলে পুরোনো UID-এর data অন্য account-এ দেখানো যাবে না।
+
+Firebase UID এবং Drive Google account subject এক জিনিস নয়।
+
+এই দুটির identity আলাদাভাবে manage করবে।
+
+---
+
+# PHASE 5 — Google Drive Backup and Sync
+
+## 5.1 Drive Folder Architecture
+
+Google Drive-এ backup রাখার structure:
+
+`My Drive / Dolil Onusondhan Backup / accounts / {accountNamespaceId} /`
+
+Namespace:
+
+`accountNamespaceId = SHA-256("dolil-onsundondhan-backup-v1:" + firebaseUid)`
+
+এই format existing project-এর implementation-এর সঙ্গে মিলিয়ে audit করবে।
+
+আগে থেকে অন্য namespace format ব্যবহার করা হলে backward compatibility বজায় রাখবে। অনুমোদন ছাড়া বিদ্যমান account namespace পরিবর্তন করবে না।
+
+## 5.2 Account Separation
+
+প্রতিটি backup repository নিচের identity দিয়ে partition করবে:
+
+`(firebaseUid, driveSubjectId)`
+
+Rules:
+
+- একই Firebase UID এবং একই Drive Google Account হলে একই repository।
+- একই Firebase UID এবং ভিন্ন Drive account হলে আলাদা repository।
+- ভিন্ন Firebase UID এবং একই Drive account হলেও আলাদা repository।
+- কোনো account-এর backup অন্য account-এর কাছে প্রকাশ করা যাবে না।
+- Email address-কে stable account identity হিসেবে ব্যবহার করবে না।
+- Namespace security boundary enforce করবে।
+
+Drive account-এর stable subject identity কীভাবে নির্ভরযোগ্যভাবে পাওয়া ও যাচাই করা যায় তা official Google identity API দিয়ে গবেষণা করবে।
+
+`openid`, `profile`, `email` বা অন্য identity scope শুধু প্রয়োজন থাকলে এবং official documentation সমর্থন করলে ব্যবহার করবে।
+
+কোনো unsupported API ধরে implementation করবে না।
+
+## 5.3 Drive Storage Structure
+
+প্রয়োজন অনুযায়ী নিচের structure ব্যবহার করবে:
+
+- `backups/`
+- `commits/`
+- `devices/`
+- `manifest.json`
+
+Backup file:
+
+`backup-{UTC_TIMESTAMP}-{UUID}.json`
+
+Commit file:
+
+`commit-{UTC_TIMESTAMP}-{UUID}.json`
+
+Commit metadata:
+
+- `commitId`
+- `backupId`
+- `parentCommitIds`
+- `deviceId`
+- `deviceSequence`
+- `timestampUtc`
+- `accountNamespaceId`
+- `driveSubjectId`
+- `payloadChecksum`
+- `schemaVersion`
+
+`manifest.json` rebuildable index হবে।
+
+Drive-এ folder এবং file তৈরির পর তাদের IDs locally persist করবে।
+
+`drive.file` দিয়ে তৈরি ও ব্যবহৃত file/folder-এর accessibility ও recovery behavior বাস্তবে পরীক্ষা করবে।
+
+## 5.4 Sync Reliability
+
+WorkManager ব্যবহার করে best-effort synchronization বাস্তবায়ন করবে।
+
+- Unique OneTimeWorkRequest।
+- PeriodicWorkRequest।
+- Minimum periodic interval Android-এর supported limit অনুযায়ী।
+- Network constraint।
+- Retry এবং exponential backoff।
+- 429 ও 5xx retry handling।
+- 401 authentication recovery।
+- 403 permission handling।
+- 404 missing file handling।
+- Pagination।
+- Idempotent operations।
+- Resumable uploads।
+- Upload recovery।
+- Duplicate prevention।
+
+Sync status:
+
+- PENDING
+- SYNCING
+- SUCCESSFUL
+- FAILED
+- AUTHORIZATION_REQUIRED
+
+Instant synchronization-এর নিশ্চয়তা দেবে না।
+
+UID বা Drive identity mismatch হলে sync অবিলম্বে halt করবে।
+
+Logout অথবা account switch হলে আগের UID-এর worker নিরাপদভাবে cancel/pause করতে হবে।
+
+## 5.5 Merge and Recovery
+
+বর্তমান project-এ multi-device sync থাকলে তা audit করে বজায় রাখবে।
+
+Commit graph, multiple parents, conflict resolution এবং tombstone behavior যাচাই করবে।
+
+কোনো deleted record পুনরায় restore হয়ে আসা যাবে না।
+
+প্রয়োজনে তিন বা তার বেশি device-এর merge test করবে।
+
+## 5.6 Optional Encryption
+
+বর্তমান project-এ encryption feature থাকলে তার implementation audit করবে।
+
+অন্যথায় encryption feature-এর existing approved design অনুসরণ করবে।
+
+প্রযোজ্য design:
+
+- AES-256-GCM।
+- PBKDF2WithHmacSHA256।
+- অন্তত 600,000 iterations।
+- প্রতি backup-এ নতুন salt ও IV।
+- 12-byte IV।
+- Password plaintext persist/upload নয়।
+- Tamper detection।
+- SHA-256 checksum।
+- Backup metadata integrity।
+
+Encryption না থাকলে user-কে পরিষ্কারভাবে জানাতে হবে যে Google Drive namespace নিজে encryption নয়।
+
+কোনো security feature UI-তে enabled দেখানো যাবে না যতক্ষণ না সেটি বাস্তবে কাজ করছে।
+
+---
+
+# PHASE 6 — Privacy Policy & Legal Transparency
+
+অ্যাপের actual implementation অনুযায়ী Privacy Policy তৈরি ও update করবে।
+
+প্রয়োজনীয় document:
+
+- `PRIVACY_POLICY.md`
+- `TERMS_OF_SERVICE.md`
+- `GOOGLE_USER_DATA_DISCLOSURE.md`
+- `DATA_RETENTION_AND_DELETION_POLICY.md`
+
+Privacy Policy-তে স্পষ্টভাবে উল্লেখ করতে হবে:
+
+1. অ্যাপ কী তথ্য সংগ্রহ করে।
+2. Firebase Authentication-এর ভূমিকা।
+3. Google Sign-In-এর ভূমিকা।
+4. Google Drive-এর ভূমিকা।
+5. Drive backup-এ কী ধরনের তথ্য রাখা হয়।
+6. Backup কোথায় রাখা হয়।
+7. Developer-এর নিজস্ব server-এ কী data যায় বা যায় না।
+8. Access token কীভাবে পরিচালিত হয়।
+9. User কীভাবে authorization revoke করতে পারেন।
+10. User কীভাবে backup restore করতে পারেন।
+11. User কীভাবে account delete করতে পারেন।
+12. Data retention policy।
+13. Third-party SDK ও services।
+14. Google user data-এর সীমাবদ্ধ ব্যবহার।
+15. Encryption status।
+16. Support ও developer contact।
+
+যদি অ্যাপের কোনো data developer-controlled server-এ না যায়, তাহলে বাস্তব architecture দিয়ে যাচাই করার পরই এই দাবি করবে।
+
+কোনো অপ্রযোজ্য certification, encryption বা security claim করবে না।
+
+## 6.1 Public URLs
+
+Google OAuth production readiness-এর জন্য প্রয়োজনীয় public resources প্রস্তুত করবে:
+
+- App homepage।
+- Privacy Policy page।
+- Terms of Service page।
+- Account deletion page।
+
+URL এখনো না থাকলে:
+
+- Website content তৈরি করবে।
+- Hosting requirements লিখবে।
+- Domain ownership requirements জানাবে।
+- Hosting সম্পন্ন না হওয়া পর্যন্ত URL-কে BLOCKED দেখাবে।
+
+Fake domain বা placeholder-কে production-ready দেখাবে না।
+
+---
+
+# PHASE 7 — Google Play Store Readiness
+
+Google OAuth approval এবং Google Play Store approval আলাদা process হিসেবে বিবেচনা করবে।
+
+দুইটির জন্য আলাদা checklist তৈরি করবে।
+
+## 7.1 Technical Requirements
+
+বর্তমান Google Play target API requirement যাচাই করবে।
+
+বর্তমান policy অনুযায়ী ৩১ আগস্ট ২০২৬ থেকে নতুন অ্যাপ ও app update-এর জন্য Android 16 / API 36 বা তার বেশি target প্রয়োজন।
+
+Project-এর existing SDK configuration audit করে প্রয়োজন হলে update করবে।
+
+অপ্রয়োজনীয়ভাবে Minimum SDK পরিবর্তন করবে না।
+
+এছাড়া পরীক্ষা করবে:
+
+- Android App Bundle।
+- Release build।
+- Application ID।
+- Versioning।
+- Signing configuration।
+- R8/ProGuard।
+- App permissions।
+- Privacy declarations।
+- Play Integrity বা অন্যান্য প্রয়োজনীয় security requirements, যদি প্রযোজ্য হয়।
+- Crash ও stability।
+- Supported Android versions।
+
+## 7.2 Play Console Policy
+
+নিচের বিষয়গুলো বাস্তব project অনুযায়ী যাচাই করবে:
+
+- Developer account status।
+- App access instructions।
+- Store listing।
+- App name।
+- Short description।
+- Full description।
+- App icon।
+- Feature graphic।
+- Screenshots।
+- Privacy Policy URL।
+- Data Safety form।
+- Content rating।
+- Target audience।
+- Ads declaration।
+- App access declaration।
+- Sensitive permission declarations।
+- Account deletion URL।
+- Release notes।
+- Android App Bundle।
+
+সব তথ্য বাস্তব app behavior-এর সঙ্গে মিলতে হবে।
+
+## 7.3 Data Safety
+
+প্রতিটি data category আলাদাভাবে বিশ্লেষণ করবে।
+
+যেমন:
+
+- Personal information।
+- Email address।
+- User identifiers।
+- Authentication information।
+- User-generated content।
+- Documents।
+- Files।
+- Financial or sensitive document data, যদি প্রকৃত feature অনুযায়ী প্রযোজ্য হয়।
+- App activity।
+- Diagnostics।
+- Device identifiers।
+
+Firebase, Google Play services এবং project-এর অন্যান্য SDK কী data process করে তা audit করবে।
+
+Google Play Data Safety form-এর জন্য field-by-field draft তৈরি করবে।
+
+কোনো তথ্য অনুমান করে পূরণ করবে না।
+
+## 7.4 Account Deletion
+
+Account তৈরি করা সম্ভব হলে:
+
+- App-এর ভিতরে account deletion option থাকতে হবে।
+- App-এর বাইরে publicly accessible web resource দিয়ে account deletion request করা যেতে হবে।
+- Deletion workflow বাস্তবে কাজ করতে হবে।
+- প্রয়োজনীয় authentication/re-authentication থাকতে হবে।
+- Associated user data deletion policy অনুসরণ করতে হবে।
+- Drive backup-এর retention/deletion behavior স্পষ্টভাবে জানাতে হবে।
+- Google Drive access disconnect বা revoke করার সঙ্গে Firebase account deletion-কে গুলিয়ে ফেলা যাবে না।
+
+শুধু account deactivate বা freeze করাকে deletion হিসেবে দেখাবে না।
+
+External deletion request page যদি backend বা secure workflow ছাড়া সম্পূর্ণ করা না যায়, তাহলে সেটিকে BLOCKED হিসেবে রিপোর্ট করবে।
+
+---
+
+# PHASE 8 — Security Audit
+
+সম্পূর্ণ security review করবে।
+
+নিচের security risks খুঁজবে:
+
+- Client secret APK-তে থাকা।
+- Private signing key repository-তে থাকা।
+- Hardcoded API secrets।
+- Debug credentials release build-এ চলে যাওয়া।
+- Access token logging।
+- Refresh token leakage।
+- Credential reuse।
+- Cross-user data leakage।
+- Wrong Drive account access।
+- WorkManager UID mismatch।
+- Backup namespace mismatch।
+- Room data ownership mismatch।
+- Unauthorized restore।
+- Account deletion failure।
+- Backup tampering।
+- Insecure temporary files।
+- WebView-based unsafe OAuth flow।
+- Improper exception handling।
+- Token revocation handling।
+- Incomplete privacy disclosure।
+
+কোনো secret পাওয়া গেলে সেটি report করবে।
+
+Secret নিজে থেকে public করবে না বা final report-এ sensitive value ছাপাবে না।
+
+---
+
+# PHASE 9 — Settings UI/UX
+
+বর্তমান Paper & Ink Material 3 design system এবং existing UI structure বজায় রাখবে।
+
+Settings-এ প্রয়োজনীয় information ও controls audit করবে।
+
+### Account
+
+- Profile information।
+- Firebase UID-এর প্রয়োজনীয় display।
+- Email verification status।
+- Google Sign-In status।
+- Logout।
+- Account deletion।
+
+### Cloud Backup & Sync
+
+- Drive connection status।
+- Connected Google Account।
+- Drive authorization status।
+- Backup status।
+- Last successful backup।
+- Last restore।
+- Manual backup।
+- Restore।
+- Auto sync।
+- Sync failure details।
+- Connect Drive।
+- Switch Drive Account।
+- Disconnect।
+- Revoke access।
+- Device management।
+- Encryption status।
+
+### Application Information
+
+- App version।
+- Build information।
+- Developer identity।
+- Privacy Policy।
+- Terms of Service।
+
+ব্যবহারকারীর কাছে misleading status দেখাবে না।
+
+উদাহরণ:
+
+Firebase logged in থাকা মানে Drive connected নয়।
+
+Drive connected থাকা মানে backup সফল হয়েছে—এমনও নয়।
+
+প্রতিটি status backend/API এবং local persisted state অনুযায়ী নির্ধারণ করবে।
+
+---
+
+# PHASE 10 — Testing & Real Verification
+
+শুধু code compile হলেই কাজ সম্পূর্ণ হয়েছে বলা যাবে না।
+
+প্রতিটি গুরুত্বপূর্ণ workflow বাস্তবে test করবে।
+
+## 10.1 Firebase Tests
+
+- Email registration।
+- Email login।
+- Invalid password।
+- Password reset।
+- Google Sign-In।
+- Cancelled Sign-In।
+- Expired authentication।
+- Logout।
+- Account switching।
+- Re-authentication।
+- Account deletion।
+
+## 10.2 Drive Tests
+
+- First-time Drive authorization।
+- Permission denial।
+- Authorization cancellation।
+- Successful authorization।
+- Folder creation।
+- Backup upload।
+- Backup listing।
+- Restore।
+- Drive account switching।
+- Disconnect।
+- Reconnect।
+- Revoke access।
+- Expired token।
+- 401।
+- 403।
+- 404।
+- 429।
+- Network failure।
+- Partial upload recovery।
+
+## 10.3 Data Isolation Tests
+
+বিশেষভাবে পরীক্ষা করবে:
+
+1. Firebase UID A + Drive Account A।
+2. Firebase UID A + Drive Account B।
+3. Firebase UID B + Drive Account A।
+4. Firebase UID B + Drive Account B।
+
+একটি account-এর data অন্য account-এ দৃশ্যমান হওয়া চলবে না।
+
+Legacy local data ও guest data explicit user approval ছাড়া কোনো authenticated account-এ migrate করা যাবে না।
+
+## 10.4 Sync Tests
+
+- Multi-device synchronization।
+- Offline changes।
+- Reconnection recovery।
+- Concurrent updates।
+- Conflict handling।
+- Duplicate prevention।
+- Deleted record handling।
+- Device retirement।
+- Multi-parent commit graph।
+- Manifest reconstruction।
+- Pagination।
+- UID change during queued sync।
+- App restart during upload।
+
+## 10.5 Privacy and Deletion Tests
+
+- In-app account deletion।
+- External deletion request workflow।
+- Firebase account deletion।
+- Associated data deletion।
+- Drive access revocation।
+- Backup retention/deletion behavior।
+- Local Room cleanup।
+- WorkManager cleanup।
+- No unauthorized backup residue।
+
+## 10.6 Release Tests
+
+- Debug build।
+- Release build।
+- Signed AAB generation।
+- Release manifest inspection।
+- Permissions inspection।
+- Secret scan।
+- R8 build。
+- Startup।
+- Crash checks।
+- Existing features regression testing।
+
+শুধু test লেখা নয়, test চালিয়ে ফলাফল সংগ্রহ করবে।
+
+Device বা Google Console access না থাকলে সেসব test-কে NOT TESTED বা BLOCKED দেখাবে।
+
+Mock test-কে real Google OAuth verification হিসেবে দাবি করবে না।
+
+---
+
+# PHASE 11 — Google Console Setup Guide
+
+সব implementation সম্পন্ন হওয়ার পরও কিছু কাজ developer-কে Google Cloud Console, Firebase Console এবং Play Console-এ করতে হবে।
+
+সেসব কাজের জন্য সহজ বাংলায় step-by-step guide তৈরি করবে।
+
+## Google Cloud Console Checklist
+
+- Cloud project নির্বাচন।
+- Drive API enable।
+- OAuth Branding।
+- App information।
+- Audience configuration।
+- OAuth scope configuration।
+- Android OAuth client।
+- Web OAuth client।
+- SHA-1/SHA-256 configuration।
+- Verified domain।
+- Homepage URL।
+- Privacy Policy URL।
+- Terms URL।
+- Contact email।
+- OAuth publishing status।
+- Brand verification submission।
+- Scope verification, যদি প্রযোজ্য হয়।
+- Final verification status।
+
+## Firebase Console Checklist
+
+- Android app package যাচাই।
+- `google-services.json`।
+- SHA fingerprints।
+- Authentication enable।
+- Google provider enable।
+- Email/password provider।
+- Authorized configuration।
+- Debug/release setup।
+
+## Google Play Console Checklist
+
+- Developer account।
+- App creation।
+- App signing।
+- Store listing।
+- Data Safety।
+- Privacy Policy।
+- Account deletion URL।
+- Testing track।
+- Closed testing, যদি প্রযোজ্য হয়।
+- Production access।
+- Release AAB।
+- Review submission।
+
+প্রতিটি ধাপের জন্য উল্লেখ করবে:
+
+- কোথায় যেতে হবে।
+- কোন setting খুলতে হবে।
+- কী value দিতে হবে।
+- কীভাবে verify করতে হবে।
+- সফল হলে কী result দেখা যাবে।
+- সম্ভাব্য error ও সমাধান।
+
+কোনো বাস্তব Google Console access না থাকলে pretend করবে না যে configuration সম্পন্ন হয়েছে।
+
+---
+
+# PHASE 12 — Required Documentation
+
+Project-এর বিদ্যমান documentation structure অনুসরণ করে প্রয়োজনীয় file তৈরি বা update করবে।
+
+অন্তত নিচের document-গুলো নিশ্চিত করবে:
+
+```text
+docs/
+└── release/
+    ├── INITIAL_AUDIT_REPORT.md
+    ├── GOOGLE_OAUTH_SETUP.md
+    ├── GOOGLE_OAUTH_VERIFICATION_GUIDE.md
+    ├── GOOGLE_OAUTH_VERIFICATION_CHECKLIST.md
+    ├── GOOGLE_OAUTH_SCOPE_JUSTIFICATION.md
+    ├── GOOGLE_OAUTH_DEMO_SCRIPT_BN.md
+    ├── GOOGLE_OAUTH_REVIEWER_GUIDE.md
+    ├── FIREBASE_SETUP.md
+    ├── GOOGLE_DRIVE_SETUP.md
+    ├── PRIVACY_POLICY.md
+    ├── TERMS_OF_SERVICE.md
+    ├── GOOGLE_USER_DATA_DISCLOSURE.md
+    ├── DATA_RETENTION_AND_DELETION_POLICY.md
+    ├── PLAY_STORE_RELEASE_GUIDE_BN.md
+    ├── PLAY_STORE_COMPLIANCE_CHECKLIST.md
+    ├── DATA_SAFETY_DRAFT.md
+    ├── ACCOUNT_DELETION_GUIDE.md
+    ├── SECURITY_AUDIT_REPORT.md
+    ├── CONFIGURATION_CHECKLIST.md
+    ├── CONFIGURATION_STATUS.md
+    └── FINAL_RELEASE_READINESS_REPORT.md
+```
+
+যে document আগে থেকেই আছে, সেটি পুনরায় তৈরি করে existing useful information নষ্ট করবে না।
+
+প্রয়োজন হলে existing document-ই update করবে।
+
+---
+
+# PHASE 13 — Implementation Rules
+
+এই নিয়মগুলো বাধ্যতামূলক:
+
+1. Research ছাড়া কোনো OAuth configuration অনুমান করবে না।
+2. Official Google policy-এর বিরুদ্ধে যাবে না।
+3. Minimum OAuth scopes ব্যবহার করবে।
+4. Firebase Authentication এবং Google Drive Authorization আলাদা রাখবে।
+5. Application-এর existing feature নষ্ট করবে না।
+6. Existing database compatibility বজায় রাখবে।
+7. কোনো hardcoded private secret যোগ করবে না।
+8. APK-তে OAuth client secret রাখবে না।
+9. কোনো Google verification approval guarantee করবে না।
+10. Fake website, privacy policy URL বা domain তৈরি করবে না।
+11. কোনো test result fabricate করবে না।
+12. Build successful না হলে successful দাবি করবে না।
+13. OAuth Console access না থাকলে verification submitted বলবে না।
+14. Play Console access না থাকলে Play Store approval হয়েছে বলবে না।
+15. Unsupported feature UI-তে enabled দেখাবে না।
+16. Missing configuration-কে পরিষ্কারভাবে BLOCKED দেখাবে।
+17. সব পরিবর্তনের আগে existing implementation-এর সঙ্গে compatibility যাচাই করবে।
+18. Scope-এর বাইরের code বা functionality পরিবর্তন করবে না।
+19. কোনো production data delete বা destructive migration চালাবে না।
+20. User approval প্রয়োজন এমন action নিজে থেকে সম্পাদন করবে না।
+
+---
+
+# PHASE 14 — Final Execution & Handover
+
+সব কাজ শেষে একটি পূর্ণাঙ্গ report তৈরি করবে।
+
+`docs/release/FINAL_RELEASE_READINESS_REPORT.md`
+
+এখানে থাকবে:
+
+## A. Research Summary
+
+- কোন official documentation অনুসরণ করা হয়েছে।
+- কোন OAuth scope নির্বাচিত হয়েছে।
+- কেন নির্বাচিত হয়েছে।
+- কোন verification requirements প্রযোজ্য।
+- কোন policy requirements প্রযোজ্য।
+- Research source URL।
+
+## B. Implementation Summary
+
+- কোন code পরিবর্তন হয়েছে।
+- কোন নতুন file তৈরি হয়েছে।
+- কোন configuration পরিবর্তন হয়েছে।
+- কোন security improvements হয়েছে।
+- কোন UI changes হয়েছে।
+- কোন existing features regression testing করা হয়েছে।
+
+## C. Verification Status
+
+আলাদাভাবে দেখাবে:
+
+| Area | Status | Evidence |
+|---|---|---|
+| Firebase Authentication | PASS/PARTIAL/FAIL | Test/build evidence |
+| Credential Manager | PASS/PARTIAL/FAIL | Implementation evidence |
+| Google Drive Authorization | PASS/PARTIAL/FAIL | API test evidence |
+| OAuth Scope Compliance | PASS/PARTIAL/FAIL | Scope audit |
+| OAuth Branding | PASS/PARTIAL/FAIL/BLOCKED | Console evidence |
+| OAuth Brand Verification | PASS/PARTIAL/FAIL/BLOCKED | Google status |
+| Sensitive/Restricted Scope Review | Applicable/Not Applicable/BLOCKED | Scope analysis |
+| Privacy Policy | PASS/PARTIAL/FAIL | Public URL or document |
+| Data Safety | PASS/PARTIAL/FAIL/BLOCKED | Field-by-field audit |
+| Account Deletion | PASS/PARTIAL/FAIL | Workflow test |
+| Android Target API | PASS/FAIL | Gradle configuration |
+| Release AAB | PASS/FAIL/BLOCKED | Build artifact |
+| Play Closed Testing | PASS/FAIL/BLOCKED/NOT APPLICABLE | Console evidence |
+| Play Production Access | PASS/FAIL/BLOCKED | Console status |
+
+## D. Outstanding Developer Actions
+
+শুধু যে কাজগুলো AI বাস্তবে শেষ করতে পারেনি এবং আমার intervention প্রয়োজন, সেগুলো তালিকাভুক্ত করবে।
+
+প্রতিটি action-এর জন্য দেবে:
+
+- কী করতে হবে।
+- কোথায় করতে হবে।
+- কেন প্রয়োজন।
+- Exact configuration value বা input requirement।
+- Expected successful outcome।
+- সংশ্লিষ্ট official URL।
+
+## E. Final Decision
+
+শেষে নিচের চারটি আলাদা সিদ্ধান্ত দেবে:
+
+1. **Google Cloud OAuth Implementation Ready?**
+2. **Google OAuth Verification Submission Ready?**
+3. **Google Play Store Submission Ready?**
+4. **Production Release Ready?**
+
+প্রতিটি প্রশ্নের উত্তর evidence-ভিত্তিক হবে।
+
+কোনো একটির status PASS হলেই অন্যগুলোকেও PASS দেখাবে না।
+
+---
+
+# Final Instruction
+
+এখন প্রথমে পুরো project audit করো এবং official documentation থেকে research সম্পন্ন করো।
+
+Research ও audit report তৈরি করার পর project-এর existing architecture-এর সঙ্গে মিলিয়ে implementation plan নির্ধারণ করো।
+
+তারপর অনুমোদিত scope-এর মধ্যে বাস্তব code changes, configuration, documentation, automated tests এবং release verification সম্পন্ন করো।
+
+আমি শুধু একটি guide বা theoretical suggestion চাই না। আমি চাই project যতদূর বাস্তবে তোমার access ও capability দিয়ে সম্পন্ন করা সম্ভব, ততদূর কাজ করে ready-to-review অবস্থায় পৌঁছে দাও।
+
+তবে Google Cloud Console, Firebase Console, custom domain, developer-owned website, Play Console, signing credentials বা external verification submission-এর জন্য আমার access বা action প্রয়োজন হলে সেটি স্পষ্টভাবে জানাবে।
+
+**কোনো fake approval, fake configuration, fake test result বা fake completion report গ্রহণযোগ্য নয়।**
+
+**সবচেয়ে গুরুত্বপূর্ণ: Existing Dolil Onusondhan application-এর কোনো working feature, architecture, data বা UI/UX অপ্রয়োজনীয়ভাবে পরিবর্তন বা নষ্ট করা যাবে না।**

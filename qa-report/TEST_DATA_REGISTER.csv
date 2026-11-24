@@ -1,0 +1,9 @@
+dataset_id,scope,record_identifier,purpose,cleanup_or_isolation,notes
+QA_DATA_01,Unit & Robolectric,"QA_TEST_2026_901",Full valid deed CRUD + approval + archive + undo + restore + conflict test,Room in-memory DB closed in @After,Verified across Room + DolilViewModel
+QA_DATA_02,Unit & Robolectric,"QA_TEST_2026_BAD",Invalid deed boundary validation (blank number + year 1850 + regMillis 0),Room in-memory DB closed in @After,Verifies blocking errors before save
+QA_DATA_03,Validator & Search,"QA_TEST_2026_EDGE",Bangla numerals (১২৫৬ / ২০২৬) + comma area (১২,৫০) + SQLi/XSS-like string literals,Pure JVM object check,Verifies no crash & exact literal preservation
+QA_DATA_04,Validator,"QA_TEST_2026_BAD_DRAFT",Negative decimal area (-5.2) in draft save,Pure JVM object check,Verifies drafts still reject malformed area
+QA_DATA_05,Compose UI Entry Wizard,"QA_TEST_2026_77",Wizard 5-step validation + Bangla year input (২০২৬) + Katha-to-Shotok conversion (2 Katha = 3.30 Shotok),In-memory Compose state,Verifies unit math and Bangla digit normalization
+QA_DATA_06,Compose UI Search & Records,"qa-s-1..22 / qa-arch-1",Pagination (22 records) + Archive tab + Soft Delete/Restore + 960dp tablet split-pane,In-memory Compose state,Verifies Load More and tablet list-detail pane
+QA_DATA_07,Guest Sandbox Seeder,"deed-demo-1..5",5 bilingual Narayanganj sample deeds seeded into isolated dolil_guest_sandbox.db,Isolated DB file (separate from dolil_onusondhan.db),Safe demo exploration without sign-in
+QA_DATA_08,Bundled Location Catalog,"narayanganj_locations.json",1 District + 9 Subdivisions (5 Upazilas + 4 Revenue Circles) + 4 Surveys + 99 deduplicated Mouzas & JL numbers,Read-only APK asset,Used by Entry Wizard & Land Directory

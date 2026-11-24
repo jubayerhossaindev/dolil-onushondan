@@ -1,0 +1,6 @@
+{
+  "name": "Dolil Onusondhan",
+  "description": "দলিল অনুসন্ধান — Bangladesh Land Deed Information Entry, Management, and Search Platform with offline drafts, cloud synchronization, role-based access, and Gemini AI assistance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

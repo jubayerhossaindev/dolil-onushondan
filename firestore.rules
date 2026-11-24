@@ -1,0 +1,285 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() &&
+        request.auth.token.get('email_verified', false) == true &&
+        request.auth.token.get('email', '') == 'jubayerhossaingalaxy@gmail.com';
+    }
+
+    function hasUserDoc() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isProfileAdmin(profile) {
+      return profile.status == 'ACTIVE' &&
+        profile.role in ['PLATFORM_ADMIN', 'ORGANIZATION_ADMIN'];
+    }
+
+    function isProfileOfficeMember(profile, officeId) {
+      return profile.status == 'ACTIVE' && (
+        profile.role in ['PLATFORM_ADMIN', 'ORGANIZATION_ADMIN'] ||
+        (profile.officeId == officeId &&
+          profile.role in ['OFFICE_VIEWER', 'OFFICE_DATA_ENTRY', 'OFFICE_SUPERVISOR'])
+      );
+    }
+
+    function canOfficeProfileCreate(profile, officeId, nextStatus) {
+      return profile.status == 'ACTIVE' && (
+        profile.role in ['PLATFORM_ADMIN', 'ORGANIZATION_ADMIN'] ||
+        (profile.officeId == officeId && (
+          (profile.role == 'OFFICE_SUPERVISOR' && nextStatus in ['DRAFT', 'PENDING_REVIEW', 'APPROVED']) ||
+          (profile.role == 'OFFICE_DATA_ENTRY' && nextStatus in ['DRAFT', 'PENDING_REVIEW'])
+        ))
+      );
+    }
+
+    function canOfficeProfileUpdate(profile, officeId, nextStatus) {
+      return profile.status == 'ACTIVE' && (
+        profile.role in ['PLATFORM_ADMIN', 'ORGANIZATION_ADMIN'] ||
+        (profile.officeId == officeId && (
+          profile.role == 'OFFICE_SUPERVISOR' ||
+          (profile.role == 'OFFICE_DATA_ENTRY' && nextStatus != 'APPROVED')
+        ))
+      );
+    }
+
+    function isPlatformAdmin() {
+      return isBootstrappedAdmin() || (hasUserDoc() && isProfileAdmin(userProfile()));
+    }
+
+    function isValidRole(role) {
+      return role in [
+        'PUBLIC_USER',
+        'OFFICE_VIEWER',
+        'OFFICE_DATA_ENTRY',
+        'OFFICE_SUPERVISOR',
+        'ORGANIZATION_ADMIN',
+        'PLATFORM_ADMIN'
+      ];
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 120 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 200 &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() <= 30)) &&
+        data.role is string && isValidRole(data.role) &&
+        (!('organizationId' in data) || (data.organizationId is string && data.organizationId.size() <= 64)) &&
+        (!('officeId' in data) || (data.officeId is string && data.officeId.size() <= 64)) &&
+        (!('officeName' in data) || (data.officeName is string && data.officeName.size() <= 120)) &&
+        data.status in ['ACTIVE', 'SUSPENDED'] &&
+        data.preferredLanguage in ['bn', 'en'] &&
+        data.themeMode in ['system', 'light', 'dark'] &&
+        data.createdAt is timestamp && data.createdAt <= request.time &&
+        data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidDeedRecord(data) {
+      return data.createdBy is string && data.createdBy.size() <= 128 &&
+        data.updatedBy is string && data.updatedBy.size() <= 128 &&
+        data.organizationId is string && data.organizationId.size() <= 64 &&
+        data.officeId is string && data.officeId.size() <= 64 &&
+        data.officeName is string && data.officeName.size() <= 160 &&
+        data.deedType in ['SAF_KABALA', 'DANPATRA', 'HEBA', 'BANTONNAMA', 'BINIMOY', 'OTHER'] &&
+        data.deedNumber is string && data.deedNumber.size() >= 1 && data.deedNumber.size() <= 64 &&
+        data.normalizedDeedNumber is string && data.normalizedDeedNumber.size() >= 1 && data.normalizedDeedNumber.size() <= 64 &&
+        data.deedYear is int && data.deedYear >= 1900 && data.deedYear <= 2100 &&
+        data.registrationDateMillis is int && data.registrationDateMillis > 0 &&
+        data.districtName is string && data.districtName.size() <= 80 &&
+        data.upazilaName is string && data.upazilaName.size() <= 80 &&
+        (!('unionName' in data) || (data.unionName is string && data.unionName.size() <= 80)) &&
+        data.mouzaName is string && data.mouzaName.size() <= 100 &&
+        data.jlNumber is string && data.jlNumber.size() <= 32 &&
+        data.status in ['DRAFT', 'PENDING_REVIEW', 'APPROVED', 'SOFT_DELETED'] &&
+        data.visibility in ['PUBLIC', 'OFFICE_ONLY', 'PRIVATE_DRAFT'] &&
+        data.rowVersion is int && data.rowVersion >= 1 &&
+        data.primaryGrantorName is string && data.primaryGrantorName.size() <= 160 &&
+        data.primaryGranteeName is string && data.primaryGranteeName.size() <= 160 &&
+        data.totalAreaDecimalText is string && data.totalAreaDecimalText.size() <= 40 &&
+        data.totalAreaSortValue is number && data.totalAreaSortValue >= 0 &&
+        data.grantors is list && data.grantors.size() <= 25 && (data.grantors.size() == 0 || data.grantors[0] is map) &&
+        data.grantees is list && data.grantees.size() <= 25 && (data.grantees.size() == 0 || data.grantees[0] is map) &&
+        data.parcels is list && data.parcels.size() <= 50 && (data.parcels.size() == 0 || data.parcels[0] is map) &&
+        data.searchTokens is list && data.searchTokens.size() <= 150 && (data.searchTokens.size() == 0 || data.searchTokens[0] is string) &&
+        (!('officeViewerUids' in data) || (data.officeViewerUids is list && data.officeViewerUids.size() <= 50 && (data.officeViewerUids.size() == 0 || data.officeViewerUids[0] is string))) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 2000)) &&
+        (!('deletedAt' in data) || data.deletedAt == null || (data.deletedAt is timestamp && data.deletedAt <= request.time)) &&
+        data.createdAt is timestamp && data.createdAt <= request.time &&
+        data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAuditLog(data) {
+      return data.actorId is string && data.actorId.size() <= 128 &&
+        data.actorName is string && data.actorName.size() <= 120 &&
+        data.organizationId is string && data.organizationId.size() <= 64 &&
+        data.officeId is string && data.officeId.size() <= 64 &&
+        data.action in ['CREATE', 'UPDATE', 'SUBMIT_DRAFT', 'APPROVE', 'SOFT_DELETE', 'RESTORE'] &&
+        data.entityType in ['DEED', 'USER_ROLE'] &&
+        data.entityId is string && data.entityId.size() <= 128 &&
+        data.previousVersion is int && data.previousVersion >= 0 &&
+        data.newVersion is int && data.newVersion >= 1 &&
+        data.summary is string && data.summary.size() <= 400 &&
+        data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // Users collection: strict PII isolation and anti-self-role-escalation
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isPlatformAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isBootstrappedAdmin());
+
+      allow create: if isSignedIn() &&
+        isValidId(userId) &&
+        request.auth.uid == userId &&
+        incoming().userId == request.auth.uid &&
+        incoming().status == 'ACTIVE' &&
+        (incoming().role == 'PUBLIC_USER' || isBootstrappedAdmin()) &&
+        incoming().keys().hasAll(['userId', 'fullName', 'email', 'role', 'status', 'preferredLanguage', 'themeMode', 'createdAt', 'updatedAt']) &&
+        incoming().keys().hasOnly(['userId', 'fullName', 'email', 'phone', 'role', 'organizationId', 'officeId', 'officeName', 'status', 'preferredLanguage', 'themeMode', 'createdAt', 'updatedAt']) &&
+        isValidUserProfile(incoming());
+
+      allow update: if isSignedIn() &&
+        isValidId(userId) &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        isValidUserProfile(incoming()) && (
+          // Self-update: cannot escalate role, status, org, or office
+          (request.auth.uid == userId &&
+            incoming().role == existing().role &&
+            incoming().status == existing().status &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'phone', 'preferredLanguage', 'themeMode', 'updatedAt'])) ||
+          // Platform / Org Admin can update role, office, organization, status
+          (isPlatformAdmin() &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'phone', 'role', 'organizationId', 'officeId', 'officeName', 'status', 'updatedAt']))
+        );
+
+      allow delete: if false;
+    }
+
+    // Deeds collection: Zero-trust public vs office vs personal draft isolation
+    match /deeds/{deedId} {
+      allow get: if isSignedIn() && isValidId(deedId) && (
+        (existing().visibility == 'PUBLIC' && existing().status == 'APPROVED') ||
+        existing().createdBy == request.auth.uid ||
+        isBootstrappedAdmin() ||
+        (hasUserDoc() && isProfileOfficeMember(userProfile(), existing().officeId))
+      );
+
+      // Query Enforcer: zero get()/exists() in list!
+      allow list: if isSignedIn() && (
+        (resource.data.visibility == 'PUBLIC' && resource.data.status == 'APPROVED') ||
+        resource.data.createdBy == request.auth.uid ||
+        ('officeViewerUids' in resource.data && request.auth.uid in resource.data.officeViewerUids) ||
+        isBootstrappedAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+        isValidId(deedId) &&
+        incoming().createdBy == request.auth.uid &&
+        incoming().updatedBy == request.auth.uid &&
+        incoming().rowVersion == 1 &&
+        incoming().keys().hasAll([
+          'createdBy', 'updatedBy', 'organizationId', 'officeId', 'officeName',
+          'deedType', 'deedNumber', 'normalizedDeedNumber', 'deedYear',
+          'registrationDateMillis', 'districtName', 'upazilaName', 'mouzaName',
+          'jlNumber', 'status', 'visibility', 'rowVersion', 'primaryGrantorName',
+          'primaryGranteeName', 'totalAreaDecimalText', 'totalAreaSortValue',
+          'grantors', 'grantees', 'parcels', 'searchTokens', 'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'createdBy', 'updatedBy', 'organizationId', 'officeId', 'officeName',
+          'deedType', 'deedNumber', 'normalizedDeedNumber', 'deedYear',
+          'registrationDateMillis', 'districtName', 'upazilaName', 'unionName', 'mouzaName',
+          'jlNumber', 'status', 'visibility', 'rowVersion', 'primaryGrantorName',
+          'primaryGranteeName', 'totalAreaDecimalText', 'totalAreaSortValue',
+          'grantors', 'grantees', 'parcels', 'searchTokens', 'officeViewerUids',
+          'notes', 'deletedAt', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidDeedRecord(incoming()) && (
+          isBootstrappedAdmin() ||
+          (incoming().status == 'DRAFT' && incoming().visibility == 'PRIVATE_DRAFT') ||
+          (hasUserDoc() && canOfficeProfileCreate(userProfile(), incoming().officeId, incoming().status))
+        );
+
+      allow update: if isSignedIn() &&
+        isValidId(deedId) &&
+        incoming().createdBy == existing().createdBy &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedBy == request.auth.uid &&
+        incoming().rowVersion == existing().rowVersion + 1 &&
+        isValidDeedRecord(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'updatedBy', 'deedType', 'deedNumber', 'normalizedDeedNumber', 'deedYear',
+          'registrationDateMillis', 'districtName', 'upazilaName', 'unionName', 'mouzaName',
+          'jlNumber', 'status', 'visibility', 'rowVersion', 'primaryGrantorName',
+          'primaryGranteeName', 'totalAreaDecimalText', 'totalAreaSortValue',
+          'grantors', 'grantees', 'parcels', 'searchTokens', 'officeViewerUids',
+          'notes', 'deletedAt', 'updatedAt'
+        ]) && (
+          isBootstrappedAdmin() ||
+          (existing().createdBy == request.auth.uid &&
+            existing().status in ['DRAFT', 'SOFT_DELETED'] &&
+            incoming().status in ['DRAFT', 'PENDING_REVIEW', 'SOFT_DELETED']) ||
+          (hasUserDoc() && canOfficeProfileUpdate(userProfile(), existing().officeId, incoming().status))
+        );
+
+      // Controlled soft deletion only: hard deletes forbidden for legal records
+      allow delete: if false;
+    }
+
+    // Immutable audit trail
+    match /audit_logs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && (
+        existing().actorId == request.auth.uid ||
+        isBootstrappedAdmin() ||
+        (hasUserDoc() && isProfileOfficeMember(userProfile(), existing().officeId))
+      );
+      allow list: if isSignedIn() && (
+        resource.data.actorId == request.auth.uid ||
+        isBootstrappedAdmin()
+      );
+      allow create: if isSignedIn() &&
+        isValidId(logId) &&
+        incoming().actorId == request.auth.uid &&
+        incoming().keys().hasAll([
+          'actorId', 'actorName', 'organizationId', 'officeId',
+          'action', 'entityType', 'entityId', 'previousVersion',
+          'newVersion', 'summary', 'createdAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'actorId', 'actorName', 'organizationId', 'officeId',
+          'action', 'entityType', 'entityId', 'previousVersion',
+          'newVersion', 'summary', 'createdAt'
+        ]) &&
+        isValidAuditLog(incoming());
+      allow update, delete: if false;
+    }
+  }
+}

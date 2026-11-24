@@ -1,0 +1,14 @@
+function_id,module,function_name,responsibility,verified_by,status
+FUNC-01,DolilViewModel,saveDeed,Validates draft/submit, guards concurrent double-submit, sets role-based status/visibility, persists locally + triggers sync,QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-02,DolilViewModel,approveDeed,Supervisor/Admin approval transitioning PENDING_REVIEW -> APPROVED & PUBLIC with audit entry,DolilEndToEndRobolectricTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-03,DolilViewModel,softDeleteDeed / undoLastArchive / restoreDeed,Controlled soft deletion & archive restoration + snackbar undo support,QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-04,DolilViewModel,syncNow / resolveConflictKeepLocal / resolveConflictAcceptServer,Pending queue upload, conflict rebase, server version acceptance,QaWorkflowAndEdgeCaseRobolectricTest & DolilDatabaseAndSyncTest,PARTIAL
+FUNC-05,DolilViewModel,updateSearchQuery / updateFilters / clearFilters / loadNextPage,Reactive search filtering, multi-faceted filtering, ranking & pagination,QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-06,DolilViewModel,setLanguage / setThemeMode / setUseDynamicColor / completeProductTour / replayProductTour,DataStore preference persistence & tour reset,QaWorkflowAndEdgeCaseRobolectricTest & OnboardingGuestAndTourRobolectricTest,PASS
+FUNC-07,DeedValidator,validate,Enforces required fields, year bounds (1900..nextYear), Bangla/comma decimal area >0, office duplicate detection,DeedValidatorTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-08,SearchNormalizer & DefaultIndexedSearchStrategy,normalizeText / normalizeCode / buildSearchTokens / rank,Bangla-to-ASCII digit conversion, NFC, slash spacing, bounded prefix tokens & weighted ranking,SearchNormalizerTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-09,DeedSorter,sort / paginate,Deterministic 10-way comparator sorting and 1-indexed pagination,DeedSorterAndRoleTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-10,RolePermissions,canViewDeed / canEditDeed / canSoftDeleteDeed / canRestoreDeed / canApproveDeed / canManageRoles,Zero-trust client RBAC matrix & suspended account denial,DolilSorterAndRoleTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS
+FUNC-11,BangladeshLocationsCatalog,ensureLoaded / mouzasForSubdivision / normalizeLocationKey,Loads narayanganj_locations.json (67 mouzas) & resolves bilingual JL codes,NarayanganjCatalogRobolectricTest,PASS
+FUNC-12,DeedPdfRenderer & DeedPrintAdapter,generatePdf / onLayout / onWrite,Renders paginated bilingual archival A4 PDFs with Paper & Ink palette,DeedDocumentPdfAndPrintRobolectricTest,PASS
+FUNC-13,AuthManager & FirestoreRepository,onGoogleSignInClicked / saveDeedWithOptimisticLock / observeAuthorizedDeeds,Credential Manager auth & remote optimistic Firestore sync,Code inspection (live Play Services & Firestore blocked),BLOCKED

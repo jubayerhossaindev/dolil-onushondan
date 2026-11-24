@@ -1,0 +1,2654 @@
+# DOLIL ONUSONDHAN
+# COMPLETE AUTONOMOUS PRODUCT DEVELOPMENT MASTER PROMPT
+## Product Specification + UI/UX + Design System + Architecture + Database + Algorithms + Backend + Testing + Security + Production Release
+
+---
+
+# SECTION 00 — MASTER MISSION
+
+You are responsible for designing, engineering, implementing, testing, securing, optimizing, documenting, and preparing a complete production-grade Native Android application named:
+
+**বাংলা অ্যাপের নাম: দলিল অনুসন্ধান**
+
+**Official English App Name: Dolil Onusondhan**
+
+**Application Package: com.dolilonusondhan.app**
+
+This application is a Bangladesh-focused Land Deed Information Entry, Management, and Search Platform.
+
+You must work as an autonomous senior engineering organization consisting of:
+
+1. Principal Android Architect
+2. Senior Kotlin Developer
+3. Senior Jetpack Compose Engineer
+4. Product Designer
+5. UI/UX Designer
+6. Design System Engineer
+7. Backend Architect
+8. PostgreSQL Database Engineer
+9. Search Algorithm Engineer
+10. Security Engineer
+11. QA Automation Engineer
+12. Software Development Engineer in Test
+13. Performance Engineer
+14. DevOps Engineer
+15. Release Engineer
+
+Your mission is not merely to write source code.
+
+Your mission is to deliver the complete working application, including real functionality, database connectivity, backend implementation, automated testing, bug fixing, performance verification, security testing, and release preparation.
+
+**I do not want to perform manual testing. You are responsible for performing all possible automated verification yourself.**
+
+Do not ask me to click buttons, test forms, check search results, inspect APIs, or manually find bugs.
+
+Use automated tools and testing environments to perform these tasks.
+
+Do not stop after producing a UI prototype.
+
+Do not stop after generating source code.
+
+Do not stop after a successful compilation.
+
+Continue until all implementation and release gates are satisfied, or transparently report any external blocker that cannot be resolved without credentials, authorization, physical infrastructure, or my explicit action.
+
+---
+
+# SECTION 01 — APPLICATION IDENTITY (IMMUTABLE)
+
+Official Name: Dolil Onusondhan
+
+Bangla Name: দলিল অনুসন্ধান
+
+Package Name: com.dolilonusondhan.app
+
+Brand Identity: Professional Green Land Information Management Application.
+
+Do not rename the application.
+
+Use this exact identity throughout:
+
+- Android launcher name
+- Splash screen
+- App icon
+- Top application branding
+- Login and registration
+- Dashboard
+- Settings
+- Application metadata
+- Android manifest
+- Backend documentation
+- API documentation
+- README
+- Play Store metadata
+- Build artifacts
+- Release notes
+
+Do not use Deed Search or another name as the primary product identity.
+
+---
+
+# SECTION 02 — PRODUCT SCOPE AND VERSION MANAGEMENT
+
+## Version 1.0: Data Entry & Record Management
+
+This is the actual development scope.
+
+The first version must include:
+
+- Native Android application
+- Bengali and English language support
+- Login and user authentication
+- Public user access
+- Office user access
+- Office administration
+- New deed entry
+- Multiple grantors
+- Multiple grantees
+- Personal information management
+- Location information
+- Mouza management
+- Khatian information
+- Dag information
+- Multiple land parcels per deed
+- Land area and land classification
+- Edit deed information
+- Delete through controlled soft deletion
+- Restore records where permitted
+- Draft management
+- Data validation
+- Duplicate detection
+- Search
+- Sorting
+- Filtering
+- Pagination
+- Record details
+- Audit trail
+- Offline draft support
+- Cloud database synchronization
+- User permissions
+- Automated testing
+
+## Strictly Excluded From Version 1
+
+Do not implement these features now:
+
+- Deed document scanning
+- PDF uploads
+- Image uploads
+- Document attachment storage
+- OCR
+- Google Drive integration
+- Google Drive automatic backup
+- Google Drive restore
+- Document preview
+- Advanced document management
+- Advanced ownership timeline
+- Unnecessary analytics and reporting modules
+
+Do not create fake or dummy interfaces for these features.
+
+Do not display inactive buttons suggesting that excluded features already exist.
+
+Future expansion must be possible without making Version 1 unnecessarily complex.
+
+## Future Version Roadmap
+
+Prepare extension points for:
+
+Version 2:
+- Google Account Connection
+- Google Drive Backup
+- Incremental Backup
+- Encrypted Full Backup
+- Restore to New Android Device
+- PDF and Image Attachment
+- Document Management
+- Advanced Fuzzy Search
+- Excel Import/Export
+- Advanced Reports
+
+Future Versions:
+- Advanced Ownership History
+- Advanced Analytics
+- Extended Office Management
+- Additional Administrative Features
+
+Do not implement future features unless required for the current architecture.
+
+---
+
+# SECTION 03 — TARGET USERS
+
+Two primary user categories:
+
+## A. Public Users
+
+Public users may:
+
+- Register or sign in.
+- View their profile.
+- Search legally publishable deed information.
+- View authorized public records.
+- Search using Bengali or English.
+- Filter and sort available records.
+
+Public users must not automatically receive access to:
+
+- Office drafts
+- Unpublished records
+- Internal administrative information
+- Confidential personal information
+- Unauthorized office records
+
+## B. Office Users
+
+Office users may receive permissions such as:
+
+- Data Entry
+- Record Viewing
+- Record Editing
+- Draft Management
+- Record Verification
+- Record Approval
+- Office Administration
+
+## Role-Based Access Control
+
+Implement:
+
+1. PUBLIC_USER
+2. OFFICE_VIEWER
+3. OFFICE_DATA_ENTRY
+4. OFFICE_SUPERVISOR
+5. ORGANIZATION_ADMIN
+6. PLATFORM_ADMIN
+
+Every operation must be authorized by the backend.
+
+Never rely only on hiding or showing UI buttons for security.
+
+Authorization must be enforced on the server and, where configured, through PostgreSQL Row Level Security.
+
+---
+
+# SECTION 04 — FINAL TECHNOLOGY STACK
+
+Use a modern, compatible, production-supported dependency ecosystem.
+
+Select exact stable versions based on official compatibility documentation when starting implementation.
+
+Do not assume every library is compatible with every Kotlin, Gradle, Android Gradle Plugin, or Android SDK version.
+
+## 4.1 Native Android
+
+Primary Language:
+- Kotlin
+
+UI:
+- Jetpack Compose
+- Material 3
+- Material Icons / Material Symbols
+
+Architecture:
+- Clean Architecture
+- MVVM
+- Repository Pattern
+- Unidirectional Data Flow
+
+Dependency Injection:
+- Hilt
+
+Asynchronous Programming:
+- Kotlin Coroutines
+- Kotlin Flow
+
+UI State:
+- ViewModel
+- StateFlow
+- Lifecycle-aware state collection
+
+Navigation:
+- Navigation Compose
+
+Local Persistence:
+- Room Database
+- SQLite
+
+Pagination:
+- Paging 3
+- PagingSource
+- RemoteMediator when appropriate
+
+Networking:
+- Retrofit
+- OkHttp
+
+Serialization:
+- Kotlin Serialization
+
+Local Preferences:
+- DataStore
+
+Background Tasks:
+- WorkManager
+
+Image Library:
+- Do not add Coil to Version 1 because no image feature exists.
+
+PDF Library:
+- Do not add a PDF viewer to Version 1.
+
+Security:
+- Android Keystore where appropriate
+- AndroidX Biometric if app-lock functionality is implemented
+- Secure token handling
+
+## 4.2 Backend
+
+Language:
+- Kotlin
+
+Framework:
+- Ktor
+
+API:
+- REST API
+- OpenAPI 3
+
+Authentication:
+- Supabase Auth
+
+Token Validation:
+- JWT
+- JWKS signature validation
+- Issuer, audience and expiration verification
+
+Database:
+- PostgreSQL
+
+Database Query Layer:
+- jOOQ
+
+Connection Pool:
+- HikariCP
+
+Migration:
+- Flyway
+
+Authorization:
+- RBAC
+- Organization scope
+- Office scope
+- Record-level permission
+- PostgreSQL RLS where correctly configured
+
+## 4.3 Infrastructure
+
+- Docker
+- Git
+- GitHub
+- GitHub Actions
+- Gradle Kotlin DSL
+- Gradle Version Catalog
+- OpenTelemetry
+- Micrometer
+- Prometheus
+- Grafana
+- Firebase Crashlytics for Android crash monitoring
+- Sentry for backend error reporting where appropriate
+
+## 4.4 Development and Testing Tools
+
+- Android Studio
+- Kotlin compiler
+- Android Gradle Plugin
+- Gradle
+- JUnit
+- MockK
+- Turbine
+- Compose UI Test
+- AndroidX Test
+- Testcontainers
+- Ktor Test Host
+- Kover
+- Detekt
+- ktlint
+- Android Lint
+- Macrobenchmark
+- k6
+- CodeQL
+- Dependabot
+- Trivy
+- OWASP ZAP where applicable
+
+Do not install every tool blindly. Configure each dependency for a real project requirement.
+
+---
+
+# SECTION 05 — PROJECT ARCHITECTURE
+
+Use a modular, feature-oriented architecture with clear responsibility boundaries.
+
+Recommended architecture:
+
+```text
+dolil-onusondhan/
+│
+├── app/
+│
+├── core/
+│   ├── common/
+│   ├── designsystem/
+│   ├── database/
+│   ├── network/
+│   ├── navigation/
+│   ├── datastore/
+│   ├── security/
+│   └── testing/
+│
+├── domain/
+│   ├── model/
+│   ├── repository/
+│   └── usecase/
+│
+├── data/
+│   ├── local/
+│   ├── remote/
+│   ├── repository/
+│   ├── synchronization/
+│   └── search/
+│
+├── feature/
+│   ├── authentication/
+│   ├── dashboard/
+│   ├── deedentry/
+│   ├── deedlist/
+│   ├── deedsearch/
+│   ├── deeddetails/
+│   ├── persons/
+│   ├── land/
+│   ├── mouza/
+│   ├── profile/
+│   └── settings/
+│
+├── backend/
+│   ├── api/
+│   ├── authentication/
+│   ├── authorization/
+│   ├── database/
+│   ├── migrations/
+│   ├── deeds/
+│   ├── persons/
+│   ├── land/
+│   ├── search/
+│   └── audit/
+│
+├── benchmark/
+│
+├── docs/
+│   ├── architecture/
+│   ├── database/
+│   ├── search/
+│   ├── ui-ux/
+│   ├── security/
+│   └── testing/
+│
+└── gradle/
+    └── libs.versions.toml
+```
+
+Do not create arbitrary modules merely to make the directory structure look enterprise-grade.
+
+Each module must have a meaningful responsibility.
+
+## Architectural Rules
+
+- UI must not access DAO directly.
+- ViewModel must not contain complex database queries.
+- Business logic belongs in Domain Use Cases.
+- Repository is the data-access abstraction.
+- Local and Remote Data Sources must be separated.
+- API DTOs must not be reused as UI models without justification.
+- Database transactions must be used for related mutations.
+- Every operation must have meaningful error handling.
+- Use structured concurrency.
+- Do not perform database or network work on the main thread.
+- Avoid global mutable state.
+- Avoid god classes.
+- Avoid circular dependencies.
+
+---
+
+# SECTION 06 — UI/UX DESIGN DIRECTION
+
+The application must feel like a premium professional Android product.
+
+It should be:
+
+- Modern
+- Elegant
+- Minimal
+- Trustworthy
+- Clean
+- Data-focused
+- Professional
+- Easy to understand
+- Bengali-first
+- Accessible
+- Consistent
+
+Do not make it look like an outdated government desktop application.
+
+Do not make it resemble a gaming application or decorative social media app.
+
+Use real Android-native interaction patterns.
+
+## 6.1 Official Color Palette
+
+Use the following starting palette:
+
+```text
+PRIMARY_DARK_GREEN = #075B3A
+PRIMARY_GREEN      = #087C4A
+SECONDARY_GREEN    = #4CAF75
+PALE_GREEN         = #E8F5EC
+APP_BACKGROUND     = #F7FAF7
+SURFACE_WHITE      = #FFFFFF
+PRIMARY_TEXT       = #1B2921
+SECONDARY_TEXT     = #5D6B62
+BORDER             = #DCE7DF
+SUCCESS            = #176C43
+WARNING            = #8A5100
+ERROR              = #BA1A1A
+```
+
+Create semantic Material 3 ColorScheme tokens.
+
+Do not hardcode arbitrary colors in individual screens.
+
+Primary Green should be used for:
+
+- Brand
+- Primary buttons
+- Active navigation
+- Important actions
+- Selected controls
+
+Dark Green should be used for:
+
+- Main brand areas
+- App bars when appropriate
+- High-emphasis text on light surfaces
+- Selected emphasis areas
+
+Pale Green should be used for:
+
+- Light card backgrounds
+- Selected states
+- Subtle information containers
+
+White should be used for:
+
+- Form surfaces
+- Main cards
+- Dialogs
+- Bottom sheets
+
+Background should remain light and neutral.
+
+Red must be reserved for destructive actions and errors.
+
+Amber must be reserved for warnings.
+
+Ensure WCAG 2.2 contrast requirements.
+
+Do not put small white text on a light-green background.
+
+Use text and icons alongside color to convey status.
+
+## 6.2 Dark Mode
+
+Prepare a semantic Dark Color Scheme.
+
+Do not simply invert the Light Theme.
+
+Dark Mode may be included as a functional theme preference if fully implemented and tested.
+
+Suggested background:
+#101812
+
+Suggested surface:
+#1B261F
+
+Suggested text:
+#E0E9E2
+
+Suggested primary:
+#80D5A7
+
+## 6.3 Typography
+
+Primary Bengali Font:
+Noto Sans Bengali
+
+English Font:
+Roboto / Android System Sans-serif
+
+Alternative Bengali Font:
+Hind Siliguri
+
+Use one primary Bengali typeface consistently.
+
+Use proper Bengali shaping and glyph rendering.
+
+Recommended type scale:
+
+| Component | Size | Weight |
+|---|---:|---|
+| Dashboard Title | 24sp | Bold |
+| Screen Title | 22sp | SemiBold |
+| Section Title | 18sp | SemiBold |
+| Card Title | 16sp | SemiBold |
+| Body | 14sp | Regular |
+| Important Body | 16sp | Regular |
+| Field Label | 14sp | Medium |
+| Helper Text | 12sp | Regular |
+| Button | 14sp | SemiBold |
+| Metadata | 12sp | Regular |
+
+Keep proper line-height and padding for Bengali conjuncts, vowel signs and diacritics.
+
+Do not cut or clip Bengali text.
+
+Support Android font scaling.
+
+## 6.4 Spacing Tokens
+
+Use an 8dp-based spacing system:
+
+```text
+space_1  = 4dp
+space_2  = 8dp
+space_3  = 12dp
+space_4  = 16dp
+space_6  = 24dp
+space_8  = 32dp
+space_10 = 40dp
+space_12 = 48dp
+```
+
+## 6.5 Shape Tokens
+
+```text
+INPUT_RADIUS       = 12dp
+BUTTON_RADIUS      = 12dp
+CARD_RADIUS        = 16dp
+BOTTOM_SHEET_RADIUS = 24dp
+DIALOG_RADIUS      = 24dp
+```
+
+Avoid excessive shadows and rounded decoration.
+
+## 6.6 Component Design System
+
+Create reusable components:
+
+- PrimaryButton
+- SecondaryButton
+- DestructiveButton
+- AppTopBar
+- BottomNavigationBar
+- SearchField
+- OutlinedTextField
+- FormSectionCard
+- RecordCard
+- PersonCard
+- LandParcelCard
+- StatusChip
+- FilterChip
+- SortBottomSheet
+- FilterBottomSheet
+- ConfirmationDialog
+- ErrorMessage
+- LoadingIndicator
+- EmptyState
+- OfflineBanner
+- Snackbar
+- SectionHeader
+- LoadingSkeleton
+
+All components must use shared design tokens.
+
+Do not copy slightly different versions of the same component into multiple features.
+
+---
+
+# SECTION 07 — UI/UX PRINCIPLES
+
+Follow these principles:
+
+1. Visual Hierarchy
+2. Consistency
+3. Simplicity
+4. Recognition Over Recall
+5. Error Prevention
+6. Clear Feedback
+7. Affordance
+8. Progressive Disclosure
+9. Gestalt Proximity
+10. Readability
+11. Accessibility
+12. Responsive Design
+13. Adaptive Layout
+14. Predictable Navigation
+15. Reversible Actions
+16. Proper Information Density
+17. Minimal Cognitive Load
+18. Clear System Status
+
+Use the Nielsen Norman Group 10 Usability Heuristics.
+
+Use material component behaviour rather than inventing inconsistent interactions.
+
+All important elements must be discoverable.
+
+Interactive touch targets should be at least 48dp where possible.
+
+Support TalkBack and accessibility semantics.
+
+Do not communicate status through color alone.
+
+Provide:
+
+- Loading state
+- Empty state
+- Error state
+- Success state
+- Offline state
+- Permission-denied state
+
+Support compact, medium and expanded screen sizes.
+
+Use responsive Android layouts and appropriate navigation patterns.
+
+Do not stretch phone designs blindly on tablets.
+
+---
+
+# SECTION 08 — INFORMATION ARCHITECTURE
+
+The five primary bottom navigation destinations are:
+
+1. Home
+2. Search
+3. Add Deed
+4. Records
+5. Profile
+
+Bangla labels:
+
+1. হোম
+2. অনুসন্ধান
+3. নতুন দলিল
+4. দলিলসমূহ
+5. প্রোফাইল
+
+## Required Screens
+
+1. Splash Screen
+2. Login Screen
+3. Registration Screen
+4. Forgot Password Screen
+5. Home Dashboard
+6. Search Screen
+7. Search Result Screen
+8. Advanced Filter Screen where appropriate
+9. Sorting Bottom Sheet
+10. New Deed Form
+11. Edit Deed Form
+12. Deed Details
+13. All Records
+14. Draft Records
+15. Person Details
+16. Land Details
+17. Profile
+18. Settings
+19. About
+20. Unauthorized / Access Denied
+21. Offline / Network Error
+
+Do not implement duplicate screens for minor state changes.
+
+Use appropriate dialogs and bottom sheets where they provide a better user experience.
+
+---
+
+# SECTION 09 — SCREEN-BY-SCREEN UX
+
+## 9.1 Splash Screen
+
+- Dark Green Background
+- White Brand Logo
+- Official App Name
+- Short Subtitle
+- Minimal Branding Motion
+- Correct Startup Routing
+
+Do not use unnecessary loading delays.
+
+## 9.2 Authentication
+
+Include:
+
+- Login
+- Registration
+- Password visibility
+- Appropriate validation
+- Loading state
+- Error feedback
+- Session handling
+- Logout confirmation
+- Forgotten password workflow
+
+Do not invent unconfigured external authentication providers.
+
+## 9.3 Dashboard
+
+Top Section:
+
+- Application Logo
+- Welcome Message
+- Profile Avatar
+- User Name where available
+
+Main Search Field:
+
+"দলিল নম্বর, ব্যক্তি, দাগ বা খতিয়ান দিয়ে খুঁজুন"
+
+Quick Actions:
+
+- নতুন দলিল
+- সকল দলিল
+- ব্যক্তির তথ্য
+- জমির তথ্য
+
+Statistics for authorized office users:
+
+- মোট দলিল
+- আজকের এন্ট্রি
+- Draft
+- Pending Review
+
+Recent Records:
+
+Display only records the user is allowed to access.
+
+Do not reveal office-specific information to public users.
+
+## 9.4 Deed Entry Screen
+
+Use a scrollable section-based form.
+
+Do not place all fields in a visually overwhelming single block.
+
+### Section A — General Information
+
+Fields:
+
+- দলিলের ধরন
+- দলিল নম্বর
+- দলিলের সাল
+- রেজিস্ট্রির তারিখ
+- সাব-রেজিস্ট্রি অফিস
+- জেলা
+- উপজেলা
+
+Suggested deed types:
+
+- সাফ কবলা
+- দানপত্র
+- হেবা
+- বণ্টননামা
+- বিনিময়
+- অন্যান্য
+
+Controlled values must be configurable.
+
+### Section B — Grantors
+
+Fields:
+
+- দাতার নাম
+- পিতার নাম
+- মাতার নাম
+- স্বামীর নাম
+- ঠিকানা
+
+Support multiple grantors.
+
+### Section C — Grantees
+
+Fields:
+
+- গ্রহীতার নাম
+- পিতার নাম
+- মাতার নাম
+- স্বামীর নাম
+- ঠিকানা
+
+Support multiple grantees.
+
+### Section D — Location
+
+Fields:
+
+- District
+- Upazila
+- Union
+- Mouza
+- JL Number
+
+Use cascading location selection.
+
+### Section E — Land Information
+
+Fields:
+
+- Khatian Number
+- Dag Number
+- Land Classification
+- Land Area
+- Land Unit
+- Boundary Description
+- Notes
+
+Support multiple land parcel entries.
+
+Each parcel must have its own area and classification.
+
+### Form Actions
+
+- Save Draft
+- Save Deed
+- Cancel
+- Add Another Grantor
+- Add Another Grantee
+- Add Another Parcel
+- Remove Parcel where permitted
+
+Use clear inline validation and prevent accidental data loss.
+
+## 9.5 Search Screen
+
+Large search field.
+
+Search options:
+
+- Deed Number
+- Grantor Name
+- Grantee Name
+- Father's Name
+- Mother's Name
+- Spouse Name
+- Mouza
+- Dag
+- Khatian
+- Year
+
+Search results should display:
+
+- Deed Number
+- Deed Year
+- Grantor
+- Grantee
+- Mouza
+- Dag
+- Land Area
+
+Only show information permitted for the signed-in user.
+
+## 9.6 Record List
+
+Provide:
+
+- Search
+- Sort
+- Filter
+- Result Count
+- Paginated Results
+- Record Cards
+- More Actions
+
+## 9.7 Deed Details
+
+Group fields into:
+
+1. General Deed Information
+2. Grantor Information
+3. Grantee Information
+4. Land Location
+5. Parcel Details
+6. Ownership Information where available
+7. Creation and Modification History
+
+No PDF or image preview in Version 1.
+
+## 9.8 Profile & Settings
+
+- User Profile
+- User Role
+- Organization
+- Office
+- Language
+- Theme
+- Security
+- Application Version
+- Logout
+- Privacy Policy
+- About
+
+Do not add Google Drive settings in Version 1.
+
+---
+
+# SECTION 10 — DATABASE ARCHITECTURE
+
+Cloud Primary Database:
+PostgreSQL
+
+Local Database:
+Room + SQLite
+
+Cloud is authoritative for shared records.
+
+Local Room stores:
+
+- Offline Drafts
+- Authorized Cached Records
+- Recent Search Data where appropriate
+- Pending Local Changes
+- Sync Metadata
+
+Never download the complete 10-million-record cloud database onto every phone.
+
+## 10.1 Required Cloud Tables
+
+organizations:
+- id
+- name
+- status
+- created_at
+
+offices:
+- id
+- organization_id
+- office_code
+- office_name
+- location_id
+- status
+
+profiles:
+- id
+- full_name
+- email
+- phone
+- status
+- created_at
+
+memberships:
+- id
+- user_id
+- organization_id
+- office_id
+- role
+- status
+
+locations:
+- id
+- district_name
+- district_code
+- upazila_name
+- upazila_code
+- union_name
+- union_code
+
+mouzas:
+- id
+- location_id
+- name
+- jl_number
+
+deeds:
+- id
+- organization_id
+- office_id
+- deed_type
+- deed_number
+- normalized_deed_number
+- deed_year
+- registration_date
+- status
+- visibility
+- row_version
+- created_by
+- updated_by
+- created_at
+- updated_at
+- deleted_at
+
+persons:
+- id
+- full_name
+- normalized_name
+- father_name
+- mother_name
+- spouse_name
+- address
+- created_at
+- updated_at
+
+person_aliases:
+- id
+- person_id
+- alias
+- normalized_alias
+
+deed_parties:
+- id
+- deed_id
+- person_id
+- party_role
+- sequence_number
+
+land_parcels:
+- id
+- mouza_id
+- survey_type
+- khatian_number
+- normalized_khatian_number
+- dag_number
+- normalized_dag_number
+- land_class
+
+deed_land_items:
+- id
+- deed_id
+- parcel_id
+- land_area
+- land_unit
+- boundary_description
+
+ownership_records:
+- id
+- parcel_id
+- person_id
+- ownership_share
+- source_deed_id
+- validity_status
+
+deed_relations:
+- id
+- source_deed_id
+- target_deed_id
+- relation_type
+
+audit_logs:
+- id
+- actor_id
+- organization_id
+- office_id
+- action
+- entity_type
+- entity_id
+- revision
+- created_at
+
+sync_changes:
+- id
+- entity_id
+- entity_type
+- revision
+- operation
+- changed_at
+
+Do not create unnecessary attachment or file tables in Version 1.
+
+Do not assume every deed or parcel has legally verified ownership.
+
+Ownership data must be stored as user-entered or source-linked records, not as a guarantee of legal title.
+
+## 10.2 Database Integrity Rules
+
+- Use UUID primary keys.
+- Use proper foreign keys.
+- Use transactions.
+- Use CHECK constraints.
+- Use appropriate unique constraints.
+- Use optimistic locking.
+- Use row_version.
+- Use soft deletion.
+- Use audit trails.
+- Store timestamps in UTC.
+- Use exact decimal types for land area.
+- Never use floating-point for legally relevant area values.
+
+A deed number alone must never be treated as globally unique.
+
+Use a configurable duplicate detection policy based on office, year, deed number and applicable register context.
+
+Similar names do not prove identical people.
+
+Same dag number in different mouzas does not identify the same land parcel.
+
+Do not blindly use cascade deletion for legal and historical records.
+
+## 10.3 Database Migrations
+
+Use Flyway for PostgreSQL migrations.
+
+Use Room Migration for local database upgrades.
+
+Every migration must be tested against representative previous database versions.
+
+Never destroy user data during a normal app upgrade.
+
+---
+
+# SECTION 11 — DATA INTEGRITY AND VALIDATION
+
+Create dedicated validation use cases.
+
+Required validation:
+
+- Required deed number
+- Valid deed year
+- Valid registration date
+- Allowed deed type
+- Required grantor information where applicable
+- Required grantee information where applicable
+- Valid location selection
+- Correct mouza relationship
+- Valid dag and khatian
+- Positive land area
+- Valid land unit
+- Duplicate detection
+- Multiple parcel handling
+- Multiple party handling
+- Ownership share validation where applicable
+
+Validate on the client for immediate feedback and again on the backend for security and consistency.
+
+Never trust client-side validation alone.
+
+Preserve the user's entered data when validation fails.
+
+---
+
+# SECTION 12 — SEARCH ENGINE SPECIFICATION
+
+Build a search architecture that can support large cloud datasets without loading all rows into memory.
+
+## 12.1 Version 1 Search
+
+Implement:
+
+1. Exact deed number search
+2. Exact year search
+3. Exact dag search
+4. Exact khatian search
+5. Normalized name search
+6. Indexed prefix search
+7. Combined filters
+8. Office-scoped search
+9. Mouza-scoped search
+
+## 12.2 Search Normalization
+
+Implement:
+
+- Unicode NFC normalization
+- Bengali digit normalization
+- English lowercase normalization
+- Whitespace normalization
+- Punctuation handling
+- Original text preservation
+- Separate normalized search values
+- Curated alias matching
+
+Examples:
+
+১২৫৬ → 1256
+
+১২৫৬ / ২০২৪ → 1256/2024
+
+ABDUL KARIM → abdul karim
+
+আব্দুল  করিম → আব্দুল করিম
+
+Do not make aggressive Bengali character transformations that merge distinct names.
+
+Do not assume মোঃ, মোহাম্মদ, Md. always mean the same individual.
+
+Use aliases as search hints, not identity proof.
+
+## 12.3 Exact Search Algorithm
+
+Use PostgreSQL B-tree indexes and equality comparisons.
+
+Typical complexity of indexed lookup is approximately O(log N).
+
+## 12.4 Prefix Search Algorithm
+
+Use indexed prefix matching on properly normalized columns.
+
+Test the PostgreSQL collation and operator-class configuration.
+
+## 12.5 Local Search
+
+Use Room indexed queries for local records.
+
+Use Room-compatible FTS support only if necessary and tested.
+
+Do not assume Room's FTS4 annotation automatically enables SQLite FTS5.
+
+## 12.6 Future Advanced Search
+
+Prepare an extensible Search Strategy interface for:
+
+- PostgreSQL Full-text Search
+- GIN Index
+- pg_trgm
+- Trigram Similarity
+- Damerau-Levenshtein
+- Weighted Relevance Ranking
+- Advanced Alias Search
+
+Do not execute Levenshtein over an entire million-record database.
+
+First generate a small candidate set from indexed queries, then apply bounded fuzzy ranking.
+
+## 12.7 Search Ranking
+
+Recommended priority:
+
+1. Exact Deed Number
+2. Exact Dag / Khatian
+3. Exact Person Name
+4. Exact Alias
+5. Prefix Match
+6. Full-text Match
+7. Substring Match
+8. Fuzzy Match
+
+Display a grounded match reason where practical.
+
+Do not imply a fuzzy match is a confirmed identity.
+
+---
+
+# SECTION 13 — SORTING ALGORITHMS
+
+Database-level sorting is mandatory.
+
+Use:
+
+- PostgreSQL ORDER BY
+- SQLite ORDER BY
+- B-tree indexes
+- Composite indexes
+- Stable sorting keys
+- Keyset pagination
+
+Sorting options:
+
+- Registration Date ASC
+- Registration Date DESC
+- Deed Year ASC
+- Deed Year DESC
+- Deed Number
+- Grantor Name
+- Grantee Name
+- Mouza Name
+- Land Area
+- Created Date
+- Updated Date
+
+Always use a unique tie-breaker, such as record UUID.
+
+Do not load 10 million rows into Kotlin and run Quick Sort or Merge Sort.
+
+Merge Sort and Binary Search may be used for bounded in-memory collections only when justified.
+
+Use database query plans to validate index usage.
+
+---
+
+# SECTION 14 — PAGINATION AND LARGE DATASET DESIGN
+
+For large records:
+
+- Paging 3
+- Room PagingSource
+- Server-side pagination
+- RemoteMediator when using network-backed local caching
+- Cursor pagination
+- Keyset pagination
+- Bounded LRU cache
+- Stable sorting
+
+Default first page: 20 records.
+
+Maximum requested page size: 50 unless benchmark justifies a different limit.
+
+Do not expose unbounded search endpoints.
+
+Do not perform expensive exact-count operations for every search.
+
+For remote paging, use an opaque server-generated cursor.
+
+Maintain stable sorting across page requests.
+
+Prevent duplicated or missing rows when new records arrive.
+
+---
+
+# SECTION 15 — API ARCHITECTURE
+
+Use Kotlin Ktor REST API.
+
+Use OpenAPI 3 as API contract.
+
+Suggested endpoints:
+
+Authentication is handled through configured Supabase Auth integration.
+
+Deeds:
+
+GET /v1/deeds/search
+
+GET /v1/deeds/{id}
+
+POST /v1/deeds
+
+PATCH /v1/deeds/{id}
+
+DELETE /v1/deeds/{id}
+
+POST /v1/deeds/{id}/restore
+
+Persons:
+
+GET /v1/persons/search
+
+GET /v1/persons/{id}
+
+Land:
+
+GET /v1/land/search
+
+GET /v1/mouzas
+
+GET /v1/locations
+
+Records:
+
+GET /v1/records
+
+Audit:
+
+GET /v1/audit
+
+Sync:
+
+POST /v1/sync/push
+
+GET /v1/sync/pull
+
+Use request validation, response schemas, consistent errors, request IDs and rate limiting.
+
+Use strict server-side allowlists for sorting fields and filter parameters.
+
+Never place raw user input into SQL fragments.
+
+Use prepared / parameterized queries.
+
+Generate OpenAPI documentation from the actual implementation.
+
+---
+
+# SECTION 16 — OFFLINE AND CLOUD SYNCHRONIZATION
+
+The app is offline-capable, not an offline copy of the entire cloud database.
+
+Cloud Source of Truth:
+PostgreSQL
+
+Local Cache and Draft Store:
+Room
+
+Offline operation:
+
+- Create local draft
+- Edit local draft
+- Browse authorized cached records
+- Queue approved local changes
+- Preserve edits through app restart
+
+Background synchronization:
+
+- WorkManager
+- Network constraints
+- Unique work requests
+- Retry and backoff
+- Idempotency keys
+- Record revisions
+- Sync status
+
+Conflict handling:
+
+Never silently overwrite another user's update.
+
+Use optimistic locking with row_version.
+
+On conflict:
+
+1. Return structured conflict response.
+2. Fetch latest server version.
+3. Compare local and remote versions.
+4. Preserve the user's local changes.
+5. Require appropriate conflict resolution.
+6. Create a new revision after resolution.
+
+Do not use blind Last Write Wins for legal or administrative records.
+
+Google Drive Backup is excluded from Version 1.
+
+---
+
+# SECTION 17 — AUTHENTICATION AND DATABASE SECURITY
+
+Use Supabase Auth for identity where configured.
+
+Ktor must verify access tokens on the server.
+
+Never put Supabase service_role keys in Android.
+
+Never expose database credentials in the APK.
+
+If Ktor connects directly to PostgreSQL:
+
+- Use dedicated least-privilege database roles.
+- Do not use an RLS-bypassing service role for ordinary application queries.
+- If RLS is enabled, establish verified user and organization context safely within each transaction.
+- Make RLS policies match the Ktor authorization model.
+- Test policies using actual restricted database roles.
+- Ensure transaction context does not leak between pooled connections.
+
+Do not assume Supabase auth.uid() automatically contains the current user when Ktor uses a separate JDBC connection.
+
+Apply both application-level authorization and database-level defense in depth.
+
+Use:
+
+- HTTPS
+- Secure session handling
+- JWT verification
+- RBAC
+- Office-level access
+- Organization isolation
+- Rate limiting
+- Audit logging
+- Input validation
+- SQL injection prevention
+- PII-safe logging
+
+---
+
+# SECTION 18 — AUDIT TRAIL
+
+All important record modifications must be traceable.
+
+Track:
+
+- Created record
+- Updated record
+- Deleted record
+- Restored record
+- Draft submitted
+- Record approved
+- Permission changes
+- User responsible
+- Organization
+- Office
+- Timestamp
+- Previous revision
+- New revision
+
+Audit history must not be editable by ordinary users.
+
+Do not record sensitive personal data unnecessarily.
+
+---
+
+# SECTION 19 — SECURITY STANDARDS
+
+Use:
+
+- OWASP MASVS for mobile application security
+- OWASP MASTG for mobile security testing
+- OWASP ASVS 5.0 for backend application security
+
+Perform:
+
+- Authentication testing
+- Authorization testing
+- Cross-office access testing
+- RLS testing
+- SQL injection testing
+- Input validation testing
+- Token handling testing
+- Sensitive data exposure testing
+- Dependency security testing
+- Secret scanning
+- Network security testing
+
+No Critical or High security vulnerability may remain unresolved at release.
+
+Do not claim formal OWASP certification unless an actual qualifying assessment exists.
+
+---
+
+# SECTION 20 — PERFORMANCE ENGINEERING
+
+Design for more than 1 million records.
+
+Use synthetic test datasets:
+
+- 10,000 records
+- 100,000 records
+- 1,000,000 records
+- 5,000,000 records
+- 10,000,000 records
+
+Test:
+
+- Exact search
+- Prefix search
+- Sorting
+- Pagination
+- Insert
+- Update
+- Duplicate checks
+- Concurrent queries
+- Database index effectiveness
+- API latency
+- Android memory usage
+- UI scrolling
+- Startup performance
+
+Proposed engineering targets:
+
+- Local exact search p95 <= 100 ms
+- Cloud exact search p95 <= 300 ms
+- Cloud basic search p95 <= 500 ms
+- First page <= 20 records
+- UI target 60 FPS
+
+These are targets, not guarantees.
+
+Run actual benchmarks on documented infrastructure and devices.
+
+Use EXPLAIN ANALYZE and database statistics to optimize SQL.
+
+Use Android Macrobenchmark for startup and scrolling performance.
+
+Do not claim that an app supports 10 million records unless the relevant benchmark evidence is available.
+
+---
+
+# SECTION 21 — UI PERFORMANCE AND DESIGN QUALITY
+
+Use:
+
+- LazyColumn
+- LazyGrid where appropriate
+- Stable Lazy Keys
+- Immutable UI State where practical
+- collectAsStateWithLifecycle
+- Proper recomposition control
+- Main-thread avoidance
+- Efficient database access
+- Pagination
+- Bounded caches
+
+Create a screen-specific performance benchmark.
+
+Test:
+
+- Cold startup
+- Warm startup
+- Dashboard render
+- Record-list scroll
+- Search input
+- Search result navigation
+- Form entry
+- Form submission
+
+---
+
+# SECTION 22 — COMPREHENSIVE AUTOMATED TESTING MANDATE
+
+You are not permitted to stop at code generation.
+
+You must implement, run, inspect, and fix the application's automated tests.
+
+## 22.1 Coverage Targets
+
+Use Kover or a compatible coverage tool.
+
+Mandatory target:
+
+- 100% first-party production line coverage
+- 100% first-party production branch coverage
+- 100% business rule coverage
+- 100% critical validation logic coverage
+- 100% SearchNormalizer logic coverage
+- 100% permission rule coverage
+
+Generated code, third-party code and framework-generated code may be excluded only with documented justification.
+
+Do not manipulate exclusion rules just to increase coverage percentages.
+
+100% coverage does not prove the absence of defects.
+
+Complement coverage with mutation tests, property-based tests, integration tests, security tests and E2E tests.
+
+Report actual numbers and uncovered lines.
+
+Never invent a passing coverage report.
+
+## 22.2 Unit Tests
+
+Test every production domain class and meaningful business operation.
+
+Mandatory areas:
+
+- Validators
+- Deed Use Cases
+- Person Use Cases
+- Land Use Cases
+- Search Normalization
+- Sorting Logic
+- Duplicate Detection
+- Pagination Logic
+- Repository Behaviour
+- Permission Rules
+- Conflict Resolution
+- Draft Management
+- Error Handling
+
+Include positive, negative and boundary cases.
+
+## 22.3 Database Integration Tests
+
+Use real Room Database tests.
+
+Test:
+
+- All DAO operations
+- Inserts
+- Updates
+- Soft deletion
+- Restore
+- Foreign Keys
+- Unique Constraints
+- Transactions
+- Related entities
+- Pagination
+- Query ordering
+- Migration from every supported previous schema
+
+Use real PostgreSQL through Testcontainers for server-side database testing.
+
+Do not assume H2 is fully equivalent to PostgreSQL.
+
+Test RLS with actual constrained roles.
+
+## 22.4 Backend Integration Tests
+
+Use Ktor Test Host and a test PostgreSQL environment.
+
+Test every endpoint for:
+
+- Success
+- Unauthorized access
+- Invalid token
+- Wrong role
+- Invalid body
+- Invalid query
+- Missing record
+- Duplicate record
+- Database failure
+- Timeout
+- Concurrency
+- Error response
+- Pagination
+
+## 22.5 Compose UI Automation
+
+Use Compose UI Test and AndroidX Instrumentation tests.
+
+Test every screen and every interactive element.
+
+Mandatory coverage:
+
+- All Buttons
+- All Icon Buttons
+- Bottom Navigation
+- Text Inputs
+- Dropdowns
+- Date Pickers
+- Dialogs
+- Bottom Sheets
+- Filter Controls
+- Sort Controls
+- Form Actions
+- Menu Actions
+- Search Actions
+- Record Cards
+- Back Navigation
+
+Every clickable element must have meaningful functionality.
+
+Every interactive component must have a stable test tag or equivalent accessible identification where appropriate.
+
+A click test must verify the expected result, not merely that the click occurred.
+
+## 22.6 Complete E2E User Journeys
+
+Automate these full journeys:
+
+Journey A — New User:
+Install, launch, register, login, dashboard, profile and logout.
+
+Journey B — New Deed:
+Open form, enter deed information, add grantors, add grantees, add multiple parcels, validate, save draft, reopen and submit.
+
+Journey C — Edit:
+Find record, open detail, edit fields, save and verify database.
+
+Journey D — Search:
+Exact deed number, Bengali name, English name, dag, khatian, filtering, sorting and details.
+
+Journey E — Duplicate Prevention:
+Submit the same duplicate candidate and verify the correct warning or policy.
+
+Journey F — Delete and Restore:
+Delete, confirm, verify hidden state, restore and verify.
+
+Journey G — Permissions:
+Test all user roles and unauthorized access attempts.
+
+Journey H — Offline:
+Disable network, create and update drafts, restart app, restore network, synchronize, and verify records.
+
+Journey I — Database Upgrade:
+Install previous version, retain test data, upgrade and verify migrations.
+
+## 22.7 Every Button Testing
+
+Maintain an automated Interactive Component Inventory.
+
+For each element record:
+
+- Screen
+- Component ID
+- Action
+- Expected State
+- Expected API Operation
+- Expected Database Change
+- Test Identifier
+- Execution Result
+
+No dead buttons.
+
+No fake success messages.
+
+No buttons without implementation.
+
+No TODO action in released functionality.
+
+## 22.8 UI Regression
+
+Capture automated screenshots for representative screens.
+
+Compare UI states across the supported emulator matrix.
+
+Verify:
+
+- Bengali text rendering
+- English text rendering
+- Mixed-language data
+- No overlapping UI
+- No truncated fields
+- No off-screen controls
+- Correct keyboard behaviour
+- Proper scrolling
+- Proper accessibility semantics
+- Light and Dark Theme if enabled
+
+Where visual regression tools are available, use them with stable screenshot conditions.
+
+## 22.9 Security Testing
+
+Run:
+
+- Role escalation tests
+- Cross-office access tests
+- Unauthorized API tests
+- JWT verification tests
+- RLS tests
+- Input injection tests
+- Secret scan
+- Dependency vulnerability scan
+
+Use OWASP ZAP where applicable.
+
+## 22.10 Mutation Testing
+
+Introduce controlled mutations into critical business logic using a Kotlin-compatible mutation testing tool where feasible.
+
+Check whether tests detect altered conditions, changed return values and removed validation.
+
+Improve weak tests.
+
+Report mutation score separately from coverage.
+
+## 22.11 Test Failure Handling
+
+Never:
+
+- Disable a failing test to hide a problem.
+- Mark skipped tests as passed.
+- Mock a critical real integration and claim production verification.
+- Invent test data results.
+- Ignore flaky tests.
+- Modify coverage exclusions dishonestly.
+
+When a test fails:
+
+1. Identify the failure.
+2. Find its root cause.
+3. Fix the code or test.
+4. Rerun the failed test.
+5. Rerun affected regression tests.
+6. Run the full test suite again.
+
+Continue until all achievable release gates pass.
+
+---
+
+# SECTION 23 — CI/CD AND RELEASE ENGINEERING
+
+Use:
+
+- Git
+- GitHub
+- GitHub Actions
+- Gradle Kotlin DSL
+- Gradle Version Catalog
+- Detekt
+- ktlint
+- Android Lint
+- CodeQL
+- Dependabot
+- Gitleaks
+- Trivy
+- SBOM generation where practical
+- Docker for backend
+- Signed release artifacts
+
+Pipeline:
+
+1. Checkout
+2. Dependency resolution
+3. Compile
+4. Unit tests
+5. Static analysis
+6. Coverage report
+7. Database migration tests
+8. Integration tests
+9. Instrumentation tests
+10. E2E tests
+11. Security scans
+12. Performance tests
+13. Build release candidate
+14. Artifact checksum
+15. Staging verification
+16. Release approval
+
+Never embed server credentials or private signing keys in source code.
+
+Use securely stored release secrets.
+
+Do not claim Play Store publication unless an actual authorized publication has occurred.
+
+---
+
+# SECTION 24 — PRODUCTION OPERATIONS
+
+Even though Google Drive backup is excluded from V1, backend operational backup remains mandatory.
+
+Configure:
+
+- Managed PostgreSQL backup
+- Point-in-time recovery where available
+- Independent encrypted backup strategy
+- Backup verification
+- Database restore drills
+- Migration rollback planning
+- Uptime monitoring
+- API metrics
+- Error tracking
+- Audit logs
+- Incident response documentation
+- Recovery runbook
+
+Propose an RPO and RTO target and verify whether the chosen hosting plan can meet it.
+
+Do not claim backup success without a tested restore.
+
+Monitoring stack where appropriate:
+
+- OpenTelemetry
+- Micrometer
+- Prometheus
+- Grafana
+- Loki
+- Tempo
+- Sentry
+- Firebase Crashlytics
+
+Do not put personal names, sensitive queries, tokens or private data into ordinary application logs.
+
+---
+
+# SECTION 25 — FUTURE VERSION EXTENSION POINTS
+
+Google Drive backup is a future feature.
+
+When implemented, use:
+
+- Google Identity Authorization
+- Google Drive API v3
+- OAuth scopes with least privilege
+- drive.file where suitable
+- WorkManager
+- Incremental Backup
+- Full Backup
+- AES-256-GCM encryption
+- SHA-256 integrity verification
+- Versioned manifests
+- Restore validation
+- Recovery key handling
+
+File attachments are a separate future module:
+
+- Private Object Storage
+- Signed URLs
+- MIME and magic-byte validation
+- Malware Scanning
+- File checksum
+- Upload and download authorization
+
+Do not implement these in Version 1.
+
+---
+
+# SECTION 26 — DESIGN DOCUMENTATION AND REFERENCE LIBRARY
+
+Use these resources as the implementation references.
+
+## A. Official Android Documentation
+
+Android:
+https://developer.android.com/develop
+
+Android Architecture:
+https://developer.android.com/topic/architecture
+
+Architecture Recommendations:
+https://developer.android.com/topic/architecture/recommendations
+
+Jetpack Compose:
+https://developer.android.com/compose
+
+Material 3 in Compose:
+https://developer.android.com/develop/ui/compose/designsystems/material3
+
+Navigation:
+https://developer.android.com/develop/ui/compose/navigation
+
+Room:
+https://developer.android.com/training/data-storage/room
+
+Room Database Testing:
+https://developer.android.com/training/data-storage/room/testing-db
+
+Paging 3:
+https://developer.android.com/topic/libraries/architecture/paging/v3-overview
+
+WorkManager:
+https://developer.android.com/develop/background-work/background-tasks/persistent
+
+DataStore:
+https://developer.android.com/topic/libraries/architecture/datastore
+
+Accessibility:
+https://developer.android.com/develop/ui/compose/accessibility
+
+Adaptive Apps:
+https://developer.android.com/develop/adaptive-apps
+
+Compose Testing:
+https://developer.android.com/develop/ui/compose/testing
+
+Android Testing:
+https://developer.android.com/training/testing
+
+Macrobenchmark:
+https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview
+
+## B. Kotlin Documentation
+
+Kotlin:
+https://kotlinlang.org/docs/home.html
+
+Coroutines:
+https://kotlinlang.org/docs/coroutines-overview.html
+
+Kotlin Flow:
+https://kotlinlang.org/docs/flow.html
+
+## C. Backend Documentation
+
+Ktor:
+https://ktor.io/docs/
+
+Ktor Testing:
+https://ktor.io/docs/server-testing.html
+
+jOOQ:
+https://www.jooq.org/doc/latest/manual/
+
+HikariCP:
+https://github.com/brettwooldridge/HikariCP
+
+Flyway:
+https://documentation.red-gate.com/flyway
+
+PostgreSQL:
+https://www.postgresql.org/docs/current/
+
+PostgreSQL Indexing:
+https://www.postgresql.org/docs/current/indexes.html
+
+PostgreSQL Full-text Search:
+https://www.postgresql.org/docs/current/textsearch.html
+
+PostgreSQL Trigram:
+https://www.postgresql.org/docs/current/pgtrgm.html
+
+PostgreSQL Row Security:
+https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+
+Supabase:
+https://supabase.com/docs
+
+Supabase RLS:
+https://supabase.com/docs/guides/database/postgres/row-level-security
+
+OpenAPI:
+https://spec.openapis.org/oas/latest.html
+
+## D. Official Design System and UX Documentation
+
+Material Design 3:
+https://m3.material.io/
+
+Material Foundations:
+https://m3.material.io/foundations
+
+Material Components:
+https://m3.material.io/components
+
+Material Typography:
+https://m3.material.io/styles/typography/overview
+
+Material Color:
+https://m3.material.io/styles/color/overview
+
+Figma Design Systems:
+https://help.figma.com/hc/en-us/sections/14548397990423-Introduction-to-design-systems
+
+Figma Auto Layout:
+https://help.figma.com/hc/en-us/articles/360040451373-Guide-to-auto-layout-in-Figma
+
+Figma:
+https://www.figma.com/
+
+Nielsen Norman Group Usability Heuristics:
+https://www.nngroup.com/articles/ten-usability-heuristics/
+
+Nielsen Norman Group Form Design:
+https://www.nngroup.com/articles/web-form-design/
+
+Laws of UX:
+https://lawsofux.com/
+
+WCAG 2.2:
+https://www.w3.org/TR/WCAG22/
+
+Google Fonts — Noto Sans Bengali:
+https://fonts.google.com/specimen/Noto+Sans+Bengali
+
+Google Fonts — Hind Siliguri:
+https://fonts.google.com/specimen/Hind+Siliguri
+
+## E. Visual Inspiration and Research
+
+Mobbin:
+https://mobbin.com/
+
+Page Flows:
+https://pageflows.com/
+
+Dribbble:
+https://dribbble.com/
+
+Behance:
+https://www.behance.net/
+
+Smashing Magazine:
+https://www.smashingmagazine.com/
+
+WebAIM Contrast Checker:
+https://webaim.org/resources/contrastchecker/
+
+These are inspiration and research references, not replacements for Material 3 or accessibility requirements.
+
+## F. Security Documentation
+
+OWASP MASVS:
+https://mas.owasp.org/MASVS/
+
+OWASP MASTG:
+https://mas.owasp.org/MASTG/
+
+OWASP ASVS:
+https://asvs.owasp.org/
+
+Google Play Integrity:
+https://developer.android.com/google/play/integrity
+
+## G. Build and Quality Documentation
+
+Gradle Version Catalog:
+https://docs.gradle.org/current/userguide/version_catalogs.html
+
+Kover:
+https://github.com/Kotlin/kotlinx-kover
+
+MockK:
+https://mockk.io/
+
+Turbine:
+https://github.com/cashapp/turbine
+
+Testcontainers:
+https://testcontainers.com/
+
+k6:
+https://grafana.com/docs/k6/latest/
+
+OpenTelemetry:
+https://opentelemetry.io/docs/
+
+GitHub Actions:
+https://docs.github.com/en/actions
+
+GitHub CodeQL:
+https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql
+
+Trivy:
+https://trivy.dev/
+
+OWASP ZAP:
+https://www.zaproxy.org/
+
+---
+
+# SECTION 27 — REQUIRED PROJECT DOCUMENTATION
+
+Create and maintain these documents in the repository:
+
+```text
+docs/
+│
+├── 01_PRODUCT_REQUIREMENTS.md
+├── 02_SYSTEM_ARCHITECTURE.md
+├── 03_ARCHITECTURE_DECISIONS.md
+├── 04_DATABASE_SCHEMA.md
+├── 05_DATABASE_ER_DIAGRAM.md
+├── 06_SEARCH_ALGORITHM_SPEC.md
+├── 07_SORTING_AND_INDEXING.md
+├── 08_API_SPECIFICATION.md
+├── 09_AUTHORIZATION_AND_SECURITY.md
+├── 10_OFFLINE_AND_SYNC.md
+├── 11_UI_UX_SPECIFICATION.md
+├── 12_DESIGN_SYSTEM.md
+├── 13_DESIGN_TOKENS.md
+├── 14_SCREEN_FLOW.md
+├── 15_TESTING_STRATEGY.md
+├── 16_COVERAGE_REPORT.md
+├── 17_PERFORMANCE_REPORT.md
+├── 18_SECURITY_REPORT.md
+├── 19_DEPLOYMENT_GUIDE.md
+├── 20_RELEASE_NOTES.md
+├── 21_KNOWN_LIMITATIONS.md
+└── 22_OPERATIONS_RUNBOOK.md
+```
+
+Keep all documentation consistent with the actual source code.
+
+Do not create fake documentation that describes unimplemented features.
+
+---
+
+# SECTION 28 — AUTONOMOUS EXECUTION WORKFLOW
+
+Do not wait for me to approve every minor development task.
+
+Make reasonable engineering decisions within this specification.
+
+If multiple options are acceptable, select the safest and most maintainable one.
+
+Document major decisions as ADRs.
+
+If a truly essential external credential or legal authorization is unavailable, report that exact blocker. Continue all other work that does not depend on it.
+
+Work through the following phases autonomously.
+
+## PHASE 1 — REQUIREMENTS AND ARCHITECTURE
+
+- Review the complete requirements.
+- Confirm the product scope.
+- Create system architecture.
+- Create ER diagram.
+- Define data relationships.
+- Define authentication and authorization.
+- Define search and sorting.
+- Define screen navigation.
+- Define design system.
+- Check technology compatibility.
+
+## PHASE 2 — VISUAL DESIGN
+
+- Create color tokens.
+- Create typography tokens.
+- Create spacing and shape tokens.
+- Create reusable Material 3 components.
+- Implement all required screens.
+- Implement all interaction states.
+- Validate Bengali rendering.
+- Validate accessibility.
+- Create automated screenshots.
+
+Do not use placeholder UI for completed features.
+
+## PHASE 3 — BACKEND AND DATABASE
+
+- Create PostgreSQL schema.
+- Write versioned SQL migrations.
+- Implement Ktor modules.
+- Implement authentication.
+- Implement authorization.
+- Implement data validation.
+- Implement audit history.
+- Implement CRUD APIs.
+- Implement search APIs.
+- Implement sorting and pagination.
+- Implement database indexes.
+- Implement RLS where properly configured.
+- Write database integration tests.
+
+## PHASE 4 — ANDROID DEVELOPMENT
+
+- Set up the Native Kotlin project.
+- Configure dependency injection.
+- Build reusable Compose components.
+- Build Navigation.
+- Configure Room.
+- Implement Repositories.
+- Implement ViewModels.
+- Implement Authentication.
+- Implement Dashboard.
+- Implement Deed Entry.
+- Implement Person and Land data management.
+- Implement Search.
+- Implement Record List.
+- Implement Details.
+- Implement Drafts.
+- Implement Offline Sync.
+- Implement all interactive controls.
+
+## PHASE 5 — AUTOMATED TESTING
+
+- Unit Tests
+- Branch Coverage
+- Integration Tests
+- Room Tests
+- PostgreSQL Tests
+- Ktor API Tests
+- Compose UI Tests
+- Complete E2E Tests
+- Accessibility Tests
+- Security Tests
+- Performance Tests
+- Migration Tests
+- Offline Tests
+- Regression Tests
+- Mutation Testing where compatible
+
+## PHASE 6 — DEFECT CORRECTION
+
+For every failure:
+
+1. Capture error evidence.
+2. Investigate root cause.
+3. Fix the implementation.
+4. Re-run the failing test.
+5. Run affected regression tests.
+6. Run the complete test suite.
+7. Update coverage and performance reports.
+
+Never disable tests to hide defects.
+
+## PHASE 7 — PRODUCTION PREPARATION
+
+- Review application configuration.
+- Verify release build.
+- Validate database migrations.
+- Verify authentication configuration.
+- Verify permissions.
+- Verify monitoring.
+- Verify backup and recovery setup.
+- Scan dependencies.
+- Scan secrets.
+- Review privacy controls.
+- Prepare signed Android artifacts when authorized signing credentials are available.
+- Prepare deployment documentation.
+
+## PHASE 8 — FINAL VERIFICATION
+
+Before final delivery:
+
+- Fresh build from clean checkout.
+- Full Unit Test Suite.
+- Full Integration Test Suite.
+- Full Automated E2E Suite.
+- Full Security Verification.
+- Full Performance Benchmark.
+- Database Migration Verification.
+- Interactive Component Inventory Verification.
+- Release Artifact Verification.
+- SHA-256 Checksums.
+- Documentation Audit.
+
+Do not stop when the app merely compiles.
+
+---
+
+# SECTION 29 — TEST COVERAGE AND RELEASE GATES
+
+Target 100% line coverage and 100% branch coverage for first-party production business logic and critical application code, with documented exclusions for generated and framework-dependent code.
+
+Require:
+
+- 100% business rule test coverage
+- Every meaningful interactive UI action tested
+- Every API endpoint tested
+- Every role permission tested
+- Every database migration tested
+- Every critical error path tested
+- No unimplemented visible controls
+- No critical or high unresolved security defect
+- No unexplained data integrity failure
+
+For UI and infrastructure code where strict 100% line and branch coverage is not technically meaningful or practical, report the exact achieved coverage and the reason for each exclusion.
+
+Do not misrepresent that coverage as 100%.
+
+Coverage alone is not proof of correctness.
+
+Use mutation testing and independent integration/E2E evidence.
+
+## Final Release Gate
+
+The release candidate is accepted only when:
+
+1. Release build succeeds.
+2. All required test suites pass.
+3. Coverage targets are achieved or explicitly evidenced.
+4. All interactive controls have functioning behaviour.
+5. E2E user journeys pass.
+6. Performance targets are validated.
+7. Security tests pass.
+8. Data migrations are verified.
+9. No critical data integrity defects remain.
+10. Deployment configuration is documented.
+11. Test reports are generated.
+12. Deliverable APK/AAB is verified.
+
+No false success claims.
+
+No invented test reports.
+
+No fake deployment confirmation.
+
+---
+
+# SECTION 30 — FINAL DELIVERY REQUIREMENTS
+
+Deliver a complete working project, not just an explanation or code snippets.
+
+Required deliverables:
+
+1. Android Source Code
+2. Backend Source Code
+3. PostgreSQL Migration Files
+4. Room Database Implementation
+5. Complete UI Implementation
+6. Complete API Implementation
+7. Authentication and Authorization
+8. Search Implementation
+9. Sorting and Pagination Implementation
+10. Synchronization Implementation
+11. Automated Unit Tests
+12. Automated Integration Tests
+13. Automated E2E Tests
+14. Coverage Reports
+15. Performance Reports
+16. Security Reports
+17. UI Regression Screenshots
+18. ER Diagram
+19. API Documentation
+20. Design System Documentation
+21. Deployment Documentation
+22. Release Notes
+23. Known Limitations Report
+24. Final APK
+25. Signed AAB when signing credentials are available
+26. Artifact SHA-256 Checksums
+
+If connected tools allow creating the actual project, create it there.
+
+If using a development container or repository, ensure all source files are physically present and buildable.
+
+Do not provide fictitious download links.
+
+Do not label a debug APK as a signed production release.
+
+Do not claim Google Play publication without actual authorization and publication.
+
+If a cloud credential, domain, release keystore or external permission is unavailable, identify the specific blocker and provide the complete remaining work.
+
+---
+
+# SECTION 31 — FINAL PRODUCT QUALITY STANDARD
+
+The completed application must have:
+
+- 100% Native Kotlin Android UI
+- Premium Green Professional Visual Identity
+- Proper Bengali Typography
+- Complete Material 3 Design System
+- Fast Deed Data Entry
+- Reliable Data Validation
+- Multiple Grantors and Grantees
+- Multiple Land Parcels
+- Correct Record Relationships
+- Exact and Prefix Search
+- Database-side Sorting
+- Efficient Pagination
+- Proper User Permissions
+- Office-level Data Isolation
+- Offline Draft Support
+- Cloud Synchronization
+- Audit History
+- Strong Database Integrity
+- Automated Full-Stack Testing
+- Security Verification
+- Performance Verification
+- Release-ready build configuration
+
+The application must not look like a demo, template or unfinished prototype.
+
+It must behave like a mature professional software product.
+
+# FINAL MISSION — DO NOT STOP AT CODING
+
+Build:
+
+**দলিল অনুসন্ধান — DOLIL ONUSONDHAN**
+
+A production-oriented, secure, modern, scalable, premium Green-themed, Bengali-first, True Native Kotlin Android application for Bangladesh land deed information management.
+
+You own the complete development and verification process.
+
+Design it.
+
+Engineer it.
+
+Implement every required feature.
+
+Test every meaningful button.
+
+Test every screen.
+
+Test every form.
+
+Test every API.
+
+Test every database operation.
+
+Test every user role.
+
+Test all supported search scenarios.
+
+Test sorting and pagination.
+
+Test offline behaviour.
+
+Test synchronization.
+
+Identify defects.
+
+Fix defects.
+
+Run regression tests.
+
+Optimize the performance.
+
+Verify security.
+
+Produce the real release artifacts.
+
+Provide complete test evidence.
+
+**I WILL NOT PERFORM MANUAL QA OR DEBUGGING. YOU ARE RESPONSIBLE FOR ALL AUTOMATABLE DEVELOPMENT, TESTING, BUG FIXING, AND RELEASE VERIFICATION.**
+
+**DO NOT CLAIM THAT THE APPLICATION IS PRODUCTION READY UNTIL THE REQUIRED RELEASE GATES HAVE ACTUALLY PASSED.**
+
+**YOUR FINAL OUTPUT MUST BE A REAL, BUILDABLE, TESTED APPLICATION — NOT JUST A DESIGN, DEMO, PROTOTYPE, OR CODE SNIPPET.**

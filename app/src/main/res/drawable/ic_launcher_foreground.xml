@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Land deed parchment silhouette centered inside 66dp safe zone (21..87) -->
+    <path
+        android:fillColor="#FFFDF7"
+        android:pathData="M34,26 L62,26 L74,38 L74,77 C74,79.2 72.2,81 70,81 L34,81 C31.8,81 30,79.2 30,77 L30,30 C30,27.8 31.8,26 34,26 Z" />
+    <!-- Folded parchment corner -->
+    <path
+        android:fillColor="#E9DDBF"
+        android:pathData="M62,26 L62,36 C62,37.1 62.9,38 64,38 L74,38 Z" />
+    <!-- Official brass antique gold header seal stripe -->
+    <path
+        android:fillColor="#C69A45"
+        android:pathData="M37,35 L54,35 L54,38 L37,38 Z" />
+    <!-- Deed lines in Ink Navy & Warm Umber -->
+    <path
+        android:fillColor="#27364B"
+        android:pathData="M37,43 L59,43 L59,47 L37,47 Z" />
+    <path
+        android:fillColor="#735A32"
+        android:pathData="M37,51 L65,51 L65,54.5 L37,54.5 Z" />
+    <path
+        android:fillColor="#625B4B"
+        android:pathData="M37,58.5 L54,58.5 L54,62 L37,62 Z" />
+    <!-- Magnifier ring and handle strictly inside 66dp safe zone (max coordinate 83.5) -->
+    <path
+        android:fillColor="#C69A45"
+        android:pathData="M59,56 C65.1,56 70,60.9 70,67 C70,69.4 69.2,71.7 67.8,73.5 L74.8,80.5 L71.8,83.5 L64.8,76.5 C63.1,77.5 61.1,78 59,78 C52.9,78 48,73.1 48,67 C48,60.9 52.9,56 59,56 Z" />
+    <path
+        android:fillColor="#F6F0DF"
+        android:pathData="M59,60 C55.1,60 52,63.1 52,67 C52,70.9 55.1,74 59,74 C62.9,74 66,70.9 66,67 C66,63.1 62.9,60 59,60 Z" />
+    <!-- Land plot parcel diamond inside lens -->
+    <path
+        android:fillColor="#27364B"
+        android:pathData="M59,62.5 L63.5,67 L59,71.5 L54.5,67 Z" />
+</vector>

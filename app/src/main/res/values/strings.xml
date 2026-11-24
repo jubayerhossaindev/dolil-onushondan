@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dolil Onusondhan</string>
+    <string name="app_subtitle">Bangladesh Land Deed Information System</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_add_deed">Add Deed</string>
+    <string name="nav_records">Records</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Common Actions -->
+    <string name="action_next">Next</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_done">Done</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_ok">OK</string>
+    <string name="action_back">Back</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_copy_field">Copy %1$s</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_clear_filter">Remove filter %1$s</string>
+    <string name="action_view_guide">User Guide</string>
+    <string name="action_replay_tour">Replay Product Tour</string>
+    <string name="action_download_pdf">Download A4 PDF</string>
+    <string name="action_print_deed">Print A4 Deed</string>
+    <string name="msg_pdf_saved">A4 PDF saved successfully.</string>
+    <string name="msg_pdf_save_failed">Could not save the PDF file. Please try again.</string>
+    <string name="msg_print_unavailable">Printing is not available on this device.</string>
+    <string name="loading_generating_pdf">Preparing A4 document...</string>
+    <string name="state_expanded">Expanded</string>
+    <string name="state_collapsed">Collapsed</string>
+
+    <!-- Onboarding Screens (4 Screens) -->
+    <string name="onboarding_step_format">Step %1$d of %2$d</string>
+    <string name="onboarding_1_title">Your Land Records, Neatly Organized!</string>
+    <string name="onboarding_1_desc">Welcome! Add, organize and find deed information with ease. Everything you need, all in one place. Let\'s get started!</string>
+    <string name="onboarding_1_cta">Let\'s Get Started</string>
+
+    <string name="onboarding_2_title">Adding Deed Information Is Easy</string>
+    <string name="onboarding_2_desc">Enter deed numbers, grantors, grantees, mouza, dag and khatian details. Keep everything organized in one place.</string>
+
+    <string name="onboarding_3_title">Find What You Need, Faster!</string>
+    <string name="onboarding_3_desc">Can\'t remember the deed number? No worries! Search using names, dag, khatian or mouza information.</string>
+
+    <string name="onboarding_4_title">Ready to Explore?</string>
+    <string name="onboarding_4_desc">Sign in with Google to save and sync your deeds across devices, or explore first in Guest Mode.</string>
+    <string name="onboarding_4_get_started">Get Started</string>
+    <string name="onboarding_4_guest">Explore as Guest</string>
+
+    <!-- Access Selection & Auth -->
+    <string name="access_heading">How Would You Like to Start?</string>
+    <string name="access_desc">Sign in with Google for cloud backup and sync, or explore locally before creating an account.</string>
+    <string name="access_google_title">Sign In or Create Account</string>
+    <string name="access_google_badge">100% Free • Google Cloud Sync</string>
+    <string name="access_google_desc">Use your Google account for free to create or access your workspace, keep offline drafts, and sync records safely.</string>
+    <string name="access_google_btn">Continue with Google</string>
+    <string name="access_guest_title">Want to look around first?</string>
+    <string name="access_guest_desc">No account needed! Explore search, sorting, and deed entry with local demo data.</string>
+    <string name="access_guest_badge">Local Only • Demo Data</string>
+    <string name="access_guest_btn">Explore Without an Account</string>
+    <string name="access_view_intro">View app intro again</string>
+    <string name="auth_error_network">Can\'t reach Google Sign-In right now. Please check your internet connection and try again.</string>
+    <string name="auth_error_cancelled">Sign-in was cancelled. Feel free to try again or explore as a Guest anytime.</string>
+    <string name="auth_error_generic">We couldn\'t complete sign-in just now. Please try again.</string>
+
+    <!-- Guest Mode -->
+    <string name="guest_banner_text">You\'re exploring in Guest Mode! All records shown here stay locally as demo data.</string>
+    <string name="guest_banner_cta">Sign In</string>
+    <string name="guest_demo_badge">Demo Data</string>
+    <string name="guest_sync_notice">Sign in for free with your Google account to save and sync your own deeds across devices.</string>
+    <string name="guest_profile_name">Guest Explorer</string>
+    <string name="guest_profile_subtitle">Local Sandbox Mode • Demo Data Only</string>
+
+    <!-- Interactive Product Tour (6 Steps) -->
+    <string name="tour_step_badge">%1$d / %2$d</string>
+    <string name="tour_step_1_title">Home Screen</string>
+    <string name="tour_step_1_body">Here\'s your Home Screen! Everything starts here.</string>
+    <string name="tour_step_2_title">Smart Search</string>
+    <string name="tour_step_2_body">Looking for a deed? Search by name, deed number, dag or khatian.</string>
+    <string name="tour_step_3_title">Add New Deed</string>
+    <string name="tour_step_3_body">Tap here to add a new deed. We\'ll guide you through the form.</string>
+    <string name="tour_step_4_title">Saved Records</string>
+    <string name="tour_step_4_body">Your accessible saved records will appear here.</string>
+    <string name="tour_step_4_office_tip">Office Tip: Review pending submissions or approve verified deeds directly from Records.</string>
+    <string name="tour_step_5_title">Filters &amp; Sorting</string>
+    <string name="tour_step_5_body">Too many records? Use Filters and Sorting to find what you need.</string>
+    <string name="tour_step_6_title">Account &amp; Settings</string>
+    <string name="tour_step_6_body">Your account and settings are right here. You can replay this tour anytime.</string>
+
+    <!-- Friendly Form Helpers & Labels -->
+    <string name="helper_deed_number">Enter the deed number shown on your document.</string>
+    <string name="helper_deed_year">Enter or pick the year the deed was registered.</string>
+    <string name="helper_grantor_name">Enter the full name of the person transferring the land.</string>
+    <string name="helper_grantee_name">Enter the full name of the person receiving the land.</string>
+    <string name="helper_mouza">Choose the Mouza where the land is located.</string>
+    <string name="helper_dag">Enter the Dag / plot number from the deed.</string>
+    <string name="helper_land_area">Enter how much land is in this Dag.</string>
+    <string name="btn_add_grantor">+ Add Another Grantor</string>
+    <string name="btn_add_grantee">+ Add Another Grantee</string>
+    <string name="btn_add_parcel">+ Add Another Parcel</string>
+
+    <!-- Unsaved Changes & Copy Feedback -->
+    <string name="unsaved_changes_title">Discard unsaved changes?</string>
+    <string name="unsaved_changes_body">You have unsaved deed details. Leaving now will discard them unless you save a draft first.</string>
+    <string name="unsaved_changes_discard">Discard</string>
+    <string name="unsaved_changes_stay">Keep Editing</string>
+    <string name="msg_copied">Copied to clipboard</string>
+
+    <!-- Friendly Feedback States -->
+    <string name="msg_save_success">All done! Your information has been saved.</string>
+    <string name="msg_update_success">Great! Your changes have been saved.</string>
+    <string name="msg_draft_success">Saved! You can finish this draft anytime.</string>
+    <string name="msg_search_found">Found it! Here are your search results.</string>
+    <string name="empty_search_title">Nothing found</string>
+    <string name="empty_search_body">Check your spelling or try searching by deed number, name, dag, khatian, or mouza.</string>
+    <string name="empty_records_title">No records yet</string>
+    <string name="empty_records_body">Add your first deed to get started—we\'ll help keep everything organized.</string>
+    <string name="empty_drafts_title">You\'re all caught up!</string>
+    <string name="empty_drafts_body">No unfinished drafts right now.</string>
+    <string name="empty_archive_title">Archive is empty</string>
+    <string name="empty_archive_body">Archived deeds will appear here and can be restored anytime.</string>
+    <string name="loading_moment">Just a moment...</string>
+    <string name="loading_fetching">Fetching your records...</string>
+    <string name="loading_saving">Saving your changes...</string>
+    <string name="err_generic">Oops! Something went wrong. Please try again.</string>
+    <string name="err_save_preserved">We couldn\'t sync right now, so your entered information is safely preserved on this device.</string>
+    <string name="err_offline_sync">Your changes are saved locally and will sync when you\'re back online.</string>
+
+    <!-- Archive Confirmation -->
+    <string name="delete_confirm_title">Move this record to Archive?</string>
+    <string name="delete_confirm_body">Are you sure? Archived deeds remain recoverable later depending on your permissions.</string>
+    <string name="delete_confirm_keep">Keep it</string>
+    <string name="delete_confirm_yes">Archive</string>
+
+    <!-- User Guide -->
+    <string name="guide_title">User Guide</string>
+    <string name="guide_subtitle">Everything you need to use Dolil Onusondhan smoothly</string>
+    <string name="guide_sec_1_title">1. Adding a Deed Step by Step</string>
+    <string name="guide_sec_1_body">Tap Add Deed, select the deed type and registration date, add one or more grantors and grantees, pick District → Upazila → Mouza, and add one or more land parcels. Total land area updates automatically in Shotok and Katha.</string>
+    <string name="guide_sec_2_title">2. Smart Search in Bangla or English</string>
+    <string name="guide_sec_2_body">Type numbers in either Bangla (১২৫৬) or English (1256). You can search by deed number, person name, Dag, Khatian, or Mouza name—even partial prefixes work.</string>
+    <string name="guide_sec_3_title">3. Filters &amp; 10 Sorting Options</string>
+    <string name="guide_sec_3_body">Narrow results in Search by deed type, year, Narayanganj mouza with 10 sorting options, or filter by status and sort cleanly in Records.</string>
+    <string name="guide_sec_4_title">4. Offline Drafts &amp; Guest Mode</string>
+    <string name="guide_sec_4_body">Save unfinished deeds as drafts anytime, even offline. In Guest Mode, everything stays in a safe local demo sandbox on your phone and never touches live cloud records.</string>
+    <string name="guide_sec_5_title">5. Official Verification Notice</string>
+    <string name="guide_sec_5_body">Dolil Onusondhan organizes your land deed information and calculations clearly, but always verify official certified records with your local Sub-Registry or AC Land office.</string>
+</resources>

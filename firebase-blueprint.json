@@ -1,0 +1,340 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile, role assignment, office membership, and UI preferences.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID matching document ID."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Display name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Verified email address."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Optional contact phone number."
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "PUBLIC_USER",
+            "OFFICE_VIEWER",
+            "OFFICE_DATA_ENTRY",
+            "OFFICE_SUPERVISOR",
+            "ORGANIZATION_ADMIN",
+            "PLATFORM_ADMIN"
+          ],
+          "description": "RBAC role enforced by backend rules."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "Assigned organization identifier."
+        },
+        "officeId": {
+          "type": "string",
+          "description": "Assigned sub-registry office identifier."
+        },
+        "officeName": {
+          "type": "string",
+          "description": "Human-readable office name."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "SUSPENDED"],
+          "description": "Account status."
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "enum": ["bn", "en"],
+          "description": "Preferred UI language code."
+        },
+        "themeMode": {
+          "type": "string",
+          "enum": ["system", "light", "dark"],
+          "description": "Preferred Material 3 theme mode."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp on creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp on update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "fullName",
+        "email",
+        "role",
+        "status",
+        "preferredLanguage",
+        "themeMode",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DeedRecord": {
+      "title": "DeedRecord",
+      "description": "Land deed record with normalized search tokens, grantors, grantees, location, land parcels, and optimistic locking version.",
+      "type": "object",
+      "properties": {
+        "createdBy": {
+          "type": "string",
+          "description": "UID of the creator."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "UID of the last editor."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "Organization ID."
+        },
+        "officeId": {
+          "type": "string",
+          "description": "Sub-registry office ID."
+        },
+        "officeName": {
+          "type": "string",
+          "description": "Sub-registry office display name."
+        },
+        "deedType": {
+          "type": "string",
+          "enum": ["SAF_KABALA", "DANPATRA", "HEBA", "BANTONNAMA", "BINIMOY", "OTHER"],
+          "description": "Deed classification."
+        },
+        "deedNumber": {
+          "type": "string",
+          "description": "Original deed number as entered."
+        },
+        "normalizedDeedNumber": {
+          "type": "string",
+          "description": "Normalized ASCII digit & trimmed deed number."
+        },
+        "deedYear": {
+          "type": "integer",
+          "description": "Deed registration year."
+        },
+        "registrationDateMillis": {
+          "type": "integer",
+          "description": "Registration date in UTC epoch milliseconds."
+        },
+        "districtName": {
+          "type": "string",
+          "description": "Bangladesh district name."
+        },
+        "upazilaName": {
+          "type": "string",
+          "description": "Upazila / Thana name."
+        },
+        "unionName": {
+          "type": "string",
+          "description": "Union / Ward name."
+        },
+        "mouzaName": {
+          "type": "string",
+          "description": "Mouza name."
+        },
+        "jlNumber": {
+          "type": "string",
+          "description": "Mouza J.L. Number."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["DRAFT", "PENDING_REVIEW", "APPROVED", "SOFT_DELETED"],
+          "description": "Workflow lifecycle state."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["PUBLIC", "OFFICE_ONLY", "PRIVATE_DRAFT"],
+          "description": "Access scope for search and viewing."
+        },
+        "rowVersion": {
+          "type": "integer",
+          "description": "Monotonically increasing optimistic concurrency version."
+        },
+        "primaryGrantorName": {
+          "type": "string",
+          "description": "First grantor display name for list sorting."
+        },
+        "primaryGranteeName": {
+          "type": "string",
+          "description": "First grantee display name for list sorting."
+        },
+        "totalAreaDecimalText": {
+          "type": "string",
+          "description": "Exact decimal representation of total land area."
+        },
+        "totalAreaSortValue": {
+          "type": "number",
+          "description": "Numeric land area in Shotok/Decimal for database sorting."
+        },
+        "grantors": {
+          "type": "array",
+          "description": "List of grantor party objects."
+        },
+        "grantees": {
+          "type": "array",
+          "description": "List of grantee party objects."
+        },
+        "parcels": {
+          "type": "array",
+          "description": "List of land parcel objects."
+        },
+        "searchTokens": {
+          "type": "array",
+          "description": "Bounded normalized search tokens for indexed array-contains lookup."
+        },
+        "officeViewerUids": {
+          "type": "array",
+          "description": "Denormalized UIDs of office staff authorized to list office-scoped deeds."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional administrative notes."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional timestamp when soft-deleted."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp on creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp on update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "createdBy",
+        "updatedBy",
+        "organizationId",
+        "officeId",
+        "officeName",
+        "deedType",
+        "deedNumber",
+        "normalizedDeedNumber",
+        "deedYear",
+        "registrationDateMillis",
+        "districtName",
+        "upazilaName",
+        "mouzaName",
+        "jlNumber",
+        "status",
+        "visibility",
+        "rowVersion",
+        "primaryGrantorName",
+        "primaryGranteeName",
+        "totalAreaDecimalText",
+        "totalAreaSortValue",
+        "grantors",
+        "grantees",
+        "parcels",
+        "searchTokens",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Append-only audit trail entry for deed lifecycle actions.",
+      "type": "object",
+      "properties": {
+        "actorId": {
+          "type": "string",
+          "description": "UID of the user performing the action."
+        },
+        "actorName": {
+          "type": "string",
+          "description": "Display name of the actor."
+        },
+        "organizationId": {
+          "type": "string",
+          "description": "Organization ID."
+        },
+        "officeId": {
+          "type": "string",
+          "description": "Office ID."
+        },
+        "action": {
+          "type": "string",
+          "enum": ["CREATE", "UPDATE", "SUBMIT_DRAFT", "APPROVE", "SOFT_DELETE", "RESTORE"],
+          "description": "Audited action type."
+        },
+        "entityType": {
+          "type": "string",
+          "enum": ["DEED", "USER_ROLE"],
+          "description": "Target entity type."
+        },
+        "entityId": {
+          "type": "string",
+          "description": "Target document ID."
+        },
+        "previousVersion": {
+          "type": "integer",
+          "description": "Previous rowVersion."
+        },
+        "newVersion": {
+          "type": "integer",
+          "description": "New rowVersion."
+        },
+        "summary": {
+          "type": "string",
+          "description": "Redacted, PII-safe change summary."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "actorId",
+        "actorName",
+        "organizationId",
+        "officeId",
+        "action",
+        "entityType",
+        "entityId",
+        "previousVersion",
+        "newVersion",
+        "summary",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "User profile and RBAC assignment."
+    },
+    "/deeds/{deedId}": {
+      "schema": {
+        "$ref": "#/entities/DeedRecord"
+      },
+      "description": "Land deed records with public, office, and private draft visibility."
+    },
+    "/audit_logs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/AuditLog"
+      },
+      "description": "Immutable audit trail entries."
+    }
+  }
+}

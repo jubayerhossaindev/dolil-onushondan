@@ -1,0 +1,65 @@
+Calculating task graph as configuration cache cannot be reused because the file system entry '.env' has been removed.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:processDebugGoogleServices
+> Task :app:generateDebugResources
+> Task :app:javaPreCompileDebug
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:processDebugNavigationResources
+> Task :app:packageDebugResources
+> Task :app:compileDebugNavigationResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:generateDebugRFile
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:mergeDebugAssets
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugUnitTestManifest
+> Task :app:mergeDebugResources
+> Task :app:processDebugResources
+> Task :app:packageDebugUnitTestForUnitTest
+> Task :app:generateDebugUnitTestConfig
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+> Task :app:processDebugJavaRes
+> Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:kspDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+> Task :app:testDebugUnitTest
+
+QaUiScreensAuditRobolectricTest > qa_test_2026 wizard validates each step converts land units and shows discard and duplicate dialogs FAILED
+    java.lang.AssertionError at QaUiScreensAuditRobolectricTest.kt:277
+
+QaUiScreensAuditRobolectricTest > qa_test_2026 records tabs details archive restore guide tour and profile settings FAILED
+    java.lang.AssertionError at QaUiScreensAuditRobolectricTest.kt:538
+
+QaWorkflowAndEdgeCaseRobolectricTest > qa_test_2026 viewModel CRUD archive undo and restore lifecycle updates Room and flows FAILED
+    androidx.compose.ui.test.ComposeTimeoutException at QaWorkflowAndEdgeCaseRobolectricTest.kt:87
+
+64 tests completed, 3 failed
+
+> Task :app:testDebugUnitTest FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:testDebugUnitTest'.
+> There were failing tests. See the report at: file:///app/applet/app/build/reports/tests/testDebugUnitTest/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 3m 21s
+33 actionable tasks: 33 executed
+Configuration cache entry stored.

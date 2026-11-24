@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">দলিল অনুসন্ধান</string>
+    <string name="app_subtitle">বাংলাদেশ জমি ও দলিল তথ্য ব্যবস্থাপনা</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_search">খোঁজ</string>
+    <string name="nav_add_deed">নতুন দলিল</string>
+    <string name="nav_records">দলিল</string>
+    <string name="nav_profile">প্রোফাইল</string>
+
+    <!-- Common Actions -->
+    <string name="action_next">পরবর্তী</string>
+    <string name="action_previous">আগের</string>
+    <string name="action_skip">এড়িয়ে যান</string>
+    <string name="action_done">সম্পন্ন</string>
+    <string name="action_cancel">বাতিল</string>
+    <string name="action_remove">সরান</string>
+    <string name="action_ok">ঠিক আছে</string>
+    <string name="action_back">ফিরে যান</string>
+    <string name="action_copy">কপি করুন</string>
+    <string name="action_copy_field">%1$s কপি করুন</string>
+    <string name="action_undo">পূর্বাবস্থায় ফেরান</string>
+    <string name="action_clear_filter">%1$s ফিল্টার সরান</string>
+    <string name="action_view_guide">ব্যবহার নির্দেশিকা</string>
+    <string name="action_replay_tour">ট্যুর আবার দেখুন</string>
+    <string name="action_download_pdf">A4 PDF ডাউনলোড</string>
+    <string name="action_print_deed">A4 প্রিন্ট করুন</string>
+    <string name="msg_pdf_saved">A4 PDF সফলভাবে সংরক্ষণ করা হয়েছে।</string>
+    <string name="msg_pdf_save_failed">PDF সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।</string>
+    <string name="msg_print_unavailable">এই ডিভাইসে প্রিন্ট সুবিধা পাওয়া যায়নি।</string>
+    <string name="loading_generating_pdf">A4 নথি তৈরি হচ্ছে...</string>
+    <string name="state_expanded">প্রসারিত</string>
+    <string name="state_collapsed">সংকুচিত</string>
+
+    <!-- Onboarding Screens (4 Screens) -->
+    <string name="onboarding_step_format">ধাপ %1$d / %2$d</string>
+    <string name="onboarding_1_title">জমির দলিলের তথ্য, এবার থাকুক গুছিয়ে!</string>
+    <string name="onboarding_1_desc">স্বাগতম! দলিলের তথ্য যোগ করা, সংরক্ষণ করা আর প্রয়োজনের সময় খুঁজে পাওয়া—সবকিছুই হবে আরও সহজ। চলুন শুরু করি!</string>
+    <string name="onboarding_1_cta">চলুন শুরু করি</string>
+
+    <string name="onboarding_2_title">দলিলের তথ্য যোগ করুন একদম সহজে</string>
+    <string name="onboarding_2_desc">দলিল নম্বর, দাতা, গ্রহীতা, মৌজা, দাগ আর খতিয়ানের তথ্য দিন। সবকিছু সুন্দরভাবে এক জায়গায় গুছিয়ে রাখুন।</string>
+
+    <string name="onboarding_3_title">যা খুঁজছেন, খুঁজে নিন সহজেই!</string>
+    <string name="onboarding_3_desc">দলিল নম্বর মনে নেই? সমস্যা নেই! নাম, দাগ, খতিয়ান বা মৌজার তথ্য দিয়েও খুঁজে দেখতে পারবেন।</string>
+
+    <string name="onboarding_4_title">তাহলে, শুরু করা যাক?</string>
+    <string name="onboarding_4_desc">দলিল ও খসড়া ক্লাউডে নিরাপদে সংরক্ষণ করতে Google দিয়ে প্রবেশ করুন, অথবা আগে Guest Mode-এ ঘুরে দেখুন।</string>
+    <string name="onboarding_4_get_started">শুরু করুন</string>
+    <string name="onboarding_4_guest">আগে একটু ঘুরে দেখি</string>
+
+    <!-- Access Selection & Auth -->
+    <string name="access_heading">কীভাবে শুরু করতে চান?</string>
+    <string name="access_desc">ক্লাউড সিঙ্কসহ কাজ শুরু করতে Google দিয়ে প্রবেশ করুন, অথবা অ্যাকাউন্ট ছাড়াই আগে দেখে নিন।</string>
+    <string name="access_google_title">প্রবেশ বা নতুন অ্যাকাউন্ট</string>
+    <string name="access_google_badge">১০০% ফ্রি • ক্লাউড সিঙ্ক</string>
+    <string name="access_google_desc">আপনার Google অ্যাকাউন্ট দিয়ে সম্পূর্ণ বিনামূল্যে প্রবেশ করুন এবং দলিল, খসড়া ও ক্লাউড সিঙ্ক ব্যবহার করুন।</string>
+    <string name="access_google_btn">Google দিয়ে প্রবেশ করুন</string>
+    <string name="access_guest_title">আগে একটু ঘুরে দেখতে চান?</string>
+    <string name="access_guest_desc">কোনো অ্যাকাউন্ট লাগবে না! Guest হিসেবে ঢুকে অ্যাপের সব Demo Feature দেখে নিন।</string>
+    <string name="access_guest_badge">শুধুমাত্র ডিভাইসে • নমুনা তথ্য</string>
+    <string name="access_guest_btn">অ্যাকাউন্ট ছাড়াই ঘুরে দেখি</string>
+    <string name="access_view_intro">পরিচিতি আবার দেখুন</string>
+    <string name="auth_error_network">ইন্টারনেট সংযোগ পাওয়া যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।</string>
+    <string name="auth_error_cancelled">লগইন সম্পন্ন হয়নি। চাইলে আবার চেষ্টা করুন অথবা Guest হিসেবে ঘুরে দেখুন।</string>
+    <string name="auth_error_generic">লগইনে একটু সমস্যা হয়েছে। আরেকবার চেষ্টা করবেন?</string>
+
+    <!-- Guest Mode -->
+    <string name="guest_banner_text">আপনি Guest Mode-এ আছেন! এখানে সব তথ্য কেবল ডিভাইসের নমুনা তথ্য (Demo Data)।</string>
+    <string name="guest_banner_cta">প্রবেশ করুন</string>
+    <string name="guest_demo_badge">নমুনা তথ্য</string>
+    <string name="guest_sync_notice">নিজের দলিল সংরক্ষণ ও বিনামূল্যে ক্লাউড সিঙ্ক ব্যবহার করতে Google দিয়ে প্রবেশ করুন।</string>
+    <string name="guest_profile_name">অতিথি ব্যবহারকারী</string>
+    <string name="guest_profile_subtitle">Demo Sandbox • কোনো Account ছাড়াই দেখছেন</string>
+
+    <!-- Interactive Product Tour (6 Steps) -->
+    <string name="tour_step_badge">%1$d / %2$d</string>
+    <string name="tour_step_1_title">হোম স্ক্রিন</string>
+    <string name="tour_step_1_body">এই হচ্ছে আপনার হোম স্ক্রিন! এখান থেকেই সবকিছু শুরু করতে পারবেন।</string>
+    <string name="tour_step_2_title">দ্রুত অনুসন্ধান</string>
+    <string name="tour_step_2_body">কোনো দলিল খুঁজছেন? এখানে নাম, দলিল নম্বর, দাগ বা খতিয়ান লিখে খুঁজে নিন।</string>
+    <string name="tour_step_3_title">নতুন দলিল যোগ</string>
+    <string name="tour_step_3_body">নতুন দলিল যোগ করতে এখানে চাপ দিন। এরপর একে একে প্রয়োজনীয় তথ্যগুলো লিখুন।</string>
+    <string name="tour_step_4_title">সংরক্ষিত দলিল</string>
+    <string name="tour_step_4_body">আপনার অনুমতিপ্রাপ্ত সংরক্ষিত দলিলগুলো এখানে পাবেন।</string>
+    <string name="tour_step_4_office_tip">অফিস টিপস: এখান থেকেই যাচাই অপেক্ষমাণ দলিল অনুমোদন বা সংশোধন করতে পারবেন।</string>
+    <string name="tour_step_5_title">Filter আর Sorting</string>
+    <string name="tour_step_5_body">অনেকগুলো দলিল? Filter আর Sorting ব্যবহার করে প্রয়োজনীয় তথ্যটা সহজেই বের করুন!</string>
+    <string name="tour_step_6_title">Account ও Settings</string>
+    <string name="tour_step_6_body">আপনার Account, Settings আর অন্যান্য প্রয়োজনীয় Option এখানে পাবেন।</string>
+
+    <!-- Friendly Form Helpers & Labels -->
+    <string name="helper_deed_number">দলিলে যে নম্বর দেওয়া আছে, সেটি লিখুন।</string>
+    <string name="helper_deed_year">দলিলটি যে সালে রেজিস্ট্রি হয়েছে, সেই সাল লিখুন।</string>
+    <string name="helper_grantor_name">যিনি জমি হস্তান্তর করেছেন, তাঁর নাম লিখুন।</string>
+    <string name="helper_grantee_name">যিনি জমি গ্রহণ করেছেন, তাঁর নাম লিখুন।</string>
+    <string name="helper_mouza">জমিটি যে মৌজায় অবস্থিত, সেই মৌজা নির্বাচন করুন।</string>
+    <string name="helper_dag">দলিল অনুযায়ী জমির দাগ নম্বর লিখুন।</string>
+    <string name="helper_land_area">এই দাগে যতটুকু জমি রয়েছে, তার পরিমাণ লিখুন।</string>
+    <string name="btn_add_grantor">+ আরও একজন দাতা যোগ করুন</string>
+    <string name="btn_add_grantee">+ আরও একজন গ্রহীতা যোগ করুন</string>
+    <string name="btn_add_parcel">+ আরেকটি দাগ যোগ করুন</string>
+
+    <!-- Unsaved Changes & Copy Feedback -->
+    <string name="unsaved_changes_title">অসংরক্ষিত পরিবর্তন বাতিল করবেন?</string>
+    <string name="unsaved_changes_body">আপনি কিছু তথ্য লিখেছেন যা এখনো সংরক্ষণ করা হয়নি। ফিরে গেলে এগুলো হারিয়ে যাবে।</string>
+    <string name="unsaved_changes_discard">বাতিল করে ফিরে যান</string>
+    <string name="unsaved_changes_stay">সম্পাদনা চালিয়ে যান</string>
+    <string name="msg_copied">ক্লিপবোর্ডে কপি করা হয়েছে</string>
+
+    <!-- Friendly Feedback States -->
+    <string name="msg_save_success">হয়ে গেছে! আপনার তথ্য সফলভাবে সংরক্ষণ হয়েছে।</string>
+    <string name="msg_update_success">চমৎকার! পরিবর্তনগুলো সংরক্ষণ করা হয়েছে।</string>
+    <string name="msg_draft_success">খসড়া রাখা হয়েছে! যেকোনো সময় এটি সম্পূর্ণ করতে পারবেন।</string>
+    <string name="msg_search_found">খুঁজে পেয়েছি! আপনার অনুসন্ধানের ফলাফল নিচে দেওয়া হলো।</string>
+    <string name="empty_search_title">কিছু পাওয়া যায়নি</string>
+    <string name="empty_search_body">বানান বা অনুসন্ধানের তথ্যটা আরেকবার দেখে চেষ্টা করুন।</string>
+    <string name="empty_records_title">এখনো কোনো দলিল যোগ করা হয়নি</string>
+    <string name="empty_records_body">চাইলে নতুন একটি দলিল দিয়ে শুরু করুন।</string>
+    <string name="empty_drafts_title">আপনার কোনো অসম্পূর্ণ Draft নেই</string>
+    <string name="empty_drafts_body">সব ঠিকঠাক! কোনো অসমাপ্ত খসড়া পড়ে নেই।</string>
+    <string name="empty_archive_title">আর্কাইভ তালিকা খালি</string>
+    <string name="empty_archive_body">আর্কাইভ করা দলিল এখানে জমা থাকবে এবং প্রয়োজনে পুনরুদ্ধার করা যাবে।</string>
+    <string name="loading_moment">একটু দেখছি...</string>
+    <string name="loading_fetching">তথ্যগুলো নিয়ে আসছি...</string>
+    <string name="loading_saving">সংরক্ষণ করা হচ্ছে...</string>
+    <string name="err_generic">ওহ! কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।</string>
+    <string name="err_save_preserved">সংরক্ষণ করা যায়নি। আপনার লেখা তথ্য হারায়নি, আবার চেষ্টা করুন।</string>
+    <string name="err_offline_sync">ইন্টারনেট সংযোগ ফিরে এলে আবার Sync হবে।</string>
+
+    <!-- Archive Confirmation -->
+    <string name="delete_confirm_title">দলিলটি আর্কাইভে পাঠাবেন?</string>
+    <string name="delete_confirm_body">নিশ্চিত তো? অনুমতি অনুযায়ী পরে আবার আর্কাইভ থেকে সক্রিয় তালিকায় ফিরিয়ে আনা যাবে।</string>
+    <string name="delete_confirm_keep">না, রেখে দিই</string>
+    <string name="delete_confirm_yes">আর্কাইভ করুন</string>
+
+    <!-- User Guide -->
+    <string name="guide_title">ব্যবহার নির্দেশিকা</string>
+    <string name="guide_subtitle">দলিল অনুসন্ধান সহজে ব্যবহার করার সহজ গাইড</string>
+    <string name="guide_sec_1_title">১. ধাপে ধাপে নতুন দলিল যোগ করা</string>
+    <string name="guide_sec_1_body">নতুন দলিল বাটনে চাপ দিয়ে ধরন ও তারিখ বেছে নিন। এরপর একাধিক দাতা-গ্রহীতা, জেলা → উপজেলা → মৌজা এবং একাধিক দাগের তথ্য যোগ করুন। মোট শতাংশ ও কাঠা নিজে থেকেই হিসাব হয়ে যাবে।</string>
+    <string name="guide_sec_2_title">২. বাংলা বা ইংরেজিতে সহজ Search</string>
+    <string name="guide_sec_2_body">বাংলা (১২৫৬) অথবা ইংরেজি (1256)—যেকোনো সংখ্যাতেই খুঁজুন। দলিল নম্বর, ব্যক্তির নাম, দাগ, খতিয়ান বা মৌজার আংশিক নাম দিলেও ফলাফল পাবেন।</string>
+    <string name="guide_sec_3_title">৩. Filter ও ১০ ধরনের Sorting</string>
+    <string name="guide_sec_3_body">অনুসন্ধান স্ক্রিনে দলিলের ধরন, সাল বা নারায়ণগঞ্জের মৌজা দিয়ে Filter এবং ১০ ধরনের Sorting ব্যবহার করুন; দলিল স্ক্রিনেও স্ট্যাটাস Filter ও পূর্ণাঙ্গ Sorting সুবিধা রয়েছে।</string>
+    <string name="guide_sec_4_title">৪. অফলাইন Draft ও Guest Mode</string>
+    <string name="guide_sec_4_body">ইন্টারনেট না থাকলেও Draft সংরক্ষণ করা যাবে। আর Guest Mode-এ সব নমুনা তথ্য ফোনেই আলাদাভাবে থাকে—মূল ডেটাবেসে কোনো পরিবর্তন হয় না।</string>
+    <string name="guide_sec_5_title">৫. যাচাইকরণ তথ্য</string>
+    <string name="guide_sec_5_body">এই অ্যাপটি দলিলের তথ্য গুছিয়ে রাখতে সহায়তা করে। চূড়ান্ত আইনি যাচাইয়ের জন্য স্থানীয় সাব-রেজিস্ট্রি বা এসি ল্যান্ড অফিসের প্রত্যয়িত কপি দেখুন।</string>
+</resources>

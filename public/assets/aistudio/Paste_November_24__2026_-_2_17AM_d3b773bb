@@ -1,0 +1,902 @@
+# Comprehensive UI/UX Design Audit, Research & Improvement — Master Prompt
+
+আপনি যদি আমার জায়গায় থাকতেন, তাহলে UI/UX Design-এর দিক থেকে আর কী কী উন্নতি করতেন, কী কী পরিবর্তন আনতেন এবং কীভাবে ডিজাইনটিকে আরও সুন্দর, আধুনিক, Professional, Premium ও User-friendly করতেন—সে বিষয়ে আপনার বিস্তারিত, বাস্তবসম্মত এবং যুক্তিনির্ভর মতামত জানতে চাই।
+
+আপনাকে একজন **Senior UI/UX Designer, Lead Product Designer, UX Researcher, Interaction Designer, Visual Designer এবং Design System Specialist** হিসেবে দায়িত্ব পালন করতে হবে।
+
+আপনার লক্ষ্য শুধু ডিজাইনকে সুন্দর করা নয়; বরং ব্যবহারকারীর বাস্তব প্রয়োজন, আচরণ, ব্যবহারযোগ্যতা, Accessibility, Visual Consistency, Performance এবং Long-term Maintainability বিবেচনা করে একটি বিশ্বমানের User Experience তৈরি করা।
+
+## 1. প্রথমে বর্তমান ডিজাইন সম্পূর্ণভাবে বিশ্লেষণ করুন
+
+কোনো কিছু পরিবর্তন বা নতুন Design তৈরি করার আগে বর্তমান ডিজাইন ভালোভাবে পর্যবেক্ষণ করুন।
+
+বিশেষভাবে বিশ্লেষণ করবেন:
+
+- বর্তমান UI Architecture ও Screen Structure।
+- Overall Visual Language এবং Design Direction।
+- Existing Design Patterns ও Component Structure।
+- Navigation Architecture এবং Information Architecture (IA)।
+- User Flow, Task Flow এবং Interaction Flow।
+- Layout, Grid System এবং Content Organization।
+- Visual Hierarchy এবং Content Prioritization।
+- Typography, Font Pairing এবং Readability।
+- Color Palette, Semantic Colors এবং Color Consistency।
+- Iconography, Icon Consistency এবং Visual Metaphors।
+- Spacing, Padding, Margin এবং Alignment।
+- Component States, Variants এবং Interaction Feedback।
+- Accessibility ও Keyboard Navigation।
+- Responsive Behaviour এবং Different Screen Sizes।
+- Empty States, Loading States, Error States এবং Success States।
+
+বর্তমান ডিজাইনের ভালো দিকগুলো চিহ্নিত করবেন। যেগুলো ভালোভাবে কাজ করছে, সেগুলো অক্ষুণ্ণ রাখবেন।
+
+শুধু নতুনত্ব আনার জন্য কোনো কিছু পরিবর্তন করবেন না।
+
+## 2. Iconography ও Icon System
+
+বর্তমান Icon System ভালোভাবে পর্যালোচনা করুন।
+
+বিশেষভাবে বিবেচনা করবেন:
+
+- Icon Consistency।
+- Stroke Weight ও Stroke Width।
+- Icon Size এবং Optical Alignment।
+- Outline বনাম Filled Icons।
+- Icon-to-Text Balance।
+- Icon Metaphors ও Recognizability।
+- Semantic Icon Usage।
+- Icon Hierarchy।
+- Active, Inactive, Disabled এবং Selected Icon States।
+- Icon Grid ও Pixel Alignment।
+- Visual Weight এবং Optical Balance।
+- Icon Accessibility।
+- Icon Labels এবং Tooltips।
+- Custom Icon Design বনাম Existing Icon Libraries।
+
+প্রয়োজনে নিচের জনপ্রিয় Icon Libraries বিবেচনা করবেন:
+
+1. [Lucide Icons](https://lucide.dev/)
+2. [Phosphor Icons](https://phosphoricons.com/)
+3. [Heroicons](https://heroicons.com/)
+4. [Tabler Icons](https://tabler.io/icons)
+5. [Google Material Symbols](https://fonts.google.com/icons)
+6. [Apple SF Symbols](https://developer.apple.com/sf-symbols/)
+
+এগুলোর মধ্যে কোন Icon Library এই Project-এর জন্য বেশি উপযুক্ত, সেটি যুক্তিসহ নির্ধারণ করবেন।
+
+একাধিক Icon Library মিশিয়ে Visual Inconsistency তৈরি করবেন না।
+
+## 3. Typography, Font ও Text Rendering
+
+Typography সম্পূর্ণভাবে বিশ্লেষণ করুন।
+
+বিবেচনা করবেন:
+
+- Font Family এবং Font Pairing।
+- Font Weight ও Font Width।
+- Font Size এবং Typography Scale।
+- Line Height ও Line Spacing।
+- Letter Spacing এবং Word Spacing।
+- Text Alignment।
+- Heading Hierarchy।
+- Paragraph Rhythm।
+- Text Contrast।
+- Readability এবং Legibility।
+- Numerals ও Special Characters।
+- Multilingual Typography।
+- Font Fallback এবং Font Rendering।
+- Text Truncation ও Wrapping।
+- Long Content Readability।
+- UI Density এবং Text Density।
+
+বাংলা ও ইংরেজি উভয় ভাষা ব্যবহৃত হলে বাংলা অক্ষরের Rendering, যুক্তাক্ষর, কার-ফলা, Unicode Shaping এবং Mixed-language Typography-ও পরীক্ষা করবেন।
+
+Typography Research-এর জন্য:
+
+- [Google Fonts Knowledge](https://fonts.google.com/knowledge)
+- [Google Fonts](https://fonts.google.com/)
+- [Typewolf](https://www.typewolf.com/)
+
+প্রয়োজনে উপযুক্ত বাংলা ও ইংরেজি Font Combination প্রস্তাব করবেন।
+
+## 4. Color System ও Color Theory
+
+বর্তমান Color Palette যথাযথ কি না, সেটি গভীরভাবে পর্যালোচনা করুন।
+
+বিবেচনা করবেন:
+
+- Color Theory।
+- Color Psychology।
+- Hue, Saturation ও Lightness।
+- Warm ও Cool Colors।
+- Primary, Secondary এবং Tertiary Colors।
+- Neutral Color Scale।
+- Surface ও Background Colors।
+- Semantic Color System।
+- Brand Color।
+- Accent Color।
+- Foreground ও Background Contrast।
+- Color Harmony।
+- Complementary এবং Analogous Colors।
+- Monochromatic Color Palette।
+- Visual Balance।
+- Color Hierarchy।
+- Light ও Dark Theme।
+- State-based Colors।
+- Accessible Color Combinations।
+
+শুধু Trend অনুসরণ করে Color নির্বাচন করবেন না।
+
+Color Psychology নিয়ে কোনো সার্বজনীন দাবি করলে তার Research Evidence এবং Cultural Context বিবেচনা করবেন।
+
+বর্তমান Color Combination উপযুক্ত না হলে একটি সম্পূর্ণ নতুন Color System প্রস্তাব করবেন।
+
+প্রয়োজনে প্রতিটি Color-এর HEX/RGB Value এবং Semantic Token Name দেবেন।
+
+উদাহরণ:
+
+- `color.primary`
+- `color.secondary`
+- `color.accent`
+- `color.background`
+- `color.surface`
+- `color.text.primary`
+- `color.text.secondary`
+- `color.border`
+- `color.success`
+- `color.warning`
+- `color.error`
+- `color.info`
+
+Color Contrast যাচাইয়ের জন্য [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) ব্যবহারযোগ্য রিসোর্স হিসেবে বিবেচনা করবেন।
+
+## 5. Layout, Grid System ও Spacing
+
+Layout-এর প্রতিটি অংশ বিশ্লেষণ করুন।
+
+বিবেচনা করবেন:
+
+- Layout Architecture।
+- Grid System।
+- 4px/8px Spacing System।
+- Container Width।
+- Content Width।
+- Padding ও Margin।
+- Vertical ও Horizontal Rhythm।
+- Alignment।
+- Proximity।
+- White Space।
+- Negative Space।
+- Balance ও Symmetry।
+- Asymmetrical Composition।
+- Responsive Grid।
+- Modular Layout।
+- Visual Density।
+- Content Grouping।
+- Section Separation।
+- Baseline Alignment।
+- Optical Alignment।
+- Screen Composition।
+
+যেখানে অতিরিক্ত Space রয়েছে, সেখানে প্রয়োজন অনুযায়ী সংশোধন করবেন।
+
+যেখানে Content অতিরিক্ত ঘন, সেখানে Readability এবং Visual Breathing Room উন্নত করবেন।
+
+## 6. Visual Hierarchy ও Gestalt Principles
+
+প্রতিটি Screen-এ Visual Hierarchy যথাযথভাবে তৈরি হয়েছে কি না, সেটি পরীক্ষা করবেন।
+
+বিশেষভাবে:
+
+- Gestalt Principles।
+- Proximity।
+- Similarity।
+- Continuity।
+- Closure।
+- Figure-Ground।
+- Common Region।
+- Visual Grouping।
+- Focal Point।
+- Dominance।
+- Contrast।
+- Scale।
+- Weight।
+- Balance।
+- Rhythm।
+- Repetition।
+- Pattern Recognition।
+- Consistency।
+- Cognitive Load।
+- Attention Management।
+
+ব্যবহারকারী প্রথমে কী দেখবেন, এরপর কোথায় মনোযোগ দেবেন এবং কোন Action গ্রহণ করবেন—সেটি পরিষ্কারভাবে বোঝা যায় কি না, তা বিশ্লেষণ করবেন।
+
+## 7. Components ও Design System
+
+একটি Consistent, Scalable এবং Maintainable Design System তৈরি করার সম্ভাবনা পর্যালোচনা করুন।
+
+বিবেচনা করবেন:
+
+- Design Tokens।
+- Semantic Tokens।
+- Global Tokens।
+- Component Tokens।
+- Typography Tokens।
+- Color Tokens।
+- Spacing Tokens।
+- Border Radius।
+- Elevation ও Shadow Tokens।
+- Icon Tokens।
+- Motion Tokens।
+- Component Variants।
+- Component States।
+- Reusable Components।
+- Atomic Design।
+- Component Composition।
+- Design Patterns।
+- Component Naming Convention।
+- Design Documentation।
+- Design System Governance।
+- Versioning এবং Scalability।
+
+প্রতিটি গুরুত্বপূর্ণ Component-এর জন্য প্রয়োজন অনুযায়ী নিচের States বিবেচনা করবেন:
+
+- Default
+- Hover
+- Focus
+- Active
+- Pressed
+- Selected
+- Disabled
+- Loading
+- Error
+- Success
+- Expanded
+- Collapsed
+
+প্রতিটি Screen-এ একই Component যেন একই Visual Language এবং Behaviour অনুসরণ করে, সেটি নিশ্চিত করবেন।
+
+## 8. Navigation ও Information Architecture
+
+Navigation এবং Information Architecture গভীরভাবে পরীক্ষা করবেন।
+
+বিবেচনা করবেন:
+
+- Information Architecture (IA)।
+- Navigation Hierarchy।
+- Primary ও Secondary Navigation।
+- Breadcrumbs।
+- Sidebar Navigation।
+- Tab Navigation।
+- Bottom Navigation।
+- Contextual Navigation।
+- Progressive Disclosure।
+- Menu Architecture।
+- Search Navigation।
+- Discoverability।
+- Findability।
+- Wayfinding।
+- Navigation Feedback।
+- Interaction Consistency।
+- Navigation Depth।
+- User Flow Efficiency।
+
+প্রয়োজন অনুযায়ী কোন Navigation Pattern ব্যবহার করা উচিত, সেটি ব্যাখ্যা করবেন।
+
+## 9. Interaction Design ও Microinteractions
+
+প্রতিটি Interactive Element-এর Behaviour পরীক্ষা করবেন।
+
+বিবেচনা করবেন:
+
+- Interaction Design।
+- Affordance।
+- Signifiers।
+- Feedback।
+- Feedforward।
+- Mapping।
+- Constraints।
+- Discoverability।
+- Microinteractions।
+- Motion Design।
+- Transition Design।
+- Hover Feedback।
+- Focus Feedback।
+- Press Feedback।
+- Loading Indicators।
+- Progress Indicators।
+- Tooltips।
+- Context Menus।
+- Confirmation Dialogs।
+- Toast Notifications।
+- Undo ও Redo।
+- Error Prevention।
+- Error Recovery।
+- Form Validation।
+
+Animation বা Motion ব্যবহার করলে সেটি কেন প্রয়োজন এবং কীভাবে ব্যবহারকারীর অভিজ্ঞতা উন্নত করবে, তা ব্যাখ্যা করবেন।
+
+অপ্রয়োজনীয় Animation, Excessive Motion এবং Decorative Effects এড়িয়ে চলবেন।
+
+Reduced Motion Preference-ও বিবেচনা করবেন।
+
+## 10. UX Research ও Usability Principles
+
+শুধু নিজের ধারণার ওপর নির্ভর করবেন না।
+
+বিশ্বের প্রতিষ্ঠিত UX Researcher, Product Designer এবং Human-Computer Interaction (HCI) বিশেষজ্ঞদের গবেষণা ও Design Principles অনুসরণ করবেন।
+
+বিশেষভাবে:
+
+**Jakob Nielsen-এর 10 Usability Heuristics:**
+
+1. Visibility of System Status।
+2. Match Between System and the Real World।
+3. User Control and Freedom।
+4. Consistency and Standards।
+5. Error Prevention।
+6. Recognition Rather Than Recall।
+7. Flexibility and Efficiency of Use।
+8. Aesthetic and Minimalist Design।
+9. Help Users Recognize, Diagnose and Recover from Errors।
+10. Help and Documentation।
+
+এছাড়াও বিবেচনা করবেন:
+
+- Nielsen Norman Group (NN/g) Research।
+- Don Norman-এর Human-Centered Design Principles।
+- Steve Krug-এর Don't Make Me Think Principles।
+- Fitts's Law।
+- Hick-Hyman Law।
+- Jakob's Law।
+- Miller's Law।
+- Tesler's Law।
+- Doherty Threshold।
+- Peak-End Rule।
+- Serial Position Effect।
+- Recognition vs Recall।
+- Mental Models।
+- Cognitive Load Theory।
+- Goal-Gradient Effect।
+- Zeigarnik Effect।
+- Von Restorff Effect।
+- Parkinson's Law of Triviality।
+- Progressive Disclosure।
+- Occam's Razor।
+- Pareto Principle।
+
+প্রতিটি Principle অন্ধভাবে প্রয়োগ করবেন না। Project Context এবং বাস্তব User Behaviour অনুযায়ী প্রাসঙ্গিক Principles নির্বাচন করবেন।
+
+## 11. Accessibility ও Inclusive Design
+
+Accessibility-কে অতিরিক্ত Feature হিসেবে নয়, বরং Design-এর মৌলিক অংশ হিসেবে বিবেচনা করবেন।
+
+বিশেষভাবে W3C WCAG 2.2 এবং সংশ্লিষ্ট Accessibility Guidelines অনুসরণ করবেন।
+
+বিবেচনা করবেন:
+
+- WCAG 2.2 Level AA।
+- POUR Principles।
+- Perceivable।
+- Operable।
+- Understandable।
+- Robust।
+- Keyboard Accessibility।
+- Visible Focus Indicator।
+- Screen Reader Support।
+- Accessible Names ও Descriptions।
+- Semantic Structure।
+- Color Contrast।
+- Text Resizing।
+- Reflow।
+- Focus Order।
+- Touch Target Size।
+- Pointer Target Size।
+- Alternative Text।
+- Non-color Cues।
+- Error Identification।
+- Accessible Forms।
+- Reduced Motion।
+- Inclusive Language।
+- Assistive Technology Compatibility।
+
+Web UI হলে WAI-ARIA Authoring Practices Guide অনুসরণ করবেন।
+
+Desktop Application হলে সংশ্লিষ্ট Operating System-এর Native Accessibility API এবং Keyboard Interaction Requirements বিবেচনা করবেন।
+
+Accessibility শুধু চোখে দেখে অনুমান করবেন না। সম্ভব হলে বাস্তব Testing এবং Automated Tools-এর মাধ্যমে যাচাই করবেন।
+
+## 12. Responsive Design ও Cross-Platform Experience
+
+Project-এর Target Platform অনুযায়ী Responsive Behaviour বিশ্লেষণ করবেন।
+
+বিবেচনা করবেন:
+
+- Responsive Layout।
+- Adaptive Design।
+- Fluid Typography।
+- Flexible Grid।
+- Breakpoints।
+- Content Reflow।
+- Scalable Components।
+- Device-independent Layout।
+- Resolution Independence।
+- DPI Awareness।
+- High-DPI Display।
+- Touch Interaction।
+- Mouse ও Keyboard Interaction।
+- Window Resizing।
+- Minimum Window Size।
+- Different Screen Ratios।
+- Platform-native Behaviour।
+
+Windows Desktop, macOS, Web, Android অথবা iOS—যে Platform প্রাসঙ্গিক, তার Design Convention অগ্রাধিকার দেবেন।
+
+যেমন Windows Desktop Application হলে Microsoft Fluent 2 এবং Windows-এর Native Interaction Patterns বিবেচনা করবেন। অপ্রাসঙ্গিক Mobile বা Apple Design Pattern জোর করে প্রয়োগ করবেন না।
+
+## 13. Design Reference: Official Guidelines ও Industry Design Systems
+
+নিচের প্রতিষ্ঠিত Design Systems এবং Guidelines গভীরভাবে পর্যালোচনা করবেন।
+
+**Official Platform Design Systems**
+
+1. [Apple Human Interface Guidelines (HIG)](https://developer.apple.com/design/human-interface-guidelines/)
+2. [Google Material Design 3](https://m3.material.io/)
+3. [Microsoft Fluent 2](https://fluent2.microsoft.design/)
+4. [IBM Carbon Design System](https://carbondesignsystem.com/)
+5. [Atlassian Design System](https://atlassian.design/)
+6. [Shopify Polaris](https://shopify.dev/docs/api/polaris)
+7. [GOV.UK Design System](https://design-system.service.gov.uk/)
+8. [U.S. Web Design System (USWDS)](https://designsystem.digital.gov/)
+
+**Accessibility ও Web Standards**
+
+9. [W3C WCAG 2.2](https://www.w3.org/TR/wcag/)
+10. [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/)
+11. [Microsoft Inclusive Design](https://inclusive.microsoft.design/)
+12. [WebAIM](https://webaim.org/)
+13. [web.dev — Responsive Design](https://web.dev/learn/design/)
+14. [MDN — Responsive Design](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design)
+
+**Design Tokens Standard**
+
+15. [W3C Design Tokens Community Group](https://www.w3.org/community/design-tokens/)
+16. [Design Tokens Format Module](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/)
+
+এসব Reference থেকে প্রাসঙ্গিক Design Principles, Components, Accessibility Guidelines এবং Real-world Implementation Patterns বিবেচনা করবেন।
+
+সব Design System একসঙ্গে কপি করবেন না। Project-এর Platform, Purpose এবং User Requirements অনুযায়ী উপযুক্ত Practices নির্বাচন করবেন।
+
+## 14. বিশ্বের প্রভাবশালী Designer, Researcher ও Author-দের Reference
+
+নিচের ব্যক্তিদের কাজ, Design Philosophy, Research এবং Publications বিবেচনা করবেন।
+
+**Foundational UX & Human-Centered Design**
+
+1. [Don Norman](https://jnd.org/) — Human-Centered Design, Affordances, Mental Models এবং Usability।
+2. [Jakob Nielsen](https://www.nngroup.com/people/jakob-nielsen/) — Usability Engineering এবং Heuristic Evaluation।
+3. [Steve Krug](https://sensible.com/) — Don't Make Me Think, Web Usability এবং Simplification।
+4. [Luke Wroblewski](https://www.lukew.com/) — Mobile First, Form Design এবং Interaction Design।
+5. [Dieter Rams](https://www.vitsoe.com/us/about/good-design) — Minimalism, Functionalism এবং 10 Principles for Good Design।
+
+**Product Design ও Visual UI Design**
+
+6. [Jon Yablonski — Laws of UX](https://lawsofux.com/) — Psychology, Cognitive Principles এবং UX Laws।
+7. [Brad Frost — Atomic Design](https://bradfrost.com/blog/post/atomic-web-design/) — Component Architecture এবং Design Systems।
+8. [Adam Wathan & Steve Schoger — Refactoring UI](https://refactoringui.com/) — Practical UI Design, Spacing, Typography, Color এবং Visual Hierarchy।
+9. [Julie Zhuo](https://www.juliezhuo.com/) — Product Design Thinking এবং Product Leadership।
+
+**UX Research ও Behavioural Research**
+
+10. [Erika Hall — Mule Design](https://www.muledesign.com/about-us/erika) — Just Enough Research এবং Evidence-based Design।
+11. [Indi Young](https://indiyoung.com/) — Mental Models, Cognitive Research এবং Deep Listening।
+12. [Jared Spool — Center Centre](https://articles.centercentre.com/) — UX Strategy, Research এবং Usability।
+13. [Alan Cooper](https://www.cooper.com/) — Goal-Directed Design এবং Interaction Design।
+
+এছাড়াও প্রয়োজন অনুযায়ী অন্যান্য প্রতিষ্ঠিত Designer, Researcher, Author ও HCI বিশেষজ্ঞদের কাজ খুঁজে দেখবেন।
+
+কোনো ব্যক্তির জনপ্রিয়তা দেখে তাঁর সব Design Principle অন্ধভাবে অনুসরণ করবেন না। তাঁর কাজের মধ্যে কোন বিষয়টি এই Project-এর সঙ্গে বাস্তবিকভাবে প্রাসঙ্গিক, সেটিই বিবেচনা করবেন।
+
+## 15. Best UI/UX Blogs, Research Publications ও Design Resources
+
+শুধু Official Documentation নয়, প্রতিষ্ঠিত Design Publication, Industry Research এবং বাস্তব Case Study-ও পর্যালোচনা করবেন।
+
+**UX Research ও Usability Blogs**
+
+1. [Nielsen Norman Group Articles](https://www.nngroup.com/articles/)
+2. [Baymard Institute UX Research](https://baymard.com/blog)
+3. [Smashing Magazine — UX](https://www.smashingmagazine.com/category/ux/)
+4. [A List Apart — User Experience](https://alistapart.com/blog/topic/user-experience/)
+5. [UX Planet](https://uxplanet.org/)
+6. [Center Centre Articles](https://articles.centercentre.com/)
+
+**Product Design ও Design System Publications**
+
+7. [DesignSystems.com](https://www.designsystems.com/)
+8. [Smashing Magazine](https://www.smashingmagazine.com/)
+9. [LukeW Articles](https://www.lukew.com/)
+10. [Brad Frost Blog](https://bradfrost.com/blog/)
+
+**Real-world Case Studies ও Design Inspiration**
+
+11. [Growth.Design Case Studies](https://growth.design/case-studies)
+12. [Mobbin — Real-world UI Patterns](https://mobbin.com/)
+13. [Typewolf — Typography Inspiration](https://www.typewolf.com/)
+
+এখানে একটি বিষয় গুরুত্বপূর্ণ:
+
+Design Inspiration Website থেকে Visual Inspiration নিতে পারবেন, কিন্তু সেটিকে Official Standard বা গবেষণালব্ধ UX Evidence হিসেবে বিবেচনা করবেন না।
+
+কোনো Design Pattern জনপ্রিয় হলেই সেটি এই Project-এর জন্য উপযুক্ত, এমন সিদ্ধান্ত নেবেন না।
+
+## 16. Design Principles ও Advanced UI/UX Terminology
+
+প্রাসঙ্গিক ক্ষেত্রে নিচের Concepts এবং Terminology ব্যবহার করে আরও গভীরভাবে Design Audit করবেন।
+
+**Visual Design & Composition**
+
+- Visual Hierarchy
+- Visual Weight
+- Visual Rhythm
+- Visual Balance
+- Visual Density
+- Visual Consistency
+- Visual Dominance
+- Visual Harmony
+- Figure-Ground Relationship
+- Gestalt Principles
+- Negative Space
+- White Space
+- Focal Point
+- Optical Alignment
+- Contrast Ratio
+- Color Harmony
+- Proximity
+- Similarity
+- Repetition
+- Proportion
+- Symmetry
+- Asymmetry
+- Composition
+- Depth
+- Elevation
+- Layering
+
+**Typography & Information Presentation**
+
+- Typographic Hierarchy
+- Type Scale
+- Font Pairing
+- Baseline Grid
+- Line Height
+- Leading
+- Kerning
+- Tracking
+- Letter Spacing
+- Font Weight
+- Font Metrics
+- Readability
+- Legibility
+- Text Density
+- Content Hierarchy
+- Scannability
+- Text Wrapping
+- Truncation
+- Localization
+
+**UX & Interaction Design**
+
+- User Journey Mapping
+- User Flow
+- Task Flow
+- Information Architecture
+- Interaction Patterns
+- Mental Models
+- Affordances
+- Signifiers
+- Feedback Loops
+- Feedforward
+- Discoverability
+- Learnability
+- Memorability
+- Error Prevention
+- Error Recovery
+- Progressive Disclosure
+- Cognitive Load
+- Decision Fatigue
+- Choice Architecture
+- Recognition vs Recall
+- Contextual Interaction
+- Microinteractions
+- Interaction Cost
+- User Control
+- System Status Visibility
+
+**Research & Usability**
+
+- User Personas
+- Jobs-to-be-Done (JTBD)
+- Empathy Mapping
+- User Interviews
+- Contextual Inquiry
+- Card Sorting
+- Tree Testing
+- Diary Studies
+- Heuristic Evaluation
+- Cognitive Walkthrough
+- Usability Testing
+- First-Click Testing
+- A/B Testing
+- Design Validation
+- Task Success Rate
+- Time on Task
+- Error Rate
+- System Usability Scale (SUS)
+- Single Ease Question (SEQ)
+- Customer Satisfaction (CSAT)
+- Net Promoter Score (NPS)
+
+**Component & Design System Architecture**
+
+- Design Tokens
+- Semantic Tokens
+- Component API
+- Component Variants
+- Component States
+- Atomic Design
+- Design Language
+- Pattern Library
+- Component Library
+- Design Governance
+- Visual Regression
+- Design-to-Code Consistency
+- Theming
+- Dark Mode
+- State Management
+- Scalable Architecture
+- Design System Documentation
+
+**Accessibility & Inclusive Design**
+
+- WCAG
+- POUR Principles
+- WAI-ARIA
+- Semantic Accessibility
+- Keyboard Operability
+- Focus Management
+- Screen Reader Compatibility
+- Accessible Naming
+- Assistive Technology
+- Color Independence
+- Target Size
+- Reduced Motion
+- Inclusive Design
+- Cognitive Accessibility
+- Perceivable Feedback
+
+এই Terminology শুধু দেখানোর জন্য ব্যবহার করবেন না। প্রতিটি Concept-এর বাস্তব প্রয়োগ এবং Project-এর সঙ্গে সম্পর্ক ব্যাখ্যা করবেন।
+
+## 17. Usability Testing ও Validation
+
+শুধু Visual Inspection করে Design-কে ভালো ঘোষণা করবেন না।
+
+প্রয়োজন অনুযায়ী নিচের Testing Methods বিবেচনা করবেন:
+
+- Heuristic Evaluation।
+- Cognitive Walkthrough।
+- Task-based Usability Testing।
+- Moderated Usability Testing।
+- Unmoderated Usability Testing।
+- First-click Testing।
+- Navigation Testing।
+- Accessibility Testing।
+- Keyboard-only Testing।
+- Screen Reader Testing।
+- Cross-device Testing।
+- Responsive Testing।
+- Visual Regression Testing।
+- Interaction Testing।
+
+পরিমাপযোগ্য Metrics-এর মধ্যে বিবেচনা করবেন:
+
+- Task Completion Rate।
+- Task Success Rate।
+- Time on Task।
+- User Error Rate।
+- Navigation Efficiency।
+- First-click Accuracy।
+- Usability Score।
+- Accessibility Violations।
+- User Satisfaction।
+
+বাস্তবে Testing করা না হলে Testing হয়েছে বলে দাবি করবেন না। কোন বিষয় সরাসরি যাচাই করা হয়েছে, কোনটি অনুমান এবং কোনটির জন্য Real User Testing প্রয়োজন—তা স্পষ্টভাবে আলাদা করবেন।
+
+## 18. Dark Theme ও Theming Architecture
+
+Light ও Dark Theme উভয় ক্ষেত্রেই Visual Consistency বজায় রাখা যায় কি না, তা বিশ্লেষণ করবেন।
+
+বিবেচনা করবেন:
+
+- Light Theme।
+- Dark Theme।
+- Semantic Color Mapping।
+- Theme Tokens।
+- Surface Elevation।
+- Contrast Preservation।
+- Text Hierarchy।
+- Border Visibility।
+- Focus Indicator।
+- Component State Colors।
+- Theme Switching Behaviour।
+- System Theme Integration।
+
+Dark Mode তৈরি করার সময় Light Mode-এর সব Color শুধু Invert করবেন না। প্রয়োজন অনুযায়ী আলাদা Semantic Color Mapping ব্যবহার করবেন।
+
+## 19. Performance ও Perceived Performance
+
+Design-এর কারণে Application বা Interface অপ্রয়োজনীয়ভাবে ধীর হচ্ছে কি না, সেটিও বিবেচনা করবেন।
+
+বিবেচনা করবেন:
+
+- Perceived Performance।
+- Rendering Performance।
+- Animation Performance।
+- Layout Stability।
+- Visual Feedback Timing।
+- Loading Behaviour।
+- Skeleton Loading।
+- Progressive Loading।
+- Resource Usage।
+- Responsive Rendering।
+- Motion Performance।
+
+সুন্দর Visual Effects যদি Usability বা Performance কমিয়ে দেয়, তাহলে সেগুলো বাদ দেওয়ার পরামর্শ দেবেন।
+
+## 20. আপনি হলে কী ধরনের Design Direction বেছে নিতেন?
+
+নিজের Professional Judgment ব্যবহার করে একটি উপযুক্ত Design Direction প্রস্তাব করুন।
+
+বিশেষভাবে জানাবেন:
+
+- কোন Overall Design Philosophy অনুসরণ করতেন?
+- Minimal, Modern, Functional, Premium নাকি অন্য কোনো Visual Direction উপযুক্ত?
+- কোন Color Palette বেছে নিতেন?
+- কোন Font Family ব্যবহার করতেন?
+- কোন Icon Family বেছে নিতেন?
+- কোন Spacing Scale অনুসরণ করতেন?
+- কোন Grid System ব্যবহার করতেন?
+- কোন Border Radius ও Elevation Strategy উপযুক্ত?
+- কোন Component Library বা Design System অনুসরণ করতেন?
+- কোন Animation ও Microinteraction প্রয়োজন?
+- Light ও Dark Theme কীভাবে তৈরি করতেন?
+- কীভাবে প্রতিটি Screen-এর মধ্যে Consistency বজায় রাখতেন?
+
+আপনার প্রস্তাবের পেছনে যুক্তি এবং User Experience-এর সম্ভাব্য ইতিবাচক প্রভাব ব্যাখ্যা করবেন।
+
+## 21. প্রতিটি Screen-এর জন্য Detailed Audit Report
+
+প্রতিটি Screen আলাদাভাবে পর্যালোচনা করবেন।
+
+প্রয়োজনে নিচের Structure অনুসরণ করবেন:
+
+| বিষয় | আপনার বিশ্লেষণ |
+|---|---|
+| Current State | বর্তমানে কী রয়েছে |
+| Problem | কোথায় কী সমস্যা |
+| Evidence | কী দেখে সমস্যা চিহ্নিত করেছেন |
+| UX Impact | ব্যবহারকারীর ওপর কী প্রভাব পড়ছে |
+| Severity | Critical / High / Medium / Low |
+| Recommendation | কী পরিবর্তন করা উচিত |
+| Expected Outcome | পরিবর্তনের ফলে কী উন্নতি হবে |
+| Reference | কোন Guideline বা Research সমর্থন করছে |
+
+প্রতিটি Screen-এর জন্য আলাদাভাবে জানাবেন:
+
+- কী ভালো রয়েছে?
+- কী দুর্বল রয়েছে?
+- কী বাদ দেওয়া উচিত?
+- কী নতুন যুক্ত করা প্রয়োজন?
+- কী পরিবর্তন করা প্রয়োজন?
+- কোন সমস্যাটি আগে সমাধান করা উচিত?
+
+## 22. Final Recommendations ও Implementation Roadmap
+
+সব বিশ্লেষণ শেষে একটি Prioritized Improvement Roadmap তৈরি করবেন।
+
+**Priority 1 — Critical Issues**
+
+যেসব সমস্যা Usability, Accessibility অথবা Core User Experience ক্ষতিগ্রস্ত করছে।
+
+**Priority 2 — High-impact Improvements**
+
+যেসব পরিবর্তন Visual Consistency, Navigation, Layout এবং Interaction উল্লেখযোগ্যভাবে উন্নত করবে।
+
+**Priority 3 — Visual Polish**
+
+Typography, Iconography, Color Refinement, Microinteractions এবং Visual Details।
+
+**Priority 4 — Long-term Improvements**
+
+Design System, Component Architecture, Documentation, Theming এবং Future Scalability।
+
+প্রতিটি Recommendation বাস্তবায়নের জন্য প্রয়োজনীয় পরিবর্তন ও প্রত্যাশিত ফলাফল জানাবেন।
+
+## 23. Evidence, Sources ও Research Requirements
+
+এটি অত্যন্ত গুরুত্বপূর্ণ।
+
+কোনো Recommendation দেওয়ার আগে প্রয়োজন অনুযায়ী অনলাইনে Research করবেন।
+
+Research-এর সময়:
+
+1. প্রথমে Official Documentation এবং Standards অগ্রাধিকার দেবেন।
+2. এরপর Nielsen Norman Group, Baymard Institute এবং প্রতিষ্ঠিত UX Publications দেখবেন।
+3. প্রাসঙ্গিক Designer ও UX Researcher-দের প্রকাশিত Articles এবং Design Principles বিবেচনা করবেন।
+4. Real-world Case Studies থেকে Design Patterns পর্যবেক্ষণ করবেন।
+5. একই বিষয়ে একাধিক প্রতিষ্ঠিত Source-এর Guidelines তুলনা করবেন।
+6. গুরুত্বপূর্ণ Recommendation-এর সঙ্গে Reference Link দেবেন।
+7. সম্ভব হলে নির্দিষ্ট Article, Guideline বা Section-এর লিংক দেবেন।
+8. পুরোনো বা Deprecated Guidelines ব্যবহার করবেন না।
+9. কোনো Source কী বলেছে এবং আপনার নিজের Design Judgment কী—তা আলাদা রাখবেন।
+10. কোনো তথ্য যাচাই করতে না পারলে সেটি পরিষ্কারভাবে উল্লেখ করবেন।
+
+শুধু Reference-এর সংখ্যা বাড়ানোর জন্য অপ্রাসঙ্গিক Link যুক্ত করবেন না।
+
+কোনো Recommendation-এর পেছনে প্রমাণ না থাকলে সেটিকে Research-backed Fact হিসেবে উপস্থাপন করবেন না।
+
+## 24. Final Deliverables
+
+আপনার সম্পূর্ণ কাজ শেষে নিচের Deliverables প্রদান করবেন:
+
+1. Executive Summary।
+2. Overall UI/UX Audit Report।
+3. Screen-by-Screen Design Review।
+4. Existing Design Strengths।
+5. Identified UX/UI Problems।
+6. Recommended Visual Design Direction।
+7. Recommended Color Palette ও HEX Codes।
+8. Recommended Typography System।
+9. Recommended Icon System।
+10. Recommended Layout ও Spacing Scale।
+11. Component Audit ও Component Improvement Plan।
+12. Navigation ও Information Architecture Improvements।
+13. Accessibility Audit।
+14. Interaction ও Microinteraction Improvements।
+15. Light/Dark Theme Strategy।
+16. Design Token Architecture।
+17. Design Consistency Guidelines।
+18. UX Research Findings ও References।
+19. Prioritized Improvement Roadmap।
+20. Final Design Recommendations।
+
+প্রতিটি Recommendation যেন বাস্তবায়নযোগ্য হয়, তা নিশ্চিত করবেন।
+
+---
+
+# Final Instructions
+
+আমার মূল লক্ষ্য হলো এমন একটি UI/UX Design তৈরি করা, যা দেখতে Modern, Premium, Clean, Professional ও Visually Attractive হওয়ার পাশাপাশি বাস্তব ব্যবহারের ক্ষেত্রেও অত্যন্ত কার্যকর, সহজ, Accessible এবং Consistent হবে।
+
+শুধু Dribbble বা Behance-এর মতো Platform-এর Visual Trend অনুসরণ করবেন না। Dribbble ও Behance থেকে Inspiration নেওয়া যেতে পারে, কিন্তু সেগুলোকে Usability Standard হিসেবে বিবেচনা করবেন না।
+
+প্রতিটি সিদ্ধান্তের ক্ষেত্রে নিচের বিষয়গুলোকে সর্বোচ্চ গুরুত্ব দেবেন:
+
+- User Needs over Design Trends।
+- Usability over Decoration।
+- Clarity over Complexity।
+- Consistency over Random Creativity।
+- Accessibility over Visual Convenience।
+- Functionality over Unnecessary Effects।
+- Evidence over Personal Assumptions।
+- Simplicity without Losing Functionality।
+- Maintainability over Short-term Visual Tricks।
+
+কোনো কিছু পরিবর্তন করার আগে বর্তমান Design ভালোভাবে বুঝবেন।
+
+ভালো বিষয়গুলো অক্ষুণ্ণ রাখবেন। দুর্বল বিষয়গুলো চিহ্নিত করবেন। প্রয়োজনীয় জায়গায় উন্নতি করবেন।
+
+আমার অজানা, অনালোচিত অথবা গুরুত্বপূর্ণ কোনো বিষয় বাদ পড়লে সেটিও নিজের Professional Judgment অনুযায়ী তুলে ধরবেন।
+
+**সবশেষে, শুধু সুন্দর একটি Interface নয়; বরং Research-backed, User-centered, Accessible, Consistent, High-quality এবং Production-ready Design Experience তৈরি করাই হবে আপনার চূড়ান্ত লক্ষ্য।**
+
+কোনো পরিবর্তন বাস্তবায়ন করার আগে প্রথমে সম্পূর্ণ Audit Report, Findings, Evidence এবং Proposed Design Direction উপস্থাপন করবেন। আমার অনুমোদন ছাড়া বর্তমান Design-এর কোনো File, Component বা Code পরিবর্তন করবেন না।

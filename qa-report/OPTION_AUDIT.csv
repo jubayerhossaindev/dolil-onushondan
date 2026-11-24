@@ -1,0 +1,11 @@
+option_id,group,options_covered,screen_or_component,verified_by,status,notes
+OPT-01,App Language,"BN (বাংলা), EN (English)",Onboarding / Access / ProfileSettings,OnboardingGuestAndTourRobolectricTest & QaUiScreensAuditRobolectricTest,PASS,Persists via UserPreferencesDataStore and updates live UI strings
+OPT-02,Theme Mode,"SYSTEM, LIGHT, DARK",ProfileSettingsScreen,PaperAndInkRedesignRobolectricTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS,Verified Paper & Ink Light/Dark WCAG AA palettes
+OPT-03,Material You Dynamic Color,"Enabled (API 31+), Disabled",ProfileSettingsScreen,PaperAndInkRedesignRobolectricTest,PASS,Defaults to false; semantic status colors & parchment stay independent
+OPT-04,Deed Type,"SAF_KABALA, DANPATRA, HEBA, BANTONNAMA, BINIMOY, OTHER",DeedEntryScreen & Search FilterSheet,QaUiScreensAuditRobolectricTest & QaWorkflowAndEdgeCaseRobolectricTest,PASS,All 6 enum variants localized BN/EN
+OPT-05,Survey Type,"CS, SA, RS, BS, BRS",DeedEntryScreen Parcels,DeedModels & Parcel unit tests,PASS,Supported across UI chips and DTO/Room persistence
+OPT-06,Land Class,"NAL, VITI, BASTU, DOBA, CHALA, COMMERCIAL, OTHER",DeedEntryScreen Parcels,Enums & DeedValidator checks,PASS,All 7 classifications localized BN/EN
+OPT-07,Land Unit,"DECIMAL (Shotok), KATHA (1.65x), BIGHA (33x), ACRE (100x), SQUARE_FEET (1/435.6x)",DeedEntryScreen Parcels,QaUiScreensAuditRobolectricTest & DolilEndToEndRobolectricTest,PASS,Verified live Shotok/Katha/SqFt conversion math
+OPT-08,Sort Options (10),"REGISTRATION_DATE_DESC/ASC, DEED_YEAR_DESC/ASC, DEED_NUMBER_ASC, GRANTOR_NAME_ASC, GRANTEE_NAME_ASC, MOUZA_NAME_ASC, LAND_AREA_DESC, UPDATED_AT_DESC",SearchScreen & RecordsScreen SortBottomSheet,QaWorkflowAndEdgeCaseRobolectricTest & DolilSorterAndRoleTest,PASS,All 10 sort orders deterministic
+OPT-09,Narayanganj Subdivisions & Offices,"Sub-Registry Offices & 9 Subdivisions (99 Mouzas)",DeedEntryScreen / LandMouzaDirectory / Admin Panel,NarayanganjCatalogRobolectricTest,PASS,Offline bundled JSON verified
+OPT-10,Assignable User Roles,"PUBLIC_USER, OFFICE_VIEWER, OFFICE_DATA_ENTRY, OFFICE_SUPERVISOR (+ Admin tiers)",ProfileSettingsScreen Admin Panel,QaWorkflowAndEdgeCaseRobolectricTest & QaUiScreensAuditRobolectricTest,PASS,Strictly gated by RolePermissions.canManageRoles
