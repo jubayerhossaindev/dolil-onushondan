@@ -61,9 +61,22 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            !~/.gradle/caches/build-cache-1
           key: ${{ runner.os }}-jdk21-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt', 'buildSrc/**/Dependencies.kt', 'gradle/*.versions.toml', '**/versions.properties') }}
           restore-keys: |
             ${{ runner.os }}-jdk21-gradle-
+
+      - name: Restore Gradle task output cache
+        id: gradle-build-cache
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: ~/.gradle/caches/build-cache-1
+          key: ${{ runner.os }}-jdk21-gradle-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-jdk21-gradle-build-
+
+      - name: Prepare Gradle task output cache directory
+        run: mkdir -p ~/.gradle/caches/build-cache-1
 
       - name: Validate and prepare release signing and Firebase configuration
         shell: bash
@@ -131,7 +144,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-configuration-cache --continue --stacktrace --warning-mode all \
+          ./gradlew --build-cache --no-configuration-cache --continue --stacktrace --warning-mode all \
             :app:lintRelease \
             :app:assembleRelease \
             :app:bundleRelease
@@ -143,7 +156,15 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            !~/.gradle/caches/build-cache-1
           key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
+
+      - name: Save Gradle task output cache
+        if: always() && steps.gradle-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.gradle/caches/build-cache-1
+          key: ${{ steps.gradle-build-cache.outputs.cache-primary-key }}
 
       - name: Verify signed APK and App Bundle
         shell: bash
