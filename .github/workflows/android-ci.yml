@@ -28,8 +28,9 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Cache Gradle dependencies and wrapper
-        uses: actions/cache@v6.1.0
+      - name: Restore Gradle dependencies and wrapper cache
+        id: gradle-cache
+        uses: actions/cache/restore@v6.1.0
         with:
           path: |
             ~/.gradle/caches
@@ -94,6 +95,14 @@ jobs:
             testDebugUnitTest \
             assembleDebug
 
+      - name: Save Gradle dependencies and wrapper cache
+        if: always() && steps.gradle-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
       - name: Upload APK and Reports
         if: always()
         uses: actions/upload-artifact@v7
