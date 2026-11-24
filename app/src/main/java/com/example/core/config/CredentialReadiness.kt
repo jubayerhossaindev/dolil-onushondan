@@ -129,12 +129,12 @@ object CredentialReadinessChecker {
                 stage = ReadinessStage.DRIVE_AUTH_TESTED,
                 state = if (hasDriveLinked) ReadinessState.READY else ReadinessState.MISSING,
                 detailEn = if (hasDriveLinked) {
-                    "Personal Google Drive connected and bound to OIDC sub (${link?.driveEmail?.ifBlank { link.driveSubjectId }})."
+                    "Personal Google Drive connected and bound to OIDC sub (${link.driveEmail.ifBlank { link.driveSubjectId }})."
                 } else {
                     "Authorize personal Google Drive via AuthorizationClient (drive.file, openid, profile, email) on a physical/Play Services device."
                 },
                 detailBn = if (hasDriveLinked) {
-                    "ব্যক্তিগত Google Drive সংযুক্ত এবং OIDC sub-এর সাথে আবদ্ধ (${link?.driveEmail?.ifBlank { link.driveSubjectId }})।"
+                    "ব্যক্তিগত Google Drive সংযুক্ত এবং OIDC sub-এর সাথে আবদ্ধ (${link.driveEmail.ifBlank { link.driveSubjectId }})।"
                 } else {
                     "Google Play Services-যুক্ত ডিভাইসে ব্যক্তিগত Google Drive (drive.file) অনুমোদন করুন।"
                 }
@@ -143,12 +143,12 @@ object CredentialReadinessChecker {
                 stage = ReadinessStage.BACKUP_RESTORE_TESTED,
                 state = if (hasVerifiedBackup) ReadinessState.READY else ReadinessState.MISSING,
                 detailEn = if (hasVerifiedBackup) {
-                    "Verified snapshot ${link?.lastVerifiedBackupId} recorded in commit graph."
+                    "Verified snapshot ${link.lastVerifiedBackupId} recorded in commit graph."
                 } else {
                     "Run a live backup snapshot and restore test against your connected Google Drive account."
                 },
                 detailBn = if (hasVerifiedBackup) {
-                    "সর্বশেষ যাচাইকৃত ব্যাকআপ: ${link?.lastVerifiedBackupId}"
+                    "সর্বশেষ যাচাইকৃত ব্যাকআপ: ${link.lastVerifiedBackupId}"
                 } else {
                     "সংযুক্ত Google Drive-এ অন্তত একটি লাইভ ব্যাকআপ ও পুনরুদ্ধার পরীক্ষা সম্পন্ন করুন।"
                 }
