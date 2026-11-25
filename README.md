@@ -66,7 +66,7 @@ The application is designed around local-first data entry: records and drafts ar
 | Local persistence | Room + Preferences DataStore |
 | Account identity | Firebase Authentication |
 | Optional backup / sync | User-authorized Google Drive |
-| License | MIT |
+| License | [MIT License](LICENSE) |
 
 ## Features
 
@@ -436,7 +436,29 @@ Do not publish vulnerabilities, credentials, private deed information, or access
 
 ### License
 
-Dolil Onushondhan is distributed under the **MIT License**. See [LICENSE](LICENSE) for the complete license text.
+The `jubayerhossaindev/dolil-onushondan` repository is licensed under the **MIT License**.
+
+Copyright (c) 2026 **Dolil Onushodan**.
+
+The MIT License is a short, permissive open-source license. It allows the licensed work, modifications, and larger works to be distributed under different terms, including without publishing their source code, provided the required copyright and license notices are preserved.
+
+**Permissions**
+
+- Commercial use
+- Modification
+- Distribution
+- Private use
+
+**Limitations**
+
+- Liability
+- Warranty
+
+**Condition**
+
+- The original copyright and license notice must be included in copies or substantial portions of the software.
+
+See the complete [MIT License](LICENSE) for the legally operative terms.
 
 ## Support
 
