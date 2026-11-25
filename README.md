@@ -19,7 +19,7 @@
 
 <p align="center">
   <a href="https://github.com/jubayerhossaindev/dolil-onushondan/actions/workflows/android-ci.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/jubayerhossaindev/dolil-onushondan/android-ci.yml?branch=main&label=Android%20CI&logo=githubactions&logoColor=white" alt="Android CI status" />
+    <img src="https://img.shields.io/github/actions/workflow/status/jubayerhossaindev/dolil-onushondan/android-ci.yml?label=Android%20CI&logo=githubactions&logoColor=white" alt="Android CI status" />
   </a>
   <a href="https://github.com/jubayerhossaindev/dolil-onushondan/releases/latest">
     <img src="https://img.shields.io/github/v/release/jubayerhossaindev/dolil-onushondan?display_name=tag&label=latest%20release&logo=github" alt="Latest release" />
