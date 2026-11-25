@@ -37,7 +37,8 @@
   <a href="#architecture">Architecture</a> ·
   <a href="#getting-started">Get started</a> ·
   <a href="#testing">Testing</a> ·
-  <a href="#releases">Releases</a>
+  <a href="#releases">Releases</a> ·
+  <a href="#community">Community</a>
 </p>
 
 ---
@@ -410,23 +411,32 @@ The current published release is **v1.0.0**.
 
 To publish a new release, the repository's release workflow expects a semantic version tag (for example, `v1.0.1`) matching the app's `versionName`, plus the signing and Firebase configuration secrets documented in the workflow.
 
-## Contributing
+## Community
 
-A populated standalone contribution guide is not currently present. Before making a substantial change:
+Dolil Onusondhan is an open-source project. These documents explain how to participate, how community members are expected to treat one another, and how to report security concerns.
 
-1. Open an [issue](https://github.com/jubayerhossaindev/dolil-onushondan/issues) to describe the problem or proposed change.
-2. Keep the pull request focused and explain user-visible behavior changes.
-3. Include or update relevant tests.
-4. Run `./gradlew lintDebug testDebugUnitTest assembleDebug` before submitting.
-5. Do not include credentials, private deed information, or real personal data in commits or test fixtures.
+<p align="center">
+  <a href="CODE_OF_CONDUCT.md">Code of Conduct</a> ·
+  <a href="CONTRIBUTING.md">Contributing Guide</a> ·
+  <a href="SECURITY.md">Security Policy</a> ·
+  <a href="LICENSE">MIT License</a>
+</p>
 
-## Security
+### Code of Conduct
 
-A complete security disclosure policy is not currently published in this repository. Please do not put credentials, private records, OAuth tokens, or other sensitive information in public issues or pull requests. The project should publish a dedicated security-reporting process before inviting private vulnerability reports.
+We aim to keep project discussions welcoming, respectful, and constructive. Please read the [Code of Conduct](CODE_OF_CONDUCT.md) before participating in issues, reviews, or contributions.
 
-## License
+### Contributing
 
-Distributed under the **MIT License**. See [LICENSE](LICENSE) for the license text.
+Bug reports, focused fixes, documentation improvements, tests, accessibility work, and scoped features are welcome. Start with the [contribution guide](CONTRIBUTING.md), and open an [issue](https://github.com/jubayerhossaindev/dolil-onushondan/issues) before beginning a substantial change.
+
+### Security
+
+Do not publish vulnerabilities, credentials, private deed information, or access tokens in public issues. Read the [Security Policy](SECURITY.md) for private reporting instructions and safe-testing boundaries.
+
+### License
+
+Dolil Onusondan is distributed under the **MIT License**. See [LICENSE](LICENSE) for the complete license text.
 
 ## Support
 
