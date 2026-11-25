@@ -436,7 +436,7 @@ Do not publish vulnerabilities, credentials, private deed information, or access
 
 ### License
 
-Dolil Onusondan is distributed under the **MIT License**. See [LICENSE](LICENSE) for the complete license text.
+Dolil Onushondhan is distributed under the **MIT License**. See [LICENSE](LICENSE) for the complete license text.
 
 ## Support
 
