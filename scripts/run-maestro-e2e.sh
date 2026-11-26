@@ -249,9 +249,17 @@ maestro test \
 test_status="$?"
 set -e
 
+responsive_status=0
+if [[ "$test_status" -eq 0 ]]; then
+  set +e
+  bash scripts/run-maestro-responsive-matrix.sh "$results_dir/responsive"
+  responsive_status="$?"
+  set -e
+fi
+
 capture_evidence
 
-if [[ "$test_status" -ne 0 ]]; then
+if [[ "$test_status" -ne 0 || "$responsive_status" -ne 0 ]]; then
   maestro hierarchy > "$results_dir/failure-hierarchy.json" \
     2> "$results_dir/failure-hierarchy.stderr" || {
       echo "WARNING: maestro hierarchy failed; falling back to Android UIAutomator." >&2
@@ -263,9 +271,10 @@ if [[ "$test_status" -ne 0 ]]; then
 fi
 
 printf '%s\n' "$test_status" > "$results_dir/exit-code.txt"
-if [[ "$test_status" -ne 0 ]]; then
-  log "Maestro E2E failed with exit code $test_status."
-  exit "$test_status"
+printf '%s\n' "$responsive_status" > "$results_dir/responsive-exit-code.txt"
+if [[ "$test_status" -ne 0 || "$responsive_status" -ne 0 ]]; then
+  log "Maestro suite exit code: $test_status; responsive matrix exit code: $responsive_status."
+  exit 1
 fi
 
-log "All Maestro flows completed successfully."
+log "All Maestro feature flows and responsive emulator profiles completed successfully."
