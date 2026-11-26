@@ -239,22 +239,196 @@ maestro --version > "$results_dir/maestro-version.txt"
 debug_dir="$results_dir/debug-output"
 mkdir -p "$debug_dir"
 
-set +e
-maestro test \
-  --test-output-dir="$results_dir" \
-  --debug-output="$debug_dir" \
-  --format=junit \
-  --output="$results_dir/report.xml" \
-  e2e/maestro
-test_status="$?"
-set -e
+# A transient ADB disconnect can poison the remainder of a directory-level
+# Maestro run (Maestro issue #3720). Run each flow in a fresh CLI process so
+# a recovered emulator can be used by the next flow.
+wait_for_adb_stable() {
+  local timeout_seconds="${1:-120}"
+  local required_seconds=5
+  local consecutive_seconds=0
+  local elapsed_seconds=0
+  local device_state=""
 
-responsive_status=0
+  while ((elapsed_seconds < timeout_seconds)); do
+    device_state="$(adb -s "$serial" get-state 2>/dev/null || true)"
+    if [[ "$device_state" == "device" ]]; then
+      consecutive_seconds=$((consecutive_seconds + 1))
+      if ((consecutive_seconds >= required_seconds)); then
+        log "ADB device $serial remained online for ${required_seconds}s."
+        return 0
+      fi
+    else
+      consecutive_seconds=0
+    fi
+
+    sleep 1
+    elapsed_seconds=$((elapsed_seconds + 1))
+  done
+
+  log "ADB device $serial did not remain online for ${required_seconds}s within ${timeout_seconds}s."
+  return 1
+}
+
+flow_status=0
+if wait_for_adb_stable 60; then
+  for flow in e2e/maestro/*.yaml; do
+    [[ -f "$flow" ]] || continue
+    flow_name="$(basename "$flow" .yaml)"
+    log "Running Maestro flow: $flow"
+
+    flow_rc=1
+    flow_report=""
+    attempt=1
+
+    while ((attempt <= 2)); do
+      attempt_dir="$results_dir/flow-runs/$flow_name/attempt-$attempt"
+      attempt_debug_dir="$debug_dir/$flow_name/attempt-$attempt"
+      mkdir -p "$attempt_dir/test-output" "$attempt_debug_dir"
+
+      log "Starting $flow_name in a fresh Maestro process (attempt $attempt)."
+      set +e
+      maestro test \
+        --test-output-dir="$attempt_dir/test-output" \
+        --debug-output="$attempt_debug_dir" \
+        --format=junit \
+        --output="$attempt_dir/report.xml" \
+        "$flow" 2>&1 | tee "$attempt_dir/console.log"
+      flow_rc=${PIPESTATUS[0]}
+      set -e
+
+      printf '%s\n' "$flow_rc" > "$attempt_dir/exit-code.txt"
+      flow_report="$attempt_dir/report.xml"
+
+      if [[ "$flow_rc" -eq 0 ]]; then
+        break
+      fi
+
+      # Retry only when logs prove an ADB transport loss. Do not retry real
+      # app assertions, validation failures, or other deterministic UI defects.
+      if [[ "$attempt" -eq 1 ]] && grep -RIEq \
+        'DeviceServerDiedException|StatusRuntimeException: UNAVAILABLE|device[[:space:]].*(offline|not found)|host:transport:.*(offline|not found)' \
+        "$attempt_dir" "$attempt_debug_dir" "$HOME/.maestro/tests" 2>/dev/null; then
+        log "Detected an ADB transport failure in $flow_name; waiting for 5 seconds of stable ADB before one isolated retry."
+        if wait_for_adb_stable 120; then
+          attempt=2
+          continue
+        fi
+        log "ADB did not recover; $flow_name cannot be retried safely."
+      fi
+
+      break
+    done
+
+    if [[ -f "$flow_report" ]]; then
+      mkdir -p "$results_dir/reports"
+      cp "$flow_report" "$results_dir/reports/$flow_name.xml"
+    fi
+
+    if [[ "$flow_rc" -ne 0 ]]; then
+      flow_status=1
+      log "Maestro flow failed: $flow_name (exit $flow_rc)."
+    else
+      log "Maestro flow passed: $flow_name."
+    fi
+
+    if ! wait_for_adb_stable 120; then
+      flow_status=1
+      log "Stopping the remaining flows because the Android emulator did not recover its ADB connection."
+      break
+    fi
+  done
+else
+  flow_status=1
+  log "Skipping Maestro flows because the emulator ADB connection was not stable after boot."
+fi
+
+# Keep one aggregate JUnit report for CI while preserving each final per-flow
+# report and both attempts (when a transport retry was needed) as artifacts.
+python3 - "$results_dir/report.xml" "$results_dir/reports" <<'PY'
+import glob
+import os
+import sys
+import xml.etree.ElementTree as ET
+
+output_path, report_dir = sys.argv[1:]
+aggregate = ET.Element("testsuites")
+report_paths = sorted(glob.glob(os.path.join(report_dir, "*.xml")))
+
+for report_path in report_paths:
+    try:
+        source_root = ET.parse(report_path).getroot()
+    except (ET.ParseError, OSError) as error:
+        print(f"Unable to read per-flow JUnit report {report_path}: {error}", file=sys.stderr)
+        continue
+
+    suites = [source_root] if source_root.tag == "testsuite" else [
+        child for child in list(source_root) if child.tag == "testsuite"
+    ]
+    for suite in suites:
+        aggregate.append(suite)
+
+if not list(aggregate):
+    suite = ET.SubElement(
+        aggregate,
+        "testsuite",
+        name="Maestro runner",
+        tests="1",
+        failures="1",
+        errors="0",
+        time="0",
+    )
+    testcase = ET.SubElement(
+        suite,
+        "testcase",
+        classname="maestro.runner",
+        name="no-junit-report",
+    )
+    ET.SubElement(testcase, "failure", message="No per-flow JUnit report was generated")
+
+total_tests = 0
+total_failures = 0
+total_errors = 0
+total_time = 0.0
+
+for suite in aggregate.findall("testsuite"):
+    testcases = suite.findall(".//testcase")
+    failures = sum(testcase.find("failure") is not None for testcase in testcases)
+    errors = sum(testcase.find("error") is not None for testcase in testcases)
+    suite.set("tests", str(len(testcases)))
+    suite.set("failures", str(failures))
+    suite.set("errors", str(errors))
+    total_tests += len(testcases)
+    total_failures += failures
+    total_errors += errors
+    try:
+        total_time += float(suite.get("time", "0"))
+    except ValueError:
+        pass
+
+aggregate.set("tests", str(total_tests))
+aggregate.set("failures", str(total_failures))
+aggregate.set("errors", str(total_errors))
+aggregate.set("time", f"{total_time:.3f}")
+ET.indent(aggregate, space="  ")
+ET.ElementTree(aggregate).write(output_path, encoding="utf-8", xml_declaration=True)
+print(
+    f"Aggregated JUnit: {total_tests} tests, "
+    f"{total_failures} failures, {total_errors} errors."
+)
+PY
+
+test_status="$flow_status"
+
+# 125 means the responsive matrix was intentionally not run; do not report a
+# default zero as if responsive checks had passed after a core-suite failure.
+responsive_status=125
 if [[ "$test_status" -eq 0 ]]; then
   set +e
   ANDROID_SERIAL="$serial" bash scripts/run-maestro-responsive-matrix.sh "$results_dir/responsive"
   responsive_status="$?"
   set -e
+else
+  log "Responsive matrix skipped because one or more core Maestro flows failed."
 fi
 
 capture_evidence
