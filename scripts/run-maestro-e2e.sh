@@ -48,15 +48,32 @@ adb install -r "$apk_path"
 adb shell pm path "$app_id" > "$results_dir/installed-package.txt"
 maestro --version > "$results_dir/maestro-version.txt"
 
+debug_dir="$results_dir/debug-output"
+mkdir -p "$debug_dir"
+
 set +e
-maestro test --test-output-dir="$results_dir" e2e/maestro
+maestro test \
+  --test-output-dir="$results_dir" \
+  --debug-output="$debug_dir" \
+  --format=junit \
+  --output="$results_dir/report.xml" \
+  e2e/maestro
 test_status=$?
 set -e
 
-# Keep device evidence even when an assertion fails.
-adb logcat -b all -d -t 20000 > "$results_dir/logcat.txt" 2>&1 || true
-adb shell dumpsys activity activities > "$results_dir/activities.txt" 2>&1 || true
+# Keep device evidence before any diagnostic command can alter the visible state.
 adb exec-out screencap -p > "$results_dir/final-screen.png" 2>/dev/null || true
+adb shell dumpsys activity activities > "$results_dir/activities.txt" 2>&1 || true
+adb logcat -b all -d -t 20000 > "$results_dir/logcat.txt" 2>&1 || true
+
+if [[ "$test_status" -ne 0 ]]; then
+  # Maestro's hierarchy command records the same accessibility tree used by selectors.
+  maestro hierarchy > "$results_dir/failure-hierarchy.json" 2> "$results_dir/failure-hierarchy.stderr" || {
+    echo "WARNING: maestro hierarchy failed; falling back to Android UIAutomator." >&2
+    adb shell uiautomator dump /sdcard/maestro-failure-hierarchy.xml >/dev/null 2>&1 || true
+    adb pull /sdcard/maestro-failure-hierarchy.xml "$results_dir/failure-hierarchy.xml" >/dev/null 2>&1 || true
+  }
+fi
 
 printf '%s\n' "$test_status" > "$results_dir/exit-code.txt"
 
