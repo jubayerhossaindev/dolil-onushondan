@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -144,6 +145,7 @@ object DolilRoutes {
     fun editDeed(deedId: String) = "edit_deed/$deedId"
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppRoot() {
     val context = LocalContext.current
