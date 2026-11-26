@@ -10,7 +10,7 @@ The initial guest-mode journey validates:
 - Local guest sandbox entry and the first-run product-tour dismissal.
 - Search for a known seeded demo deed and opening its details.
 - Primary navigation: Home, Search, Records, and Profile.
-- Records tabs: All, Drafts, Pending, and Archive.
+- Records tabs available to the guest role: All, Drafts, and Archive. The approval-only Pending tab is intentionally absent for `PUBLIC_USER` guest accounts.
 - Secondary destinations: Persons, Land, and User Guide.
 - Opening the Add Deed wizard.
 
