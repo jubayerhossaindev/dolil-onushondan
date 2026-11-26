@@ -49,6 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -172,7 +174,12 @@ fun AppRoot() {
         useDynamicColor = localPrefs.useDynamicColor,
         language = localPrefs.language
     ) {
-        when {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .semantics { testTagsAsResourceId = true }
+        ) {
+            when {
             showSplash || localPrefsNullable == null -> {
                 SplashScreen(
                     language = localPrefs.language,
@@ -253,6 +260,7 @@ fun AppRoot() {
                         scope.launch { prefsStore.setGuestModeActive(false) }
                     }
                 )
+            }
             }
         }
     }
@@ -573,7 +581,9 @@ fun DolilMainScaffold(
                         DolilExtendedAddFab(
                             language = preferences.language,
                             onClick = { navigateToAddDeed() },
-                            modifier = Modifier.tourTarget(tourTargets, TourTargetId.ADD_DEED_TAB)
+                            modifier = Modifier
+                                .testTag("add_deed_fab")
+                                .tourTarget(tourTargets, TourTargetId.ADD_DEED_TAB)
                         )
                     }
                 },
