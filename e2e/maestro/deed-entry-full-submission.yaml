@@ -112,7 +112,11 @@ appId: com.dolil.onushodan
 - inputText: "E2E-FULL-2026-01"
 - assertNotVisible:
     text: "Please enter the deed number."
-# Deed number and year are side by side in the same visible row.
+# Dismissing the number field's IME with Enter (not Back) restores the
+# LazyColumn viewport so the adjacent year field remains available to Maestro.
+- pressKey: Enter
+- assertVisible:
+    id: entry_deed_year
 - tapOn:
     id: entry_deed_year
 - eraseText: 4
