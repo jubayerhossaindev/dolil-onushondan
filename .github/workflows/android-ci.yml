@@ -35,6 +35,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ~/.m2/repository/org/robolectric
             !~/.gradle/caches/build-cache-1
           key: ${{ runner.os }}-jdk21-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/gradle-wrapper.properties', 'buildSrc/**/Versions.kt', 'buildSrc/**/Dependencies.kt', 'gradle/*.versions.toml', '**/versions.properties') }}
           restore-keys: |
@@ -115,6 +116,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ~/.m2/repository/org/robolectric
             !~/.gradle/caches/build-cache-1
           key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
       - name: Save Gradle task output cache
