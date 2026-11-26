@@ -77,22 +77,9 @@ appId: com.dolil.onushodan
     timeout: 20000
 - tapOn:
     id: deed_type_HEBA
-- scrollUntilVisible:
-    element:
-      id: entry_deed_number
-    direction: DOWN
-    timeout: 20000
-- tapOn:
-    id: entry_deed_number
-- inputText: "E2E-FULL-2026-01"
-- assertNotVisible:
-    text: "Please enter the deed number."
-# Deed number and year are side by side in the same visible row.
-# Tap the year directly instead of issuing a scroll gesture over the dirty form.
-- tapOn:
-    id: entry_deed_year
-- eraseText: 4
-- inputText: "2026"
+# Exercise the date picker before opening the numeric IME. With the keyboard
+# open, Android resizes the LazyColumn viewport around the focused field, leaving
+# later date controls outside the scrollable viewport.
 - scrollUntilVisible:
     element:
       id: entry_reg_date_calendar_button
@@ -110,6 +97,26 @@ appId: com.dolil.onushodan
     id: registration_date_picker_dialog
 - tapOn:
     id: date_picker_confirm_button
+
+# Return to the required fields only after the date-picker journey is complete.
+- scrollUntilVisible:
+    element:
+      id: entry_deed_number
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: entry_deed_number
+- inputText: "E2E-FULL-2026-01"
+- assertNotVisible:
+    text: "Please enter the deed number."
+# Deed number and year are side by side in the same visible row.
+- tapOn:
+    id: entry_deed_year
+- eraseText: 4
+- inputText: "2026"
+# Complete the numeric IME's Enter/Done action. Unlike hideKeyboard (Back),
+# this does not trigger the dirty-form discard BackHandler.
+- pressKey: Enter
 - scrollUntilVisible:
     element:
       id: wizard_next_button
