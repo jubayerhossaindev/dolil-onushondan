@@ -28,6 +28,22 @@ if [[ "$boot_completed" != "1" ]]; then
   exit 3
 fi
 
+# Apply Android Emulator's documented cold-boot CPU mitigations before UI testing.
+# A longer screen timeout keeps the display available while avoiding aggressive
+# background work associated with an AC-powered, idle emulator.
+adb shell settings put system screen_off_timeout 214783647
+
+# Google documents this permission revocation to reduce launcher/home-screen
+# CPU usage from hotword detection on Google APIs system images.
+if adb shell pm list packages com.google.android.googlequicksearchbox | grep -q "package:com.google.android.googlequicksearchbox"; then
+  adb shell pm revoke com.google.android.googlequicksearchbox android.permission.RECORD_AUDIO || {
+    echo "WARNING: Could not revoke Google app microphone permission; continuing." >&2
+  }
+fi
+
+# Let first-boot system components settle before installing and launching the app.
+sleep 15
+
 adb install -r "$apk_path"
 adb shell pm path "$app_id" > "$results_dir/installed-package.txt"
 maestro --version > "$results_dir/maestro-version.txt"
