@@ -29,7 +29,7 @@ bash scripts/run-maestro-e2e.sh app/build/outputs/apk/debug/app-debug.apk
 
 ## CI evidence
 
-The `Android E2E` workflow uploads the Maestro output directory, emulator logcat, activity dump, final screenshot, and the CLI version for both passing and failing runs.
+The `Android E2E` workflow uploads the Maestro test output and debug-output directories, JUnit report, emulator logcat, activity dump, final screenshot, and CLI version for both passing and failing runs. On failure, it also captures the current Maestro accessibility hierarchy (with an Android UIAutomator fallback). The Add Deed wizard flow records screenshots before scrolling and after the lazy footer button is brought into view.
 
 ## Coverage boundaries
 
