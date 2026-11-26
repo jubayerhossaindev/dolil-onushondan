@@ -50,6 +50,16 @@ jobs:
         with:
           packages: 'platform-tools emulator system-images;android-35;google_apis;x86_64'
 
+      - name: Install Android Emulator Linux runtime library
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes libpulse0
+
+          ldconfig -p | grep -F 'libpulse.so.0'
+
       - name: Verify Android SDK emulator tools
         shell: bash
         run: |
@@ -61,7 +71,18 @@ jobs:
           command -v avdmanager
           test -x "$ANDROID_HOME/emulator/emulator"
 
+          qemu_binary="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-x86_64"
+          test -x "$qemu_binary"
+
           adb version
+          echo "Checking Android Emulator QEMU shared libraries:"
+          qemu_dependencies="$(ldd "$qemu_binary")"
+          printf '%s\\n' "$qemu_dependencies"
+          if grep -Fq 'not found' <<< "$qemu_dependencies"; then
+            echo "::error::Android Emulator QEMU has unresolved Linux shared-library dependencies."
+            exit 1
+          fi
+
           "$ANDROID_HOME/emulator/emulator" -version
 
       - name: Set up Gradle dependency and build cache
