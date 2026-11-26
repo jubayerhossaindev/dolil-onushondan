@@ -11,6 +11,11 @@ appId: com.dolil.onushodan
     id: onboarding_skip_button
 - assertVisible:
     id: access_selection_screen
+- scrollUntilVisible:
+    element:
+      id: access_guest_button
+    direction: DOWN
+    timeout: 20000
 - tapOn:
     id: access_guest_button
 - assertVisible:
