@@ -55,6 +55,58 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-jdk21-gradle-build-
 
+      - name: Prepare CI-only files (debug.keystore, google-services.json)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          # 1) Debug keystore expected at the repo root by signing config 'debugConfig'
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore debug.keystore \
+              -storepass android -keypass android \
+              -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+          # 2) google-services.json: real one from secret, else a dummy so the build works (also on fork PRs)
+          if [ -f app/google-services.json ]; then
+            echo "app/google-services.json already present"
+          elif [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            case "$GOOGLE_SERVICES_JSON" in
+              "{"*) printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json ;;
+              *)    printf '%s' "$GOOGLE_SERVICES_JSON" | base64 -d > app/google-services.json ;;
+            esac
+            echo "google-services.json written from secret"
+          else
+            echo "::warning::No GOOGLE_SERVICES_JSON secret; generating a dummy google-services.json (Firebase will not work at runtime)."
+            python3 - <<'PY'
+          import json, re, glob
+          pkg, suffix = None, ""
+          for f in glob.glob("app/build.gradle*"):
+              t = open(f).read()
+              m = re.search(r'applicationId\s*=?\s*["\']([^"\']+)["\']', t)
+              if m: pkg = pkg or m.group(1)
+              m = re.search(r'applicationIdSuffix\s*=?\s*["\']([^"\']+)["\']', t)
+              if m: suffix = suffix or m.group(1)
+              if not pkg:
+                  m = re.search(r'namespace\s*=?\s*["\']([^"\']+)["\']', t)
+                  if m: pkg = m.group(1)
+          if not pkg: raise SystemExit("Could not detect applicationId in app/build.gradle*")
+          names = [pkg] + ([pkg + suffix] if suffix else [])
+          clients = [{
+            "client_info": {"mobilesdk_app_id": "1:123456789012:android:%016x" % (i + 1),
+                            "android_client_info": {"package_name": n}},
+            "api_key": [{"current_key": "AIzaSyDummyKeyForCiOnly0000000000000000"}]
+          } for i, n in enumerate(names)]
+          json.dump({"project_info": {"project_number": "123456789012", "project_id": "ci-dummy",
+                                      "storage_bucket": "ci-dummy.appspot.com"},
+                     "client": clients, "configuration_version": "1"},
+                    open("app/google-services.json", "w"), indent=2)
+          print("Dummy google-services.json for", names)
+          PY
+          fi
+
       - name: Build debug APK
         run: |
           chmod +x ./gradlew
