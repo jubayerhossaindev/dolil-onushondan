@@ -30,6 +30,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -62,14 +65,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -77,6 +85,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -116,6 +125,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Calendar
 import java.util.TimeZone
+import kotlinx.coroutines.launch
 
 private data class EntryFormSnapshot(
     val officeId: String,
@@ -284,6 +294,11 @@ fun DeedEntryScreen(
     var grantees by remember(initialDeed?.id) { mutableStateOf(initialGrantees) }
     var parcels by remember(initialDeed?.id) { mutableStateOf(initialParcels) }
     var deedNotes by remember(initialDeed?.id) { mutableStateOf(initialDeed?.notes.orEmpty()) }
+
+    val focusManager = LocalFocusManager.current
+    val deedYearFocusRequester = remember { FocusRequester() }
+    val deedYearBringIntoViewRequester = remember { BringIntoViewRequester() }
+    val focusCoroutineScope = rememberCoroutineScope()
 
     var currentStep by rememberSaveable(initialDeed?.id) { mutableIntStateOf(0) }
     var localStepErrors by remember(initialDeed?.id) { mutableStateOf<List<ValidationErrorCode>>(emptyList()) }
@@ -652,6 +667,10 @@ fun DeedEntryScreen(
                                             },
                                             testTag = "entry_deed_number",
                                             isError = deedNumberError,
+                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                            keyboardActions = KeyboardActions(
+                                                onNext = { deedYearFocusRequester.requestFocus() }
+                                            ),
                                             modifier = Modifier.weight(1.2f)
                                         )
                                         DolilOutlinedField(
@@ -669,8 +688,24 @@ fun DeedEntryScreen(
                                             },
                                             testTag = "entry_deed_year",
                                             isError = deedYearError,
-                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                            modifier = Modifier.weight(1f)
+                                            keyboardOptions = KeyboardOptions(
+                                                keyboardType = KeyboardType.Number,
+                                                imeAction = ImeAction.Done
+                                            ),
+                                            keyboardActions = KeyboardActions(
+                                                onDone = { focusManager.clearFocus() }
+                                            ),
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .focusRequester(deedYearFocusRequester)
+                                                .bringIntoViewRequester(deedYearBringIntoViewRequester)
+                                                .onFocusChanged { focusState ->
+                                                    if (focusState.isFocused) {
+                                                        focusCoroutineScope.launch {
+                                                            deedYearBringIntoViewRequester.bringIntoView()
+                                                        }
+                                                    }
+                                                }
                                         )
                                     }
 
