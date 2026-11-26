@@ -1,0 +1,65 @@
+appId: com.dolil.onushodan
+---
+# Executed repeatedly by run-maestro-responsive-matrix.sh after changing
+# emulator size, density, orientation, and system font scale with adb.
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: onboarding_screen
+- tapOn:
+    id: onboarding_skip_button
+- assertVisible:
+    id: access_selection_screen
+- scrollUntilVisible:
+    element:
+      id: access_guest_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: access_guest_button
+- assertVisible:
+    id: product_tour_overlay
+- tapOn:
+    id: tour_skip_button
+- assertVisible:
+    id: dashboard_screen
+- takeScreenshot: responsive_dashboard
+
+- tapOn:
+    id: nav_records
+- assertVisible:
+    id: records_screen
+- tapOn:
+    id: records_tab_drafts
+- assertVisible:
+    id: records_screen
+- tapOn:
+    id: nav_search
+- assertVisible:
+    id: search_screen
+- tapOn:
+    id: nav_profile
+- assertVisible:
+    id: profile_screen
+- takeScreenshot: responsive_profile
+
+- tapOn:
+    id: nav_home
+- assertVisible:
+    id: dashboard_screen
+- tapOn:
+    id: add_deed_fab
+- extendedWaitUntil:
+    visible:
+      id: deed_entry_screen
+    timeout: 20000
+- assertVisible:
+    id: deed_entry_screen
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: wizard_next_button
+- takeScreenshot: responsive_deed_entry
