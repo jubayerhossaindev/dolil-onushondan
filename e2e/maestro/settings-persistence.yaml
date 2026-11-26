@@ -1,0 +1,73 @@
+appId: com.dolil.onushodan
+---
+# Exercises guest-accessible settings and verifies persistence across process death.
+# Signed-in account and Drive settings require the configured Firebase test environment.
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: onboarding_screen
+- tapOn:
+    id: onboarding_skip_button
+- assertVisible:
+    id: access_selection_screen
+- scrollUntilVisible:
+    element:
+      id: access_guest_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: access_guest_button
+- assertVisible:
+    id: product_tour_overlay
+- tapOn:
+    id: tour_skip_button
+- assertVisible:
+    id: dashboard_screen
+- tapOn:
+    id: nav_profile
+- assertVisible:
+    id: profile_screen
+
+# Change the guest-visible preferences.
+- scrollUntilVisible:
+    element:
+      id: profile_lang_en
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: profile_lang_en
+- assertVisible:
+    text: "1. Appearance"
+- scrollUntilVisible:
+    element:
+      id: profile_theme_dark
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: profile_theme_dark
+- tapOn:
+    id: profile_dynamic_color_switch
+- takeScreenshot: guest_settings_before_restart
+
+# Destroy only the app process. Do not clear app data or DataStore preferences.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: dashboard_screen
+    timeout: 30000
+- tapOn:
+    id: nav_profile
+- assertVisible:
+    id: profile_screen
+- assertVisible:
+    text: "1. Appearance"
+- assertVisible:
+    text: "2. Language & Guide"
+- assertVisible:
+    id: profile_lang_en
+- assertVisible:
+    id: profile_theme_dark
+- assertVisible:
+    id: profile_dynamic_color_switch
+- takeScreenshot: guest_settings_after_restart
