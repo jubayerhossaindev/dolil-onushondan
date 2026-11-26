@@ -51,6 +51,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-jdk21-gradle-build-
 
+      - name: Install Maestro CLI
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          export PATH="$HOME/.maestro/bin:$PATH"
+          if [ -x "$HOME/.maestro/bin/maestro" ]; then
+            sudo ln -sf "$HOME/.maestro/bin/maestro" /usr/local/bin/maestro
+          fi
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          maestro --version
+
       - name: Enable KVM group permissions
         run: |
           if [ -e /dev/kvm ]; then
@@ -70,7 +80,11 @@ jobs:
           arch: x86_64
           disable-animations: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: maestro test .maestro/
+          script: |
+            export PATH="$HOME/.maestro/bin:/usr/local/bin:$PATH"
+            command -v maestro
+            maestro --version
+            maestro test .maestro/
 
       - name: Save Gradle dependencies and wrapper cache
         if: always() && steps.gradle-cache.outputs.cache-hit != 'true'
