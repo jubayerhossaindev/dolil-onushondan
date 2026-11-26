@@ -151,11 +151,21 @@ printf 'no\n' | "$avdmanager" create avd \
 
 avd_config="$ANDROID_AVD_HOME/$avd_name.avd/config.ini"
 [[ -f "$avd_config" ]] || fail "AVD configuration was not created: $avd_config"
-if grep -q '^hw.cpu.ncore=' "$avd_config"; then
-  sed -i 's/^hw.cpu.ncore=.*/hw.cpu.ncore=2/' "$avd_config"
-else
-  printf '\nhw.cpu.ncore=2\n' >> "$avd_config"
-fi
+set_avd_property() {
+  local property="$1"
+  local value="$2"
+
+  if grep -q "^$property=" "$avd_config"; then
+    sed -i "s|^$property=.*|$property=$value|" "$avd_config"
+  else
+    printf '\n%s=%s\n' "$property" "$value" >> "$avd_config"
+  fi
+}
+
+set_avd_property "hw.cpu.ncore" "2"
+# Keep the guest ADB transport closed until Android has completed its boot.
+# This avoids exposing the host to the early boot-time adbd restart window.
+set_avd_property "test.delayAdbTillBootComplete" "1"
 printf '%s\n' "$avd_config" > "$results_dir/avd-config-path.txt"
 cp "$avd_config" "$results_dir/avd-config.ini"
 
@@ -166,7 +176,8 @@ emulator_args=(
   -accel "$accel_mode"
   -no-window
   -gpu swiftshader_indirect
-  -no-snapshot
+  # Disable snapshot storage itself, not just automatic Quick Boot save/load.
+  -no-snapstorage
   -noaudio
   -no-boot-anim
   -camera-back none
@@ -290,12 +301,21 @@ wait_for_adb_stable() {
 }
 
 recover_adb_transport() {
-  log "Requesting reconnection of offline ADB transports."
-  adb reconnect offline > "$results_dir/adb-reconnect.txt" 2>&1 || true
-  timeout 180s adb -s "$serial" wait-for-device || {
-    log "ADB did not return to the device state after reconnect."
+  log "Restarting the host ADB server to discard stale emulator transports."
+  adb devices -l > "$results_dir/adb-devices-before-restart.txt" 2>&1 || true
+  adb kill-server > "$results_dir/adb-server-restart.txt" 2>&1 || true
+  adb start-server >> "$results_dir/adb-server-restart.txt" 2>&1 || {
+    log "Host ADB server did not restart."
     return 1
   }
+
+  timeout 180s adb -s "$serial" wait-for-device || {
+    adb devices -l > "$results_dir/adb-devices-after-restart-failure.txt" 2>&1 || true
+    log "ADB did not return to the device state after the host server restart."
+    return 1
+  }
+
+  adb devices -l > "$results_dir/adb-devices-after-restart.txt" 2>&1 || true
   wait_for_adb_stable 240 30
 }
 
