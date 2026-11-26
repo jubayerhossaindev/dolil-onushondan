@@ -308,6 +308,7 @@ private fun DolilSessionShell(
                     authEmail = email,
                     authDisplayName = displayName,
                     isGuestMode = isGuestMode,
+                    initialPreferences = initialPreferences,
                     isEmailVerifiedInitial = isEmailVerified,
                     authProviderIds = providerIds,
                     appContext = appContext,
