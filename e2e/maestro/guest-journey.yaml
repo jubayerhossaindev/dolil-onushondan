@@ -39,7 +39,7 @@ appId: com.dolil.onushodan
     id: record_card_demo-deed-1
 - assertVisible:
     id: deed_details_screen
-- pressKey: back
+- pressKey: BACK
 - assertVisible:
     id: search_screen
 
@@ -70,21 +70,21 @@ appId: com.dolil.onushodan
     id: quick_action_persons
 - assertVisible:
     id: persons_directory_screen
-- pressKey: back
+- pressKey: BACK
 - assertVisible:
     id: dashboard_screen
 - tapOn:
     id: quick_action_land
 - assertVisible:
     id: land_directory_screen
-- pressKey: back
+- pressKey: BACK
 - assertVisible:
     id: dashboard_screen
 - tapOn:
     id: quick_action_guide
 - assertVisible:
     id: user_guide_screen
-- pressKey: back
+- pressKey: BACK
 - assertVisible:
     id: dashboard_screen
 
