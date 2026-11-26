@@ -24,6 +24,25 @@ appId: com.dolil.onushodan
 - assertVisible:
     id: dashboard_screen
 
+# Use English labels for deterministic review/calculation assertions.
+- tapOn:
+    id: nav_profile
+- assertVisible:
+    id: profile_screen
+- scrollUntilVisible:
+    element:
+      id: profile_lang_en
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: profile_lang_en
+- assertVisible:
+    text: "1. Appearance"
+- tapOn:
+    id: nav_home
+- assertVisible:
+    id: dashboard_screen
+
 - tapOn:
     id: add_deed_fab
 - extendedWaitUntil:
@@ -65,8 +84,24 @@ appId: com.dolil.onushodan
       id: deed_type_HEBA
     direction: UP
     timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: deed_type_HEBA
+    direction: UP
+    timeout: 20000
 - tapOn:
     id: deed_type_HEBA
+- scrollUntilVisible:
+    element:
+      id: entry_reg_date_calendar_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: entry_reg_date_calendar_button
+- assertVisible:
+    id: registration_date_picker_dialog
+- tapOn:
+    id: date_picker_cancel_button
 - tapOn:
     id: entry_reg_date_calendar_button
 - assertVisible:
