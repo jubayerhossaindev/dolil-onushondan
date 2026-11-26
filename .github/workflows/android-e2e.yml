@@ -134,6 +134,28 @@ jobs:
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
           "$HOME/.maestro/bin/maestro" --version
 
+      - name: Enable KVM for Android emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -e /dev/kvm ]]; then
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+          fi
+
+          if [[ -r /dev/kvm && -w /dev/kvm ]]; then
+            echo "KVM is available to the runner:"
+            ls -l /dev/kvm
+          else
+            echo "::warning::KVM is unavailable to this runner; enabling the Android Emulator's explicit TCG fallback."
+            echo "ANDROID_I_WANT_MY_TCG=yes" >> "$GITHUB_ENV"
+          fi
+
+          df -h /
+          df -h "$ANDROID_HOME" 2>/dev/null || true
+
       - name: Run Maestro on Android emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
