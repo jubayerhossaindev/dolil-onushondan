@@ -42,71 +42,35 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-jdk21-gradle-
 
-      - name: Restore Gradle task output cache
+      - name: Restore Gradle build cache
         id: gradle-build-cache
         uses: actions/cache/restore@v6.1.0
         with:
           path: ~/.gradle/caches/build-cache-1
-          key: ${{ runner.os }}-jdk21-gradle-build-${{ github.sha }}
+          key: ${{ runner.os }}-jdk21-gradle-build-${{ hashFiles('**/*.gradle*', '**/gradle.properties', 'gradle/*.versions.toml', '**/versions.properties') }}
           restore-keys: |
             ${{ runner.os }}-jdk21-gradle-build-
 
-      - name: Prepare Gradle task output cache directory
-        run: mkdir -p ~/.gradle/caches/build-cache-1
-
-      - name: Generate debug keystore
+      - name: Enable KVM group permissions
         run: |
-          if [[ ! -f debug.keystore ]]; then
-            keytool -genkeypair -v \
-              -keystore debug.keystore \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US"
+          if [ -e /dev/kvm ]; then
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+            ls -la /dev/kvm
+          else
+            echo "KVM device node /dev/kvm not found; emulator will use TCG fallback."
           fi
 
-      - name: Create isolated Firebase configuration
-        run: |
-          cat > app/google-services.json <<'EOF'
-          {
-            "project_info": {
-              "project_number": "000000000000",
-              "project_id": "dummy-project",
-              "storage_bucket": "dummy-project.appspot.com"
-            },
-            "client": [
-              {
-                "client_info": {
-                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
-                  "android_client_info": {
-                    "package_name": "com.dolil.onushodan"
-                  }
-                },
-                "oauth_client": [],
-                "api_key": [
-                  {
-                    "current_key": "dummy-key"
-                  }
-                ],
-                "services": {
-                  "appinvite_service": {
-                    "other_platform_oauth_client": []
-                  }
-                }
-              }
-            ],
-            "configuration_version": "1"
-          }
-          EOF
-
-      - name: Build debug APK
-        run: |
-          chmod +x gradlew
-          ./gradlew --build-cache --no-configuration-cache --stacktrace --warning-mode all \
-            :app:assembleDebug
+      - name: Run Maestro E2E on Android 35
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: default
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: maestro test .maestro/
 
       - name: Save Gradle dependencies and wrapper cache
         if: always() && steps.gradle-cache.outputs.cache-hit != 'true'
@@ -118,60 +82,9 @@ jobs:
             !~/.gradle/caches/build-cache-1
           key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
 
-      - name: Save Gradle task output cache
+      - name: Save Gradle build cache
         if: always() && steps.gradle-build-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6.1.0
         with:
           path: ~/.gradle/caches/build-cache-1
           key: ${{ steps.gradle-build-cache.outputs.cache-primary-key }}
-
-      - name: Install pinned Maestro CLI
-        env:
-          MAESTRO_VERSION: 2.12.1
-        run: |
-          export MAESTRO_VERSION
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-          "$HOME/.maestro/bin/maestro" --version
-
-      - name: Enable KVM for Android emulator
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [[ -e /dev/kvm ]]; then
-            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null
-            sudo udevadm control --reload-rules
-            sudo udevadm trigger --name-match=kvm
-          fi
-
-          if [[ -r /dev/kvm && -w /dev/kvm ]]; then
-            echo "KVM is available to the runner:"
-            ls -l /dev/kvm
-          else
-            echo "::warning::KVM is unavailable to this runner; enabling the Android Emulator's explicit TCG fallback."
-            echo "ANDROID_I_WANT_MY_TCG=yes" >> "$GITHUB_ENV"
-          fi
-
-          df -h /
-          df -h "$ANDROID_HOME" 2>/dev/null || true
-
-      - name: Run Maestro on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2.38.0
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_5
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
-          script: bash scripts/run-maestro-e2e.sh app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Upload Maestro evidence
-        if: always()
-        uses: actions/upload-artifact@v7.0.2
-        with:
-          name: android-e2e-evidence-${{ github.run_id }}
-          path: build/maestro-results/
-          if-no-files-found: warn
-          retention-days: 14
