@@ -87,16 +87,19 @@ appId: com.dolil.onushodan
     timeout: 20000
 - tapOn:
     id: entry_reg_date_calendar_button
+# Material3 DatePickerDialog renders in a separate Android dialog window.
+# Its Compose testTags are not exposed as resource IDs in the runtime hierarchy,
+# so assert and tap the visible, localized button labels instead.
 - assertVisible:
-    id: registration_date_picker_dialog
+    text: "Select date"
 - tapOn:
-    id: date_picker_cancel_button
+    text: "Cancel"
 - tapOn:
     id: entry_reg_date_calendar_button
 - assertVisible:
-    id: registration_date_picker_dialog
+    text: "Select date"
 - tapOn:
-    id: date_picker_confirm_button
+    text: "Select"
 
 # Return to the required fields only after the date-picker journey is complete.
 - scrollUntilVisible:
