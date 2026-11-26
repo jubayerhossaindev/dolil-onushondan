@@ -71,18 +71,11 @@ jobs:
           command -v avdmanager
           test -x "$ANDROID_HOME/emulator/emulator"
 
-          qemu_binary="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-x86_64"
-          test -x "$qemu_binary"
+          test -x "$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-x86_64"
 
           adb version
-          echo "Checking Android Emulator QEMU shared libraries:"
-          qemu_dependencies="$(ldd "$qemu_binary")"
-          printf '%s\\n' "$qemu_dependencies"
-          if grep -Fq 'not found' <<< "$qemu_dependencies"; then
-            echo "::error::Android Emulator QEMU has unresolved Linux shared-library dependencies."
-            exit 1
-          fi
-
+          # Use the official emulator launcher for runtime validation. It prepares
+          # LD_LIBRARY_PATH for the bundled QEMU/Qt libraries before starting QEMU.
           "$ANDROID_HOME/emulator/emulator" -version
 
       - name: Set up Gradle dependency and build cache
