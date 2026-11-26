@@ -1,24 +1,37 @@
 # Android E2E QA
 
-This suite runs the Android app on a GitHub-hosted Android emulator and drives the rendered UI with Maestro.
+The Android QA suite combines real-emulator Maestro journeys, Compose/Robolectric UI tests, and deterministic repository/domain integration tests. A tap is not considered proof of functionality unless the expected state or persisted result is asserted.
 
-## Current automated journey
+## Real-emulator Maestro journeys
 
-The initial guest-mode journey validates:
+The CI workflow executes every flow in `e2e/maestro/` against a fresh Android 35 Google APIs emulator:
 
-- First-run onboarding and access selection.
-- Local guest sandbox entry and the first-run product-tour dismissal.
-- Search for a known seeded demo deed and opening its details.
-- Primary navigation: Home, Search, Records, and Profile.
-- Records tabs available to the guest role: All, Drafts, and Archive. The approval-only Pending tab is intentionally absent for `PUBLIC_USER` guest accounts.
-- Secondary destinations: Persons, Land, and User Guide.
-- Opening the Add Deed wizard.
+- `guest-journey.yaml`: first-run onboarding, guest entry, seeded deed search/details, primary navigation, record tabs, secondary directories, user guide, and Add Deed wizard reachability.
+- Additional feature flows are added to cover Deed Entry, validation, Draft persistence, complete submission, search/filter/sort, directory interactions, and app restart.
+- Each flow starts from a deterministic app state. Flows that verify persistence intentionally restart the app without clearing application data.
 
-The flow uses stable Compose test tags exposed as Android resource IDs. The UI labels and interactions remain the source of truth; tags are selectors, not proof that the underlying business action succeeded.
+The CI runner creates one AVD and launches it once per job. It uses `emulator -accel-check` to verify KVM when available, explicitly configures TCG only when KVM cannot be used, and starts with `-no-snapshot` so no launcher dialogs or prior device state can be restored. It does not send a synthetic MENU key to the launcher after boot.
+
+## Other automated application coverage
+
+`./gradlew :app:testDebugUnitTest` runs the JVM/Robolectric suite. Coverage includes:
+
+- Compose screen behavior for onboarding, access, dashboard, search/filter/sort, records/details, deed wizard, profile/settings, guide/tour, tablet list/detail layouts, and date picker interactions.
+- Deed validation boundaries, Bangla digit normalization, duplicate detection, land-unit conversions, role/permission matrices, and record sorting/pagination.
+- Room database save/update/archive/restore, audit-log and pending-sync transactions, guest isolation, persistence, and conflict handling.
+- Portable JSON export/import integrity, checksum/tamper rejection, PDF generation, print adapter behavior, encryption, Drive backup/restore, account isolation, device retirement, and sync-worker authorization/error paths.
+
+The Android CI artifact contains build/test/lint reports. The Android E2E artifact contains Maestro command output, JUnit XML, emulator console and acceleration diagnostics, AVD configuration, screenshots, activity/window state, logcat, preflight hierarchy, and failure hierarchy.
+
+## Data and external-service boundaries
+
+The app uses Firebase Authentication for identity. Deed data is stored locally in Room and can be backed up to the user's personal Google Drive; the Android app does not use Firestore for deed storage. Guest mode intentionally uses a separate Room database and never queues cloud sync.
+
+The CI guest flows validate local Room persistence and complete local deed lifecycle operations without production credentials. Google Credential Manager/OAuth and live Google Drive network operations are not faked as successful: their application logic is exercised with deterministic auth/Drive gateways and storage test doubles in JVM/Robolectric tests. A real production-account sign-in or live personal-Drive round trip requires configured, isolated test credentials and is reported separately.
 
 ## Local execution
 
-Build the debug APK with the same CI-only Firebase config and debug keystore preparation used by `.github/workflows/android-ci.yml`, start an Android emulator, then run:
+Build the debug APK using the same CI-only Firebase configuration and debug keystore preparation used by `.github/workflows/android-ci.yml`, install Maestro CLI 2.12.1, then run:
 
 ```bash
 export MAESTRO_VERSION=2.12.1
@@ -26,13 +39,3 @@ curl -fsSL "https://get.maestro.mobile.dev" | bash
 export PATH="$HOME/.maestro/bin:$PATH"
 bash scripts/run-maestro-e2e.sh app/build/outputs/apk/debug/app-debug.apk
 ```
-
-## CI evidence
-
-The `Android E2E` workflow uploads the Maestro test output and debug-output directories, JUnit report, emulator logcat, activity dump, final screenshot, and CLI version for both passing and failing runs. On failure, it also captures the current Maestro accessibility hierarchy (with an Android UIAutomator fallback). The Add Deed wizard flow records screenshots before scrolling and after the lazy footer button is brought into view.
-
-## Coverage boundaries
-
-This is an initial deterministic end-to-end baseline, not a claim of exhaustive coverage. It currently exercises the local guest sandbox. Live Google OAuth, Firebase account creation, Google Drive OAuth/backup/restore, real printer hardware, and physical-device/OEM-specific behaviour require isolated test credentials, service fixtures, and/or physical-device infrastructure. Add explicit assertions and flows for each additional workflow before treating it as release-covered.
-
-A control is not considered tested merely because it was tapped: critical actions must assert their expected result and relevant persisted state.

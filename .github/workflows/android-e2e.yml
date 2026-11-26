@@ -21,25 +21,19 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Maestro: pinned (the install script otherwise fetches the latest release).
   MAESTRO_VERSION: "2.12.1"
-  # Maestro docs: default driver start-up wait is 15s on Android, too short for CI emulators.
   MAESTRO_DRIVER_STARTUP_TIMEOUT: "300000"
   MAESTRO_CLI_NO_ANALYTICS: "1"
-  # Same emulator profile as android-release.yml
-  EMU_API: "35"
-  EMU_TARGET: google_apis
-  EMU_ARCH: x86_64
-  EMU_PROFILE: pixel_5
-  # The repo's own runner script writes its evidence here (see android-release.yml)
-  RESULTS_DIR: build/maestro-results
+  ANDROID_API_LEVEL: "35"
+  ANDROID_TARGET: "google_apis"
+  ANDROID_ARCH: "x86_64"
+  ANDROID_DEVICE_PROFILE: "pixel_5"
 
 jobs:
   maestro-e2e:
     name: Maestro UI E2E (Android 35)
-    # Pinned image: `ubuntu-latest` migrated to Ubuntu 26.04 (Oct 19 - Nov 19, 2026).
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -51,9 +45,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # Gradle dependency + build cache (restores at start, saves at end).
-      # Only `main` writes the cache; pull requests read it.
-      - name: Set up Gradle (dependency + build cache)
+      - name: Set up Gradle dependency and build cache
         uses: gradle/actions/setup-gradle@v5
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
@@ -62,7 +54,6 @@ jobs:
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
-          # 1) Debug keystore expected at the repo root by signing config 'debugConfig'
           if [ ! -f debug.keystore ]; then
             keytool -genkeypair -v \
               -keystore debug.keystore \
@@ -72,7 +63,6 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
 
-          # 2) google-services.json: real one from secret, else a dummy so the build works (also on fork PRs)
           if [ -f app/google-services.json ]; then
             echo "app/google-services.json already present"
           elif [ -n "$GOOGLE_SERVICES_JSON" ]; then
@@ -82,31 +72,27 @@ jobs:
             esac
             echo "google-services.json written from secret"
           else
-            echo "::warning::No GOOGLE_SERVICES_JSON secret; generating a dummy google-services.json (Firebase will not work at runtime)."
+            echo "::warning::No GOOGLE_SERVICES_JSON secret; generating a dummy google-services.json (Firebase runtime services are unavailable in this CI job)."
             python3 - <<'PY'
-          import json, re, glob
-          pkg, suffix = None, ""
-          for f in glob.glob("app/build.gradle*"):
-              t = open(f).read()
-              m = re.search(r'applicationId\s*=?\s*["\']([^"\']+)["\']', t)
-              if m: pkg = pkg or m.group(1)
-              m = re.search(r'applicationIdSuffix\s*=?\s*["\']([^"\']+)["\']', t)
-              if m: suffix = suffix or m.group(1)
-              if not pkg:
-                  m = re.search(r'namespace\s*=?\s*["\']([^"\']+)["\']', t)
-                  if m: pkg = m.group(1)
-          if not pkg: raise SystemExit("Could not detect applicationId in app/build.gradle*")
-          names = [pkg] + ([pkg + suffix] if suffix else [])
-          clients = [{
-            "client_info": {"mobilesdk_app_id": "1:123456789012:android:%016x" % (i + 1),
-                            "android_client_info": {"package_name": n}},
-            "api_key": [{"current_key": "AIzaSyDummyKeyForCiOnly0000000000000000"}]
-          } for i, n in enumerate(names)]
-          json.dump({"project_info": {"project_number": "123456789012", "project_id": "ci-dummy",
-                                      "storage_bucket": "ci-dummy.appspot.com"},
-                     "client": clients, "configuration_version": "1"},
-                    open("app/google-services.json", "w"), indent=2)
-          print("Dummy google-services.json for", names)
+          import json
+          package_name = "com.dolil.onushodan"
+          payload = {
+              "project_info": {
+                  "project_number": "123456789012",
+                  "project_id": "ci-dummy",
+                  "storage_bucket": "ci-dummy.appspot.com",
+              },
+              "client": [{
+                  "client_info": {
+                      "mobilesdk_app_id": "1:123456789012:android:0000000000000001",
+                      "android_client_info": {"package_name": package_name},
+                  },
+                  "api_key": [{"current_key": "AIzaSyDummyKeyForCiOnly0000000000000000"}],
+              }],
+              "configuration_version": "1",
+          }
+          with open("app/google-services.json", "w", encoding="utf-8") as f:
+              json.dump(payload, f, indent=2)
           PY
           fi
 
@@ -114,8 +100,8 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew --build-cache --configuration-cache assembleDebug
-          test -f app/build/outputs/apk/debug/app-debug.apk
-          ls -l app/build/outputs/apk/debug/
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
 
       - name: Restore Maestro CLI cache
         uses: actions/cache@v6.1.0
@@ -123,98 +109,35 @@ jobs:
           path: ~/.maestro
           key: maestro-${{ runner.os }}-${{ env.MAESTRO_VERSION }}
 
-      - name: Install Maestro CLI
+      - name: Install pinned Maestro CLI
         run: |
           if [ ! -x "$HOME/.maestro/bin/maestro" ]; then
             curl -fsSL "https://get.maestro.mobile.dev" | bash
           fi
-          sudo ln -sf "$HOME/.maestro/bin/maestro" /usr/local/bin/maestro
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
           "$HOME/.maestro/bin/maestro" --version
 
-      # GitHub now schedules Linux runners on Azure and AWS (changelog 2026-10-28) and
-      # nested virtualization is not guaranteed, so detect KVM instead of assuming it.
-      # Without KVM the emulator needs ANDROID_I_WANT_MY_TCG=yes (same as android-release.yml).
-      - name: Enable KVM group permissions
-        id: kvm
-        run: |
-          echo "Image: $(. /etc/os-release && echo "$PRETTY_NAME") | CPUs: $(nproc) | virt flags: $(grep -c -E 'vmx|svm' /proc/cpuinfo || true)"
-          if [ -e /dev/kvm ]; then
-            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-            sudo udevadm control --reload-rules
-            sudo udevadm trigger --name-match=kvm
-            sleep 1
-          fi
-          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
-            ls -la /dev/kvm
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::KVM is unavailable to this runner; enabling the Android Emulator's explicit TCG fallback."
-            echo "ANDROID_I_WANT_MY_TCG=yes" >> "$GITHUB_ENV"
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          fi
-          df -h /
+      # The emulator is created and booted exactly once by the repository runner script.
+      # Do not use android-emulator-runner here: its post-boot KEYCODE_MENU injection
+      # caused a Pixel Launcher ANR on this headless runner and an AVD snapshot then
+      # carried that system dialog into the actual E2E session.
+      - name: Run full Maestro E2E suite on a fresh Android 35 emulator
+        run: bash scripts/run-maestro-e2e.sh app/build/outputs/apk/debug/app-debug.apk
 
-      # AVD snapshot cache (official emulator-runner pattern). Only useful with KVM.
-      - name: Restore AVD cache
-        if: steps.kvm.outputs.available == 'true'
-        id: avd-cache
-        uses: actions/cache@v6.1.0
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ runner.os }}-api${{ env.EMU_API }}-${{ env.EMU_ARCH }}-${{ env.EMU_TARGET }}-${{ env.EMU_PROFILE }}-v3
-
-      - name: Create AVD and snapshot (cache miss only)
-        if: steps.kvm.outputs.available == 'true' && steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.EMU_API }}
-          target: ${{ env.EMU_TARGET }}
-          arch: ${{ env.EMU_ARCH }}
-          profile: ${{ env.EMU_PROFILE }}
-          force-avd-creation: false
-          disable-animations: false
-          disable-linux-hw-accel: false
-          emulator-boot-timeout: 1200
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
-          script: echo "AVD snapshot generated for caching."
-
-      # The repo's own runner script installs the APK, runs e2e/maestro/guest-journey.yaml
-      # and writes diagnostics to build/maestro-results/ (same call as android-release.yml).
-      - name: Run Maestro E2E on Android 35
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.EMU_API }}
-          target: ${{ env.EMU_TARGET }}
-          arch: ${{ env.EMU_ARCH }}
-          profile: ${{ env.EMU_PROFILE }}
-          force-avd-creation: false
-          disable-animations: true
-          # Official input: explicitly choose hardware vs software acceleration.
-          disable-linux-hw-accel: ${{ steps.kvm.outputs.available == 'true' && 'false' || 'true' }}
-          emulator-boot-timeout: 1200
-          emulator-options: ${{ steps.kvm.outputs.available == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none' || '-no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none' }}
-          script: bash scripts/run-maestro-e2e.sh app/build/outputs/apk/debug/app-debug.apk
-
-      # Logs need a login to read; annotations do not. Surface the key lines there.
       - name: Surface failure details
         if: failure()
         run: |
-          d="$RESULTS_DIR"
-          echo "Contents of $d:"; ls -la "$d" 2>&1 | head -n 40
-          msg=""
-          for f in "$d"/*.log "$d"/*.txt; do
-            [ -f "$f" ] || continue
-            echo "::group::$(basename "$f") (last 60 lines)"; tail -n 60 "$f"; echo "::endgroup::"
-            msg+="--- $(basename "$f") ---"$'\n'"$(tail -n 12 "$f" | cut -c1-220)"$'\n'
-          done
-          if [ -z "$msg" ]; then
-            msg="No log files in $d. Listing: $(ls -la "$d" 2>&1 | head -n 12 | tr '\n' ' ')"
+          d="build/maestro-results"
+          echo "Evidence directory: $d"
+          if [ -d "$d" ]; then
+            find "$d" -maxdepth 4 -type f -printf '%p (%s bytes)\n' | sort
+            for f in "$d"/*.txt "$d"/*.log; do
+              [ -f "$f" ] || continue
+              echo "::group::$(basename "$f")"
+              tail -n 80 "$f"
+              echo "::endgroup::"
+            done
           fi
-          enc="$(printf '%s' "$msg" | sed -e 's/\x1b\[[0-9;]*[A-Za-z]//g' -e 's/\r//g' -e 's/%/%25/g' | awk '{printf "%s%%0A",$0}')"
-          echo "::error title=Maestro E2E failure details::${enc:0:3500}"
 
       - name: Upload E2E evidence
         if: always()
@@ -225,4 +148,4 @@ jobs:
             build/maestro-results/
             ~/.maestro/tests/
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 14

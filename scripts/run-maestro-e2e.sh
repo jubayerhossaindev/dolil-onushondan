@@ -1,48 +1,236 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 app_id="com.dolil.onushodan"
 apk_path="${1:-app/build/outputs/apk/debug/app-debug.apk}"
-results_dir="build/maestro-results"
+results_dir="${RESULTS_DIR:-build/maestro-results}"
+api_level="${ANDROID_API_LEVEL:-35}"
+target="${ANDROID_TARGET:-google_apis}"
+arch="${ANDROID_ARCH:-x86_64}"
+device_profile="${ANDROID_DEVICE_PROFILE:-pixel_5}"
+avd_name="maestro-api-${api_level}"
+emulator_port="${EMULATOR_PORT:-5554}"
+boot_timeout_seconds="${EMULATOR_BOOT_TIMEOUT_SECONDS:-1200}"
 
 mkdir -p "$results_dir"
 
-if [[ ! -f "$apk_path" ]]; then
-  echo "ERROR: APK not found: $apk_path" >&2
-  exit 2
+emulator_pid=""
+evidence_captured="false"
+test_status=0
+
+log() {
+  printf '[%s] %s\n' "$(date --iso-8601=seconds)" "$*"
+}
+
+fail() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
+
+resolve_sdk_tool() {
+  local tool_name="$1"
+  local candidate=""
+
+  if command -v "$tool_name" >/dev/null 2>&1; then
+    command -v "$tool_name"
+    return 0
+  fi
+
+  if [[ -n "${ANDROID_HOME:-}" ]]; then
+    for candidate in "$ANDROID_HOME"/cmdline-tools/*/bin/"$tool_name"; do
+      if [[ -x "$candidate" ]]; then
+        printf '%s\n' "$candidate"
+        return 0
+      fi
+    done
+  fi
+
+  return 1
+}
+
+capture_evidence() {
+  local serial="emulator-$emulator_port"
+
+  if ! adb devices | grep -Fq "$serial"; then
+    return 0
+  fi
+
+  adb -s "$serial" exec-out screencap -p > "$results_dir/final-screen.png" 2>/dev/null || true
+  adb -s "$serial" shell dumpsys activity activities > "$results_dir/activities.txt" 2>&1 || true
+  adb -s "$serial" shell dumpsys window windows > "$results_dir/window-state.txt" 2>&1 || true
+  adb -s "$serial" shell dumpsys activity lastanr > "$results_dir/last-anr.txt" 2>&1 || true
+  adb -s "$serial" logcat -b all -d -t 30000 > "$results_dir/logcat.txt" 2>&1 || true
+  adb -s "$serial" logcat -b events -d -t 12000 > "$results_dir/events-logcat.txt" 2>&1 || true
+
+  evidence_captured="true"
+}
+
+cleanup() {
+  local status="$?"
+  trap - EXIT
+
+  if [[ "$evidence_captured" != "true" ]]; then
+    capture_evidence
+  fi
+
+  if [[ -n "$emulator_pid" ]] && kill -0 "$emulator_pid" 2>/dev/null; then
+    adb -s "emulator-$emulator_port" emu kill >/dev/null 2>&1 || kill "$emulator_pid" 2>/dev/null || true
+    wait "$emulator_pid" 2>/dev/null || true
+  fi
+
+  exit "$status"
+}
+trap cleanup EXIT
+
+[[ -f "$apk_path" ]] || fail "APK not found: $apk_path"
+[[ -n "${ANDROID_HOME:-}" ]] || fail "ANDROID_HOME is not set."
+
+sdkmanager="$(resolve_sdk_tool sdkmanager)" || fail "Android sdkmanager was not found."
+avdmanager="$(resolve_sdk_tool avdmanager)" || fail "Android avdmanager was not found."
+emulator_bin="$ANDROID_HOME/emulator/emulator"
+[[ -x "$emulator_bin" ]] || fail "Android Emulator binary not found: $emulator_bin"
+
+log "Android SDK: $ANDROID_HOME"
+log "Emulator version: $("$emulator_bin" -version 2>&1 | head -n 1)"
+log "SDK Manager: $sdkmanager"
+log "AVD Manager: $avdmanager"
+
+# Install only the SDK packages required by this job; sdkmanager leaves already
+# installed packages untouched. The API/system image remain pinned by workflow env.
+system_image="system-images;android-$api_level;$target;$arch"
+installed_packages="$("$sdkmanager" --list_installed 2>&1)"
+missing_packages=()
+for package in platform-tools emulator "$system_image"; do
+  if ! grep -Fq "$package" <<< "$installed_packages"; then
+    missing_packages+=("$package")
+  fi
+done
+
+if (("${#missing_packages[@]}" > 0)); then
+  log "Installing missing Android SDK packages: ${missing_packages[*]}"
+  "$sdkmanager" --install "${missing_packages[@]}"
 fi
 
-adb wait-for-device
+# Configure KVM permissions when the hosted runner exposes /dev/kvm.
+if [[ -e /dev/kvm ]]; then
+  echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+    | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null
+  sudo udevadm control --reload-rules
+  sudo udevadm trigger --name-match=kvm
+  sleep 1
+fi
+
+accel_status=0
+"$emulator_bin" -accel-check > "$results_dir/acceleration-check.txt" 2>&1 || accel_status="$?"
+cat "$results_dir/acceleration-check.txt"
+
+if [[ -r /dev/kvm && -w /dev/kvm ]]; then
+  if [[ "$accel_status" -ne 0 ]] || ! grep -Eqi 'KVM.*installed and usable' "$results_dir/acceleration-check.txt"; then
+    fail "The runner exposes /dev/kvm but Android Emulator could not verify KVM acceleration."
+  fi
+  accel_mode="auto"
+  printf 'KVM acceleration verified by emulator -accel-check.\n' > "$results_dir/acceleration-mode.txt"
+else
+  export ANDROID_I_WANT_MY_TCG=yes
+  accel_mode="off"
+  printf 'KVM unavailable; emulator will use explicit TCG software emulation.\n' > "$results_dir/acceleration-mode.txt"
+fi
+
+export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
+mkdir -p "$ANDROID_AVD_HOME"
+
+# A fresh AVD plus -no-snapshot prevents Quick Boot from restoring stale system UI,
+# launcher ANR dialogs, app state, or user data from a previous emulator session.
+"$avdmanager" delete avd -n "$avd_name" >/dev/null 2>&1 || true
+printf 'no\n' | "$avdmanager" create avd \
+  --force \
+  --name "$avd_name" \
+  --package "$system_image" \
+  --device "$device_profile"
+
+avd_config="$ANDROID_AVD_HOME/$avd_name.avd/config.ini"
+[[ -f "$avd_config" ]] || fail "AVD configuration was not created: $avd_config"
+if grep -q '^hw.cpu.ncore=' "$avd_config"; then
+  sed -i 's/^hw.cpu.ncore=.*/hw.cpu.ncore=2/' "$avd_config"
+else
+  printf '\nhw.cpu.ncore=2\n' >> "$avd_config"
+fi
+printf '%s\n' "$avd_config" > "$results_dir/avd-config-path.txt"
+cp "$avd_config" "$results_dir/avd-config.ini"
+
+adb start-server
+emulator_args=(
+  -port "$emulator_port"
+  -avd "$avd_name"
+  -accel "$accel_mode"
+  -no-window
+  -gpu swiftshader_indirect
+  -no-snapshot
+  -noaudio
+  -no-boot-anim
+  -camera-back none
+  -camera-front none
+)
+
+log "Starting the only emulator session for this job."
+printf '%q ' "$emulator_bin" "${emulator_args[@]}" > "$results_dir/emulator-command.txt"
+printf '\n' >> "$results_dir/emulator-command.txt"
+"$emulator_bin" "${emulator_args[@]}" > "$results_dir/emulator-console.log" 2>&1 &
+emulator_pid="$!"
+
+serial="emulator-$emulator_port"
+timeout 180s adb -s "$serial" wait-for-device || fail "ADB did not connect to $serial."
 
 boot_completed=""
-for attempt in $(seq 1 60); do
-  boot_completed="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+attempt=0
+while ((attempt < boot_timeout_seconds)); do
+  boot_completed="$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
   if [[ "$boot_completed" == "1" ]]; then
     break
   fi
+  if ! kill -0 "$emulator_pid" 2>/dev/null; then
+    fail "Android Emulator exited before boot completed. See emulator-console.log."
+  fi
   sleep 2
+  attempt=$((attempt + 2))
 done
 
-if [[ "$boot_completed" != "1" ]]; then
-  echo "ERROR: Android emulator did not finish booting." >&2
-  exit 3
+[[ "$boot_completed" == "1" ]] || fail "Android Emulator did not complete boot within ${boot_timeout_seconds}s."
+log "Android Emulator boot completed."
+adb -s "$serial" shell getprop > "$results_dir/boot-properties.txt"
+adb -s "$serial" shell settings put system screen_off_timeout 214783647
+adb -s "$serial" shell settings put global window_animation_scale 0.0
+adb -s "$serial" shell settings put global transition_animation_scale 0.0
+adb -s "$serial" shell settings put global animator_duration_scale 0.0
+
+# Google documents this permission revocation as a way to reduce idle hotword CPU
+# work on Google APIs emulator images. It does not interact with the app under test.
+if adb -s "$serial" shell pm list packages com.google.android.googlequicksearchbox \
+  | grep -q 'package:com.google.android.googlequicksearchbox'; then
+  adb -s "$serial" shell pm revoke \
+    com.google.android.googlequicksearchbox android.permission.RECORD_AUDIO \
+    > "$results_dir/google-app-audio-permission.txt" 2>&1 || {
+      log "Google Search microphone permission was not granted/revocable; see diagnostic file."
+    }
 fi
 
-# Apply Android Emulator's documented cold-boot CPU mitigations before UI testing.
-# A longer screen timeout keeps the display available while avoiding aggressive
-# background work associated with an AC-powered, idle emulator.
-adb shell settings put system screen_off_timeout 214783647
-
-# Google documents this permission revocation to reduce launcher/home-screen
-# CPU usage from hotword detection on Google APIs system images.
-if adb shell pm list packages com.google.android.googlequicksearchbox | grep -q "package:com.google.android.googlequicksearchbox"; then
-  adb shell pm revoke com.google.android.googlequicksearchbox android.permission.RECORD_AUDIO || {
-    echo "WARNING: Could not revoke Google app microphone permission; continuing." >&2
-  }
-fi
-
-# Let first-boot system components settle before installing and launching the app.
+# Let first-boot system components settle. No key events are injected into the
+# launcher; Maestro will launch the target app directly.
 sleep 15
+adb -s "$serial" logcat -b events -d -t 12000 > "$results_dir/preflight-events-logcat.txt" 2>&1 || true
+adb -s "$serial" shell uiautomator dump /sdcard/preflight-hierarchy.xml \
+  > "$results_dir/preflight-hierarchy-dump.txt" 2>&1 || true
+adb -s "$serial" pull /sdcard/preflight-hierarchy.xml \
+  "$results_dir/preflight-hierarchy.xml" >/dev/null 2>&1 || true
+
+if grep -Eqi 'am_anr.*com\.google\.android\.apps\.nexuslauncher|ANR in com\.google\.android\.apps\.nexuslauncher' \
+  "$results_dir/preflight-events-logcat.txt"; then
+  fail "Pixel Launcher ANR was reported during emulator boot, before Maestro started. See preflight-events-logcat.txt."
+fi
+if grep -Eqi "Pixel Launcher isn't responding|android:id/aerr_wait" \
+  "$results_dir/preflight-hierarchy.xml"; then
+  fail "Android system ANR dialog is visible before app launch. See preflight-hierarchy.xml."
+fi
 
 adb install -r "$apk_path"
 adb shell pm path "$app_id" > "$results_dir/installed-package.txt"
@@ -58,28 +246,26 @@ maestro test \
   --format=junit \
   --output="$results_dir/report.xml" \
   e2e/maestro
-test_status=$?
+test_status="$?"
 set -e
 
-# Keep device evidence before any diagnostic command can alter the visible state.
-adb exec-out screencap -p > "$results_dir/final-screen.png" 2>/dev/null || true
-adb shell dumpsys activity activities > "$results_dir/activities.txt" 2>&1 || true
-adb logcat -b all -d -t 20000 > "$results_dir/logcat.txt" 2>&1 || true
+capture_evidence
 
 if [[ "$test_status" -ne 0 ]]; then
-  # Maestro's hierarchy command records the same accessibility tree used by selectors.
-  maestro hierarchy > "$results_dir/failure-hierarchy.json" 2> "$results_dir/failure-hierarchy.stderr" || {
-    echo "WARNING: maestro hierarchy failed; falling back to Android UIAutomator." >&2
-    adb shell uiautomator dump /sdcard/maestro-failure-hierarchy.xml >/dev/null 2>&1 || true
-    adb pull /sdcard/maestro-failure-hierarchy.xml "$results_dir/failure-hierarchy.xml" >/dev/null 2>&1 || true
-  }
+  maestro hierarchy > "$results_dir/failure-hierarchy.json" \
+    2> "$results_dir/failure-hierarchy.stderr" || {
+      echo "WARNING: maestro hierarchy failed; falling back to Android UIAutomator." >&2
+      adb -s "$serial" shell uiautomator dump /sdcard/maestro-failure-hierarchy.xml \
+        > "$results_dir/failure-hierarchy-dump.txt" 2>&1 || true
+      adb -s "$serial" pull /sdcard/maestro-failure-hierarchy.xml \
+        "$results_dir/failure-hierarchy.xml" >/dev/null 2>&1 || true
+    }
 fi
 
 printf '%s\n' "$test_status" > "$results_dir/exit-code.txt"
-
 if [[ "$test_status" -ne 0 ]]; then
-  echo "Maestro E2E failed with exit code $test_status." >&2
+  log "Maestro E2E failed with exit code $test_status."
   exit "$test_status"
 fi
 
-echo "Maestro E2E completed successfully."
+log "All Maestro flows completed successfully."
