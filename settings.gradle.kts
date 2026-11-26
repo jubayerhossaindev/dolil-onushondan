@@ -1,4 +1,12 @@
 pluginManagement {
+  resolutionStrategy {
+    eachPlugin {
+      if (requested.id.id == "org.jetbrains.kotlin.plugin.compose") {
+        useModule("org.jetbrains.kotlin:compose-compiler-gradle-plugin:${requested.version}")
+      }
+    }
+  }
+
   repositories {
     google {
       content {
@@ -12,7 +20,6 @@ pluginManagement {
   }
 }
 
-plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0" }
 
 dependencyResolutionManagement {
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)

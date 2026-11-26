@@ -1,0 +1,87 @@
+appId: com.dolil.onushodan
+---
+# End-to-end Room draft persistence: create -> save -> process restart -> read back.
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: onboarding_screen
+- tapOn:
+    id: onboarding_skip_button
+- assertVisible:
+    id: access_selection_screen
+- scrollUntilVisible:
+    element:
+      id: access_guest_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: access_guest_button
+- assertVisible:
+    id: product_tour_overlay
+- tapOn:
+    id: tour_skip_button
+- assertVisible:
+    id: dashboard_screen
+
+# Create a uniquely named draft in the isolated guest Room database.
+- tapOn:
+    id: add_deed_fab
+- extendedWaitUntil:
+    visible:
+      id: deed_entry_screen
+    timeout: 20000
+- tapOn:
+    id: entry_deed_number
+- inputText: "E2E-DRAFT-2026"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: entry_deed_year
+    direction: DOWN
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: entry_deed_year
+    timeout: 10000
+- tapOn:
+    id: entry_deed_year
+- eraseText: 4
+- inputText: "2026"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: save_draft_button
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: save_draft_button
+- tapOn:
+    id: save_draft_button
+- extendedWaitUntil:
+    visible:
+      id: deed_details_screen
+    timeout: 30000
+- assertVisible:
+    id: deed_details_screen
+- takeScreenshot: deed_draft_saved_details
+
+# Return to the dashboard, then kill and relaunch the Android process without
+# clearing app data. This verifies persistence beyond Compose/ViewModel memory.
+- pressKey: BACK
+- assertVisible:
+    id: dashboard_screen
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: dashboard_screen
+    timeout: 30000
+- tapOn:
+    id: nav_records
+- assertVisible:
+    id: records_screen
+- tapOn:
+    id: records_tab_drafts
+- assertVisible:
+    text: ".*E2E-DRAFT-2026.*"
+- takeScreenshot: deed_draft_persisted_after_restart

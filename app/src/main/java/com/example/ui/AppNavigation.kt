@@ -46,9 +46,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -142,6 +145,7 @@ object DolilRoutes {
     fun editDeed(deedId: String) = "edit_deed/$deedId"
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppRoot() {
     val context = LocalContext.current
@@ -172,7 +176,12 @@ fun AppRoot() {
         useDynamicColor = localPrefs.useDynamicColor,
         language = localPrefs.language
     ) {
-        when {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .semantics { testTagsAsResourceId = true }
+        ) {
+            when {
             showSplash || localPrefsNullable == null -> {
                 SplashScreen(
                     language = localPrefs.language,
@@ -254,6 +263,7 @@ fun AppRoot() {
                     }
                 )
             }
+            }
         }
     }
 }
@@ -298,6 +308,7 @@ private fun DolilSessionShell(
                     authEmail = email,
                     authDisplayName = displayName,
                     isGuestMode = isGuestMode,
+                    initialPreferences = initialPreferences,
                     isEmailVerifiedInitial = isEmailVerified,
                     authProviderIds = providerIds,
                     appContext = appContext,
@@ -573,7 +584,9 @@ fun DolilMainScaffold(
                         DolilExtendedAddFab(
                             language = preferences.language,
                             onClick = { navigateToAddDeed() },
-                            modifier = Modifier.tourTarget(tourTargets, TourTargetId.ADD_DEED_TAB)
+                            modifier = Modifier
+                                .testTag("add_deed_fab")
+                                .tourTarget(tourTargets, TourTargetId.ADD_DEED_TAB)
                         )
                     }
                 },

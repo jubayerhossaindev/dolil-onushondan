@@ -228,6 +228,59 @@ jobs:
           "$apksigner" verify --verbose "${apks[0]}"
           jarsigner -verify "${bundles[0]}"
 
+      - name: Install pinned Maestro CLI
+        if: success()
+        env:
+          MAESTRO_VERSION: 2.12.1
+        run: |
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Enable KVM for Android emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -e /dev/kvm ]]; then
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+          fi
+
+          if [[ -r /dev/kvm && -w /dev/kvm ]]; then
+            echo "KVM is available to the runner:"
+            ls -l /dev/kvm
+          else
+            echo "::warning::KVM is unavailable to this runner; enabling the Android Emulator's explicit TCG fallback."
+            echo "ANDROID_I_WANT_MY_TCG=yes" >> "$GITHUB_ENV"
+          fi
+
+          df -h /
+          df -h "$ANDROID_HOME" 2>/dev/null || true
+
+      - name: Run Maestro against the signed release APK
+        if: success()
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: bash scripts/run-maestro-e2e.sh app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload Maestro E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: maestro-release-evidence-${{ github.ref_name }}
+          path: build/maestro-results/
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Remove temporary signing and Firebase files
         if: always()
         shell: bash

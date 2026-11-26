@@ -103,6 +103,7 @@ class DolilViewModel(
     private val authEmail: String,
     private val authDisplayName: String,
     val isGuestMode: Boolean = false,
+    initialPreferences: LocalUserPreferences = LocalUserPreferences(),
     isEmailVerifiedInitial: Boolean = false,
     private val authProviderIds: List<String> = emptyList(),
     private val appContext: Context? = null,
@@ -119,7 +120,7 @@ class DolilViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = LocalUserPreferences()
+            initialValue = initialPreferences
         )
 
     private val _isEmailVerified = MutableStateFlow(isEmailVerifiedInitial)

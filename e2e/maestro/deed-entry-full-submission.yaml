@@ -1,0 +1,373 @@
+appId: com.dolil.onushodan
+---
+# Real-emulator coverage for the five-step Deed Entry wizard.
+# Every transition asserts the next visible state or the saved deed result.
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: onboarding_screen
+- tapOn:
+    id: onboarding_skip_button
+- assertVisible:
+    id: access_selection_screen
+- scrollUntilVisible:
+    element:
+      id: access_guest_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: access_guest_button
+- assertVisible:
+    id: product_tour_overlay
+- tapOn:
+    id: tour_skip_button
+- assertVisible:
+    id: dashboard_screen
+
+# Use English labels for deterministic review/calculation assertions.
+- tapOn:
+    id: nav_profile
+- assertVisible:
+    id: profile_screen
+- scrollUntilVisible:
+    element:
+      id: profile_lang_en
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: profile_lang_en
+- assertVisible:
+    text: "1. Appearance"
+- tapOn:
+    id: nav_home
+- assertVisible:
+    id: dashboard_screen
+
+- tapOn:
+    id: add_deed_fab
+- extendedWaitUntil:
+    visible:
+      id: deed_entry_screen
+    timeout: 20000
+
+# Keep the IME open while moving between controls. Maestro Android hideKeyboard sends KEYCODE_BACK;
+# this screen's dirty-form BackHandler treats that as an exit request and opens the discard dialog.
+# Tapping the next field/control or scrolling the content avoids that navigation event.
+# Step 1/5: required-field validation, deed type, date picker, and general data.
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: wizard_next_button
+- assertVisible:
+    text: "Please enter the deed number."
+- scrollUntilVisible:
+    element:
+      id: entry_deed_number
+    direction: UP
+    timeout: 20000
+# Select the deed type before focusing a text field. The numeric IME reduces
+# the LazyColumn viewport and prevents off-screen FlowRow chips from composing.
+- scrollUntilVisible:
+    element:
+      id: deed_type_HEBA
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: deed_type_HEBA
+# Exercise the date picker before opening the numeric IME. With the keyboard
+# open, Android resizes the LazyColumn viewport around the focused field, leaving
+# later date controls outside the scrollable viewport.
+- scrollUntilVisible:
+    element:
+      id: entry_reg_date_calendar_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: entry_reg_date_calendar_button
+# Material3 DatePickerDialog renders in a separate Android dialog window.
+# Its Compose testTags are not exposed as resource IDs in the runtime hierarchy,
+# so assert and tap the visible, localized button labels instead.
+- assertVisible:
+    text: "Select date"
+- tapOn:
+    text: "Cancel"
+- tapOn:
+    id: entry_reg_date_calendar_button
+- assertVisible:
+    text: "Select date"
+- tapOn:
+    text: "Select"
+
+# Return to the required fields only after the date-picker journey is complete.
+- scrollUntilVisible:
+    element:
+      id: entry_deed_number
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: entry_deed_number
+- inputText: "E2E-FULL-2026-01"
+- assertNotVisible:
+    text: "Please enter the deed number."
+# The number field explicitly maps Enter to IME Next. The app moves focus
+# to the year field and requests it into the LazyColumn viewport.
+- pressKey: Enter
+- assertVisible:
+    id: entry_deed_year
+- tapOn:
+    id: entry_deed_year
+- eraseText: 4
+- inputText: "2026"
+# The year field explicitly maps Enter to IME Done and clears focus. This hides
+# the keyboard without dispatching Back to the dirty-form BackHandler.
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: wizard_next_button
+
+# Step 2/5: grantor fields, optional details, and dynamic add/remove.
+- extendedWaitUntil:
+    visible:
+      id: grantor_name_0
+    timeout: 10000
+- tapOn:
+    id: grantor_name_0
+- inputText: "E2E Grantor One"
+- scrollUntilVisible:
+    element:
+      id: grantor_father_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: grantor_father_0
+- inputText: "E2E Grantor Parent"
+- scrollUntilVisible:
+    element:
+      id: grantor_optional_toggle_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: grantor_optional_toggle_0
+- scrollUntilVisible:
+    element:
+      id: grantor_mother_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: grantor_mother_0
+- inputText: "E2E Grantor Mother"
+- scrollUntilVisible:
+    element:
+      id: add_grantor_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: add_grantor_button
+- extendedWaitUntil:
+    visible:
+      id: grantor_name_1
+    timeout: 10000
+- tapOn:
+    id: grantor_name_1
+- inputText: "E2E Temporary Grantor"
+- scrollUntilVisible:
+    element:
+      id: remove_grantor_1
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: remove_grantor_1
+- assertNotVisible:
+    id: grantor_name_1
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: wizard_next_button
+
+# Step 3/5: grantee fields and dynamic add/remove.
+- extendedWaitUntil:
+    visible:
+      id: grantee_name_0
+    timeout: 10000
+- tapOn:
+    id: grantee_name_0
+- inputText: "E2E Grantee One"
+- scrollUntilVisible:
+    element:
+      id: grantee_optional_toggle_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: grantee_optional_toggle_0
+- scrollUntilVisible:
+    element:
+      id: grantee_father_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: grantee_father_0
+- inputText: "E2E Grantee Parent"
+- scrollUntilVisible:
+    element:
+      id: add_grantee_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: add_grantee_button
+- extendedWaitUntil:
+    visible:
+      id: grantee_name_1
+    timeout: 10000
+- tapOn:
+    id: grantee_name_1
+- inputText: "E2E Temporary Grantee"
+- scrollUntilVisible:
+    element:
+      id: remove_grantee_1
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: remove_grantee_1
+- assertNotVisible:
+    id: grantee_name_1
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: wizard_next_button
+
+# Step 4/5: cascading location fields and J.L. number.
+- extendedWaitUntil:
+    visible:
+      id: entry_upazila
+    timeout: 10000
+- tapOn:
+    id: entry_upazila
+- inputText: "Fatulla Revenue Circle"
+- scrollUntilVisible:
+    element:
+      id: entry_mouza
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: entry_mouza
+- inputText: "Deulpara"
+- scrollUntilVisible:
+    element:
+      id: entry_jl_number
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: entry_jl_number
+- inputText: "149"
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: wizard_next_button
+
+# Step 5/5: multiple parcel controls, unit conversion, optional boundary, and review.
+- extendedWaitUntil:
+    visible:
+      id: parcel_khatian_0
+    timeout: 10000
+- tapOn:
+    id: parcel_khatian_0
+- inputText: "501"
+- scrollUntilVisible:
+    element:
+      id: parcel_dag_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: parcel_dag_0
+- inputText: "902"
+- scrollUntilVisible:
+    element:
+      id: parcel_unit_0_KATHA
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: parcel_unit_0_KATHA
+- scrollUntilVisible:
+    element:
+      id: parcel_area_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: parcel_area_0
+- inputText: "2"
+- scrollUntilVisible:
+    element:
+      id: parcel_optional_toggle_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: parcel_optional_toggle_0
+- scrollUntilVisible:
+    element:
+      id: parcel_boundary_0
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: parcel_boundary_0
+- inputText: "North: E2E boundary test"
+- scrollUntilVisible:
+    element:
+      id: add_parcel_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: add_parcel_button
+- extendedWaitUntil:
+    visible:
+      id: parcel_khatian_1
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: remove_parcel_1
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: remove_parcel_1
+- assertNotVisible:
+    id: parcel_khatian_1
+- scrollUntilVisible:
+    element:
+      id: live_total_area_card
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Computed Total Area: 3.30 Shotok (Decimal)"
+- assertVisible:
+    id: entry_review_summary_card
+- scrollUntilVisible:
+    element:
+      id: save_submit_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: save_submit_button
+- extendedWaitUntil:
+    visible:
+      id: deed_details_screen
+    timeout: 30000
+- assertVisible:
+    id: deed_details_screen
+- assertVisible:
+    text: "E2E-FULL-2026-01"
+- takeScreenshot: deed_entry_full_submission_details

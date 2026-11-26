@@ -1,0 +1,117 @@
+appId: com.dolil.onushodan
+---
+# Runs against a clean app install and uses the isolated local guest sandbox.
+- launchApp:
+    clearState: true
+
+# First-run onboarding and guest entry.
+- assertVisible:
+    id: onboarding_screen
+- tapOn:
+    id: onboarding_skip_button
+- assertVisible:
+    id: access_selection_screen
+- scrollUntilVisible:
+    element:
+      id: access_guest_button
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: access_guest_button
+- assertVisible:
+    id: product_tour_overlay
+- tapOn:
+    id: tour_skip_button
+- assertVisible:
+    id: dashboard_screen
+- assertVisible:
+    id: guest_mode_banner
+
+# Search a known seeded demo deed and open its details.
+- tapOn:
+    id: nav_search
+- assertVisible:
+    id: search_screen
+- tapOn:
+    id: search_screen_input
+- inputText: "1256"
+- hideKeyboard
+- assertVisible:
+    id: record_card_demo-deed-1
+- tapOn:
+    id: record_card_demo-deed-1
+- assertVisible:
+    id: deed_details_screen
+- pressKey: BACK
+- assertVisible:
+    id: search_screen
+
+# Exercise the primary bottom navigation and record filters.
+- tapOn:
+    id: nav_records
+- assertVisible:
+    id: records_screen
+- tapOn:
+    id: records_tab_drafts
+# Guest accounts use PUBLIC_USER and must not see approval-only controls.
+- assertNotVisible:
+    id: records_tab_pending
+- tapOn:
+    id: records_tab_archive
+- tapOn:
+    id: records_tab_all
+- tapOn:
+    id: nav_profile
+- assertVisible:
+    id: profile_screen
+- tapOn:
+    id: nav_home
+- assertVisible:
+    id: dashboard_screen
+
+# Exercise the dashboard's secondary destinations.
+- tapOn:
+    id: quick_action_persons
+- assertVisible:
+    id: persons_directory_screen
+- pressKey: BACK
+- assertVisible:
+    id: dashboard_screen
+- tapOn:
+    id: quick_action_land
+- assertVisible:
+    id: land_directory_screen
+- pressKey: BACK
+- assertVisible:
+    id: dashboard_screen
+- tapOn:
+    id: quick_action_guide
+- assertVisible:
+    id: user_guide_screen
+- pressKey: BACK
+- assertVisible:
+    id: dashboard_screen
+
+# Ensure the add-deed wizard is reachable in the real running app.
+- tapOn:
+    id: add_deed_fab
+- extendedWaitUntil:
+    visible:
+      id: deed_entry_screen
+    timeout: 20000
+- assertVisible:
+    id: deed_entry_screen
+- takeScreenshot: deed_entry_initial_viewport
+# The wizard footer is the last LazyColumn item and is not composed until scrolled into view.
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: deed_entry_next_button_visible
+- extendedWaitUntil:
+    visible:
+      id: wizard_next_button
+    timeout: 10000
+- assertVisible:
+    id: wizard_next_button

@@ -76,8 +76,23 @@ android {
     unitTests {
       isIncludeAndroidResources = true
       all {
-        val preCachedDir = file("/home/appuser/.m2/repository/org/robolectric/android-all-instrumented/16-robolectric-13921718-i7")
-        if (preCachedDir.exists()) {
+        // Robolectric fetches android-all outside Gradle's dependency resolver.
+        // Use Google's Maven Central mirror to avoid shared-egress 429 responses.
+        it.systemProperty(
+          "robolectric.dependency.repo.url",
+          "https://maven-central.storage-download.googleapis.com/maven2/"
+        )
+        it.systemProperty("robolectric.dependency.repo.id", "google-maven-central")
+
+        // Reuse the CI-cached runtime jar when available; otherwise fetch it from the mirror.
+        val preCachedDir = file(
+          "${System.getProperty("user.home")}/.m2/repository/org/robolectric/android-all-instrumented/16-robolectric-13921718-i7"
+        )
+        val preCachedJar = File(
+          preCachedDir,
+          "android-all-instrumented-16-robolectric-13921718-i7.jar"
+        )
+        if (preCachedJar.isFile) {
           it.systemProperty("robolectric.offline", "true")
           it.systemProperty("robolectric.dependency.dir", preCachedDir.absolutePath)
         }
