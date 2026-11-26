@@ -314,7 +314,7 @@ restart_emulator_after_transport_loss() {
   # child directly; restarting only the host ADB server did not restore the
   # guest adbd / Maestro instrumentation transport in earlier runs.
   if ! adb -s "$serial" emu kill > "$results_dir/emulator-stop.txt" 2>&1; then
-    log "Emulator console was unreachable; terminating the emulator process tree."
+    log "Emulator console was unreachable; requesting termination of the emulator process tree."
     child_pids="$(pgrep -P "$emulator_pid" 2>/dev/null || true)"
     if [[ -n "$child_pids" ]]; then
       while IFS= read -r child_pid; do
@@ -323,23 +323,27 @@ restart_emulator_after_transport_loss() {
       done <<< "$child_pids"
     fi
     kill -TERM "$emulator_pid" 2>/dev/null || true
+  fi
 
-    for ((elapsed_seconds = 0; elapsed_seconds < 10; elapsed_seconds += 1)); do
-      if ! kill -0 "$emulator_pid" 2>/dev/null; then
-        break
-      fi
-      sleep 1
-    done
-
-    if kill -0 "$emulator_pid" 2>/dev/null; then
-      if [[ -n "$child_pids" ]]; then
-        while IFS= read -r child_pid; do
-          [[ -n "$child_pid" ]] || continue
-          kill -KILL "$child_pid" 2>/dev/null || true
-        done <<< "$child_pids"
-      fi
-      kill -KILL "$emulator_pid" 2>/dev/null || true
+  # Bound the graceful-shutdown path too. Never block the CI job forever on a
+  # QEMU process whose ADB transport has already died.
+  for ((elapsed_seconds = 0; elapsed_seconds < 20; elapsed_seconds += 1)); do
+    if ! kill -0 "$emulator_pid" 2>/dev/null; then
+      break
     fi
+    sleep 1
+  done
+
+  if kill -0 "$emulator_pid" 2>/dev/null; then
+    log "Emulator did not exit gracefully; force-stopping its QEMU child and launcher."
+    child_pids="$(pgrep -P "$emulator_pid" 2>/dev/null || true)"
+    if [[ -n "$child_pids" ]]; then
+      while IFS= read -r child_pid; do
+        [[ -n "$child_pid" ]] || continue
+        kill -KILL "$child_pid" 2>/dev/null || true
+      done <<< "$child_pids"
+    fi
+    kill -KILL "$emulator_pid" 2>/dev/null || true
   fi
 
   wait "$emulator_pid" 2>/dev/null || true
@@ -367,7 +371,7 @@ restart_emulator_after_transport_loss() {
   elapsed_seconds=0
   boot_completed=""
   while ((elapsed_seconds < boot_timeout_seconds)); do
-    boot_completed="$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r' || true)"
+    boot_completed="$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
     if [[ "$boot_completed" == "1" ]]; then
       break
     fi
@@ -397,7 +401,6 @@ restart_emulator_after_transport_loss() {
   adb devices -l > "$results_dir/adb-devices-after-emulator-restart.txt" 2>&1 || true
   wait_for_adb_stable 300 45
 }
-
 # Do not start Maestro during the first-boot ADB instability window. Require
 # continuous shell-level responsiveness, not just an online transport state.
 if ! wait_for_adb_stable 240 30; then
