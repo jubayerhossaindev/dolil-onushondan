@@ -300,23 +300,102 @@ wait_for_adb_stable() {
   return 1
 }
 
-recover_adb_transport() {
-  log "Restarting the host ADB server to discard stale emulator transports."
-  adb devices -l > "$results_dir/adb-devices-before-restart.txt" 2>&1 || true
+restart_emulator_after_transport_loss() {
+  local child_pids=""
+  local child_pid=""
+  local boot_completed=""
+  local elapsed_seconds=0
+
+  log "Capturing ADB state before a full emulator restart."
+  adb devices -l > "$results_dir/adb-devices-before-emulator-restart.txt" 2>&1 || true
+
+  # Prefer the emulator console's graceful shutdown while the transport still
+  # responds. If it is offline, terminate the emulator launcher and its QEMU
+  # child directly; restarting only the host ADB server did not restore the
+  # guest adbd / Maestro instrumentation transport in earlier runs.
+  if ! adb -s "$serial" emu kill > "$results_dir/emulator-stop.txt" 2>&1; then
+    log "Emulator console was unreachable; terminating the emulator process tree."
+    child_pids="$(pgrep -P "$emulator_pid" 2>/dev/null || true)"
+    if [[ -n "$child_pids" ]]; then
+      while IFS= read -r child_pid; do
+        [[ -n "$child_pid" ]] || continue
+        kill -TERM "$child_pid" 2>/dev/null || true
+      done <<< "$child_pids"
+    fi
+    kill -TERM "$emulator_pid" 2>/dev/null || true
+
+    for ((elapsed_seconds = 0; elapsed_seconds < 10; elapsed_seconds += 1)); do
+      if ! kill -0 "$emulator_pid" 2>/dev/null; then
+        break
+      fi
+      sleep 1
+    done
+
+    if kill -0 "$emulator_pid" 2>/dev/null; then
+      if [[ -n "$child_pids" ]]; then
+        while IFS= read -r child_pid; do
+          [[ -n "$child_pid" ]] || continue
+          kill -KILL "$child_pid" 2>/dev/null || true
+        done <<< "$child_pids"
+      fi
+      kill -KILL "$emulator_pid" 2>/dev/null || true
+    fi
+  fi
+
+  wait "$emulator_pid" 2>/dev/null || true
+  emulator_pid=""
+
+  log "Restarting the host ADB server after stopping the emulator."
   adb kill-server > "$results_dir/adb-server-restart.txt" 2>&1 || true
   adb start-server >> "$results_dir/adb-server-restart.txt" 2>&1 || {
     log "Host ADB server did not restart."
     return 1
   }
 
+  # Reboot the same AVD without wiping userdata. The app and its database stay
+  # installed; Maestro's next fresh CLI session reinstalls its own driver APKs.
+  log "Starting a fresh Android emulator process for the single transport retry."
+  "$emulator_bin" "${emulator_args[@]}" >> "$results_dir/emulator-console.log" 2>&1 &
+  emulator_pid="$!"
+
   timeout 180s adb -s "$serial" wait-for-device || {
-    adb devices -l > "$results_dir/adb-devices-after-restart-failure.txt" 2>&1 || true
-    log "ADB did not return to the device state after the host server restart."
+    adb devices -l > "$results_dir/adb-devices-after-emulator-restart-failure.txt" 2>&1 || true
+    log "ADB did not reconnect to $serial after the full emulator restart."
     return 1
   }
 
-  adb devices -l > "$results_dir/adb-devices-after-restart.txt" 2>&1 || true
-  wait_for_adb_stable 240 30
+  elapsed_seconds=0
+  boot_completed=""
+  while ((elapsed_seconds < boot_timeout_seconds)); do
+    boot_completed="$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r' || true)"
+    if [[ "$boot_completed" == "1" ]]; then
+      break
+    fi
+    if ! kill -0 "$emulator_pid" 2>/dev/null; then
+      log "Android Emulator exited before completing its recovery boot."
+      return 1
+    fi
+    sleep 2
+    elapsed_seconds=$((elapsed_seconds + 2))
+  done
+
+  if [[ "$boot_completed" != "1" ]]; then
+    log "Android Emulator did not complete recovery boot within ${boot_timeout_seconds}s."
+    return 1
+  fi
+
+  adb -s "$serial" shell settings put system screen_off_timeout 214783647
+  adb -s "$serial" shell settings put global window_animation_scale 0.0
+  adb -s "$serial" shell settings put global transition_animation_scale 0.0
+  adb -s "$serial" shell settings put global animator_duration_scale 0.0
+
+  if ! adb -s "$serial" shell pm path "$app_id" 2>/dev/null | grep -q '^package:'; then
+    log "Application package was absent after emulator restart; reinstalling the already-built APK."
+    adb -s "$serial" install -r "$apk_path" || return 1
+  fi
+
+  adb devices -l > "$results_dir/adb-devices-after-emulator-restart.txt" 2>&1 || true
+  wait_for_adb_stable 300 45
 }
 
 # Do not start Maestro during the first-boot ADB instability window. Require
@@ -365,7 +444,7 @@ if wait_for_adb_stable 240 30; then
         'DeviceServerDiedException|StatusRuntimeException: UNAVAILABLE|device[[:space:]].*(offline|not found)|host:transport:.*(offline|not found)' \
         "$attempt_dir" "$attempt_debug_dir" 2>/dev/null; then
         log "Detected an ADB transport failure in $flow_name; reconnecting and requiring 30 seconds of responsive ADB/package-manager checks before one isolated retry."
-        if recover_adb_transport; then
+        if restart_emulator_after_transport_loss; then
           attempt=2
           continue
         fi
@@ -389,7 +468,7 @@ if wait_for_adb_stable 240 30; then
 
     if ! wait_for_adb_stable 180 15; then
       log "ADB became unstable after $flow_name; attempting explicit offline-device recovery."
-      if ! recover_adb_transport; then
+      if ! restart_emulator_after_transport_loss; then
         flow_status=1
         log "Stopping the remaining flows because Android ADB/package readiness did not recover."
         break
