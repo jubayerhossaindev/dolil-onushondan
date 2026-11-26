@@ -33,6 +33,16 @@ appId: com.dolil.onushodan
 - tapOn:
     id: entry_deed_number
 - inputText: "E2E-DRAFT-2026"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: entry_deed_year
+    direction: DOWN
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: entry_deed_year
+    timeout: 10000
 - tapOn:
     id: entry_deed_year
 - eraseText: 4
