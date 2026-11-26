@@ -45,6 +45,11 @@ appId: com.dolil.onushodan
     timeout: 20000
 - tapOn:
     id: profile_theme_dark
+- scrollUntilVisible:
+    element:
+      id: profile_dynamic_color_switch
+    direction: DOWN
+    timeout: 20000
 - tapOn:
     id: profile_dynamic_color_switch
 - takeScreenshot: guest_settings_before_restart
@@ -66,8 +71,18 @@ appId: com.dolil.onushodan
     text: "2. Language & Guide"
 - assertVisible:
     id: profile_lang_en
+- scrollUntilVisible:
+    element:
+      id: profile_theme_dark
+    direction: UP
+    timeout: 20000
 - assertVisible:
     id: profile_theme_dark
+- scrollUntilVisible:
+    element:
+      id: profile_dynamic_color_switch
+    direction: DOWN
+    timeout: 20000
 - assertVisible:
     id: profile_dynamic_color_switch
 - takeScreenshot: guest_settings_after_restart
