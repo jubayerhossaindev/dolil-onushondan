@@ -31,6 +31,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -43,6 +44,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
@@ -65,6 +67,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
@@ -111,6 +115,7 @@ import com.example.domain.validation.ValidationErrorCode
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Calendar
+import java.util.TimeZone
 
 private data class EntryFormSnapshot(
     val officeId: String,
@@ -670,29 +675,68 @@ fun DeedEntryScreen(
                                     }
 
                                     val regDateFormatted = DolilStrings.formatDate(registrationDateMillis, language)
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable(
-                                                role = Role.Button,
-                                                onClickLabel = DolilStrings.regDateLabel(language)
-                                            ) { showDatePicker = true }
-                                            .testTag("entry_reg_date_box")
-                                    ) {
-                                        DolilOutlinedField(
-                                            value = regDateFormatted,
-                                            onValueChange = {},
-                                            label = DolilStrings.regDateLabel(language),
-                                            readOnly = true,
-                                            testTag = "entry_reg_date",
-                                            trailingIcon = {
+                                    val regDateError = ValidationErrorCode.INVALID_REGISTRATION_DATE in combinedErrors
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Box(modifier = Modifier.fillMaxWidth()) {
+                                            DolilOutlinedField(
+                                                value = regDateFormatted,
+                                                onValueChange = {},
+                                                label = DolilStrings.regDateLabel(language),
+                                                readOnly = true,
+                                                isError = regDateError,
+                                                testTag = "entry_reg_date",
+                                                trailingIcon = {
+                                                    Spacer(Modifier.size(48.dp))
+                                                }
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .matchParentSize()
+                                                    .padding(top = 6.dp)
+                                                    .clip(RoundedCornerShape(DolilRadius.Input))
+                                                    .pointerHoverIcon(PointerIcon.Hand)
+                                                    .clickable(
+                                                        role = Role.Button,
+                                                        onClickLabel = DolilStrings.regDateLabel(language)
+                                                    ) {
+                                                        haptics.performSubtleTick()
+                                                        showDatePicker = true
+                                                    }
+                                                    .testTag("entry_reg_date_box")
+                                            )
+                                            IconButton(
+                                                onClick = {
+                                                    haptics.performSubtleTick()
+                                                    showDatePicker = true
+                                                },
+                                                modifier = Modifier
+                                                    .align(Alignment.CenterEnd)
+                                                    .padding(top = 6.dp, end = 4.dp)
+                                                    .minimumInteractiveComponentSize()
+                                                    .pointerHoverIcon(PointerIcon.Hand)
+                                                    .testTag("entry_reg_date_calendar_button")
+                                            ) {
                                                 Icon(
                                                     imageVector = DolilIcons.Calendar,
-                                                    contentDescription = null,
+                                                    contentDescription = DolilStrings.regDateLabel(language),
                                                     tint = MaterialTheme.colorScheme.primary
                                                 )
                                             }
-                                        )
+                                        }
+                                        if (regDateError) {
+                                            Text(
+                                                text = DolilStrings.validationMessage(
+                                                    ValidationErrorCode.INVALID_REGISTRATION_DATE,
+                                                    language
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.padding(
+                                                    start = DolilSpacing.Space4,
+                                                    top = DolilSpacing.Space1
+                                                )
+                                            )
+                                        }
                                     }
 
                                     OfficeDropdownField(
@@ -1110,29 +1154,47 @@ fun DeedEntryScreen(
     }
 
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = registrationDateMillis)
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = localMillisToUtcDatePickerMillis(registrationDateMillis)
+        )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(
+                    enabled = datePickerState.selectedDateMillis != null,
                     onClick = {
-                        datePickerState.selectedDateMillis?.let {
-                            registrationDateMillis = it
+                        datePickerState.selectedDateMillis?.let { selectedUtcMillis ->
+                            registrationDateMillis = utcDatePickerMillisToLocalNoonMillis(selectedUtcMillis)
                             clearError(ValidationErrorCode.INVALID_REGISTRATION_DATE)
                         }
                         showDatePicker = false
-                    }
+                    },
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .testTag("date_picker_confirm_button")
                 ) {
                     Text(if (language == AppLanguage.BN) "নির্বাচন করুন" else "Select")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(
+                    onClick = { showDatePicker = false },
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .testTag("date_picker_cancel_button")
+                ) {
                     Text(DolilStrings.cancel(language))
                 }
-            }
+            },
+            modifier = Modifier.testTag("registration_date_picker_dialog")
         ) {
-            DatePicker(state = datePickerState)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                DatePicker(state = datePickerState)
+            }
         }
     }
 
@@ -1985,3 +2047,40 @@ private fun ParcelEditorCard(
         }
     }
 }
+
+internal fun localMillisToUtcDatePickerMillis(localMillis: Long): Long {
+    val localCal = Calendar.getInstance().apply {
+        timeInMillis = localMillis
+    }
+    return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        clear()
+        set(
+            localCal.get(Calendar.YEAR),
+            localCal.get(Calendar.MONTH),
+            localCal.get(Calendar.DAY_OF_MONTH),
+            0,
+            0,
+            0
+        )
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+
+internal fun utcDatePickerMillisToLocalNoonMillis(utcMillis: Long): Long {
+    val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        timeInMillis = utcMillis
+    }
+    return Calendar.getInstance().apply {
+        clear()
+        set(
+            utcCal.get(Calendar.YEAR),
+            utcCal.get(Calendar.MONTH),
+            utcCal.get(Calendar.DAY_OF_MONTH),
+            12,
+            0,
+            0
+        )
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+

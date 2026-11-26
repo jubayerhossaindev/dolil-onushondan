@@ -25,7 +25,7 @@ Dolil Onusondhan uses **Firebase strictly for Authentication and Auth lifecycle 
 
 1. **Create or select a Firebase project** in [Firebase Console](https://console.firebase.google.com/).
 2. **Register Android App:**
-   - **Android package name:** `com.aistudio.dolilonusondhan.xkqmpz`
+   - **Android package name:** `com.dolil.onushodan`
    - **App nickname:** `Dolil Onusondhan Android`
    - **Debug signing certificate SHA-1 & SHA-256:** Obtain via:
 
@@ -42,7 +42,7 @@ Dolil Onusondhan uses **Firebase strictly for Authentication and Auth lifecycle 
    - Download `google-services.json` from **Project Settings → General** and save it at:
      `app/google-services.json`
    - Verify the downloaded JSON contains:
-     - `client_info.android_client_info.package_name == "com.aistudio.dolilonusondhan.xkqmpz"`
+     - `client_info.android_client_info.package_name == "com.dolil.onushodan"`
      - Android OAuth client (`client_type: 1`) matching your SHA-1
      - Web OAuth client (`client_type: 3`) so `default_web_client_id` is generated at build time
 5. **App Check (Optional / Recommended for Auth protection):**

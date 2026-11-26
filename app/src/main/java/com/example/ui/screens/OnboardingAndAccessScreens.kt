@@ -75,7 +75,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import com.example.R
-import com.example.core.config.CredentialReadinessChecker
 import com.example.core.designsystem.DolilComponentTokens
 import com.example.core.designsystem.DolilErrorBanner
 import com.example.core.designsystem.DolilIcons
@@ -84,6 +83,7 @@ import com.example.core.designsystem.DolilRadius
 import com.example.core.designsystem.DolilSecondaryButton
 import com.example.core.designsystem.DolilSpacing
 import com.example.core.designsystem.DolilStrings
+import com.example.core.designsystem.LocalLocalizedContext
 import com.example.core.designsystem.dolilColors
 import com.example.core.designsystem.dolilStr
 import com.example.core.designsystem.isReducedMotionEnabled
@@ -427,7 +427,7 @@ fun AccessSelectionScreen(
     var resetEmail by remember { mutableStateOf("") }
     var isResetLoading by remember { mutableStateOf(false) }
 
-    val readiness = remember(context) { CredentialReadinessChecker.inspect(context, firebaseUid = null) }
+    val localizedContext = LocalLocalizedContext.current ?: context
 
     LaunchedEffect(Unit) {
         AuthManager.attemptAutoSignIn(
@@ -441,7 +441,10 @@ fun AccessSelectionScreen(
         )
     }
 
+    val isAnyAuthBusy = isGoogleLoading || isEmailLoading || isResetLoading
+
     fun startGoogleSignIn() {
+        if (isAnyAuthBusy) return
         errorMessage = null
         infoMessage = null
         isGoogleLoading = true
@@ -449,6 +452,7 @@ fun AccessSelectionScreen(
             context = context,
             credentialManager = credentialManager,
             scope = scope,
+            language = language,
             onAuthSuccess = {
                 isGoogleLoading = false
                 onAuthSuccess()
@@ -459,12 +463,13 @@ fun AccessSelectionScreen(
             },
             onAuthCancelled = {
                 isGoogleLoading = false
-                errorMessage = context.getString(R.string.auth_error_cancelled)
+                errorMessage = localizedContext.getString(R.string.auth_error_cancelled)
             }
         )
     }
 
     fun submitEmailAuth() {
+        if (isAnyAuthBusy) return
         errorMessage = null
         infoMessage = null
         if (isRegisterMode) {
@@ -618,37 +623,6 @@ fun AccessSelectionScreen(
                 )
             }
 
-            if (!readiness.firebaseAuthReady) {
-                Surface(
-                    color = semantic.warningContainer,
-                    shape = RoundedCornerShape(DolilRadius.Input),
-                    border = BorderStroke(DolilComponentTokens.CardBorderWidth, semantic.warning.copy(alpha = 0.35f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(DolilSpacing.Space3),
-                        horizontalArrangement = Arrangement.spacedBy(DolilSpacing.Space2),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Icon(
-                            imageVector = DolilIcons.Info,
-                            contentDescription = null,
-                            tint = semantic.onWarningContainer,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = if (language == AppLanguage.BN) {
-                                "লাইভ Firebase লগইনের জন্য app/google-services.json যোগ করা প্রয়োজন। তবে এখনই Guest Mode-এ পুরো অ্যাপ ব্যবহার করে দেখতে পারবেন।"
-                            } else {
-                                "Firebase Authentication requires app/google-services.json for live sign-in. You can explore the full workspace offline anytime via Guest Mode."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = semantic.onWarningContainer
-                        )
-                    }
-                }
-            }
-
             errorMessage?.let { msg ->
                 DolilErrorBanner(
                     message = msg,
@@ -690,6 +664,7 @@ fun AccessSelectionScreen(
                 badgeText = dolilStr(R.string.access_google_badge),
                 isSuccessBadge = true,
                 isLoading = isGoogleLoading,
+                enabled = !isAnyAuthBusy,
                 buttonTestTag = "access_login_button",
                 onClick = ::startGoogleSignIn
             )
@@ -846,7 +821,7 @@ fun AccessSelectionScreen(
 
                     Button(
                         onClick = ::submitEmailAuth,
-                        enabled = !isEmailLoading,
+                        enabled = !isAnyAuthBusy,
                         shape = RoundedCornerShape(DolilRadius.Button),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -886,6 +861,7 @@ fun AccessSelectionScreen(
                 badgeText = dolilStr(R.string.access_guest_badge),
                 isSuccessBadge = false,
                 isLoading = false,
+                enabled = !isAnyAuthBusy,
                 buttonTestTag = "access_guest_button",
                 onClick = onEnterGuestMode
             )
@@ -979,6 +955,7 @@ private fun AccessChoiceCard(
     badgeText: String?,
     isSuccessBadge: Boolean,
     isLoading: Boolean,
+    enabled: Boolean = true,
     buttonTestTag: String,
     onClick: () -> Unit
 ) {
@@ -1068,7 +1045,7 @@ private fun AccessChoiceCard(
                         haptics.performSubtleTick()
                         onClick()
                     },
-                    enabled = !isLoading,
+                    enabled = enabled && !isLoading,
                     shape = RoundedCornerShape(DolilRadius.Button),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -1098,6 +1075,7 @@ private fun AccessChoiceCard(
                         haptics.performSubtleTick()
                         onClick()
                     },
+                    enabled = enabled && !isLoading,
                     shape = RoundedCornerShape(DolilRadius.Button),
                     modifier = Modifier
                         .fillMaxWidth()

@@ -105,16 +105,22 @@ jobs:
           fi
 
           # app/build.gradle.kts currently configures this exact release key alias.
-          keytool -list -keystore "$keystore_path" -storepass "$STORE_PASSWORD" -alias dolilonushodan >/dev/null
+          release_sha1_line="$(keytool -list -v -keystore "$keystore_path" -storepass "$STORE_PASSWORD" -alias dolilonushodan | grep -E '^[[:space:]]*SHA1:' | head -n 1 || true)"
+          release_sha1_hash="$(printf '%s' "$release_sha1_line" | sed -E 's/^[[:space:]]*SHA1:[[:space:]]*//' | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          if [[ -z "$release_sha1_hash" ]]; then
+            echo "::error::Could not extract SHA-1 fingerprint from release keystore alias 'dolilonushodan'."
+            exit 1
+          fi
 
           printf '%s' "$FIREBASE_CONFIG_BASE64" | base64 --decode > app/google-services.json
 
-          python3 - app/google-services.json <<'PY'
+          python3 - app/google-services.json "$release_sha1_hash" <<'PY'
           import json
           import pathlib
           import sys
 
           config_path = pathlib.Path(sys.argv[1])
+          expected_sha1 = sys.argv[2].strip().lower()
           try:
               config = json.loads(config_path.read_text(encoding="utf-8"))
           except (OSError, json.JSONDecodeError) as error:
@@ -123,17 +129,40 @@ jobs:
           project_id = config.get("project_info", {}).get("project_id")
           clients = config.get("client", [])
           expected_package = "com.dolil.onushodan"
-          package_matches = any(
-              client.get("client_info", {}).get("android_client_info", {}).get("package_name")
-              == expected_package
+          matching_clients = [
+              client
               for client in clients
-          )
+              if client.get("client_info", {}).get("android_client_info", {}).get("package_name")
+              == expected_package
+          ]
 
           if not project_id or project_id == "dummy-project":
               raise SystemExit("Firebase configuration must contain a real project_id.")
-          if not package_matches:
+          if not matching_clients:
               raise SystemExit(
                   f"Firebase configuration must include Android package {expected_package}."
+              )
+
+          oauth_clients = [
+              oauth
+              for client in matching_clients
+              for oauth in client.get("oauth_client", [])
+          ]
+          has_web_client = any(oauth.get("client_type") == 3 for oauth in oauth_clients)
+          if not has_web_client:
+              raise SystemExit(
+                  f"Firebase configuration for {expected_package} is missing a Web OAuth client (client_type == 3). Enable Google Sign-In in Firebase Auth and re-export FIREBASE_CONFIG_BASE64."
+              )
+
+          android_hashes = [
+              (oauth.get("android_info", {}).get("certificate_hash") or "").strip().lower()
+              for oauth in oauth_clients
+              if oauth.get("client_type") == 1
+              and oauth.get("android_info", {}).get("package_name") == expected_package
+          ]
+          if expected_sha1 not in android_hashes:
+              raise SystemExit(
+                  f"Firebase configuration for {expected_package} does not include release keystore SHA-1 ({expected_sha1}). Registered hashes: {android_hashes}. Add the release SHA-1 in Firebase Console and update FIREBASE_CONFIG_BASE64."
               )
           PY
 

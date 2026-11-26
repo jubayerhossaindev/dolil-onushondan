@@ -603,6 +603,7 @@ fun DolilOutlinedField(
     supportingText: String? = null,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
+    enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     trailingIcon: (@Composable () -> Unit)? = null
 ) {
@@ -612,6 +613,7 @@ fun DolilOutlinedField(
         label = { Text(label, style = MaterialTheme.typography.bodyMedium) },
         isError = isError,
         readOnly = readOnly,
+        enabled = enabled,
         singleLine = singleLine,
         supportingText = if (!supportingText.isNullOrBlank()) {
             { Text(supportingText, style = MaterialTheme.typography.bodySmall) }
@@ -623,7 +625,13 @@ fun DolilOutlinedField(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+            disabledBorderColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+            disabledLabelColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            disabledTrailingIconColor = MaterialTheme.colorScheme.primary,
+            disabledSupportingTextColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest
         ),
         modifier = modifier
             .fillMaxWidth()

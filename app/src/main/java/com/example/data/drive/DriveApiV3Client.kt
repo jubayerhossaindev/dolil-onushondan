@@ -144,7 +144,9 @@ class HttpDriveApiV3Client(
         accessToken: String,
         fileId: String
     ): DriveFileMetadata? = executeWithRetry {
-        val url = "$DRIVE_BASE/files/$fileId".toHttpUrl().newBuilder()
+        val safeFileId = validateDriveId(fileId, "fileId")
+        val url = "$DRIVE_BASE/files".toHttpUrl().newBuilder()
+            .addPathSegment(safeFileId)
             .addQueryParameter("fields", "id,name,parents,mimeType,size,modifiedTime,sha256Checksum,trashed")
             .build()
         val req = Request.Builder()
@@ -239,7 +241,9 @@ class HttpDriveApiV3Client(
 
         val initOutcome = executeWithRetry {
             val initUrl = if (isUpdateExisting && !preGeneratedOrExistingId.isNullOrBlank()) {
-                "$UPLOAD_BASE/files/$preGeneratedOrExistingId".toHttpUrl().newBuilder()
+                val safeId = validateDriveId(preGeneratedOrExistingId, "preGeneratedOrExistingId")
+                "$UPLOAD_BASE/files".toHttpUrl().newBuilder()
+                    .addPathSegment(safeId)
                     .addQueryParameter("uploadType", "resumable")
                     .addQueryParameter("fields", "id,name,parents,mimeType,size,modifiedTime,sha256Checksum")
                     .build()
@@ -311,7 +315,9 @@ class HttpDriveApiV3Client(
         accessToken: String,
         fileId: String
     ): ByteArray = executeWithRetry {
-        val url = "$DRIVE_BASE/files/$fileId".toHttpUrl().newBuilder()
+        val safeFileId = validateDriveId(fileId, "fileId")
+        val url = "$DRIVE_BASE/files".toHttpUrl().newBuilder()
+            .addPathSegment(safeFileId)
             .addQueryParameter("alt", "media")
             .build()
         val req = Request.Builder()
@@ -332,9 +338,13 @@ class HttpDriveApiV3Client(
         accessToken: String,
         fileId: String
     ) {
+        val safeFileId = validateDriveId(fileId, "fileId")
+        val url = "$DRIVE_BASE/files".toHttpUrl().newBuilder()
+            .addPathSegment(safeFileId)
+            .build()
         executeWithRetry {
             val req = Request.Builder()
-                .url("$DRIVE_BASE/files/$fileId")
+                .url(url)
                 .header("Authorization", "Bearer $accessToken")
                 .delete()
                 .build()
@@ -346,6 +356,20 @@ class HttpDriveApiV3Client(
                 }
             }
         }
+    }
+
+    private fun validateDriveId(id: String, fieldName: String): String {
+        val trimmed = id.trim()
+        require(trimmed.isNotEmpty()) { "$fieldName must not be blank" }
+        require(
+            !trimmed.contains('/') &&
+                !trimmed.contains('\\') &&
+                !trimmed.contains('?') &&
+                !trimmed.contains('#') &&
+                !trimmed.contains("..") &&
+                trimmed.none { it.isWhitespace() || it.isISOControl() }
+        ) { "Invalid characters in $fieldName" }
+        return trimmed
     }
 
     private suspend fun generateIdsInternal(accessToken: String, count: Int): List<String> =

@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -43,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -66,10 +69,12 @@ import com.example.core.designsystem.DolilExtendedAddFab
 import com.example.core.designsystem.DolilGuestBanner
 import com.example.core.designsystem.DolilNavigationRail
 import com.example.core.designsystem.DolilOfflineBanner
+import com.example.core.designsystem.DolilPrimaryButton
 import com.example.core.designsystem.DolilRadius
 import com.example.core.designsystem.DolilSpacing
 import com.example.core.designsystem.DolilStrings
 import com.example.core.designsystem.DolilTheme
+import com.example.core.designsystem.DolilTopBar
 import com.example.core.designsystem.PrimaryDestination
 import com.example.core.designsystem.dolilColors
 import com.example.core.designsystem.isReducedMotionEnabled
@@ -102,8 +107,11 @@ import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.TourTargetId
 import com.example.ui.screens.TourTargetsState
 import com.example.ui.screens.UserGuideScreen
-import com.example.ui.screens.tourTarget
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import com.example.ui.screens.tourTarget
 
 object DolilRoutes {
     const val HOME = "home"
@@ -319,6 +327,7 @@ private fun DolilSessionShell(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DolilMainScaffold(
     viewModel: DolilViewModel,
@@ -360,6 +369,7 @@ fun DolilMainScaffold(
     val driveAccountMismatch by viewModel.driveAccountMismatch.collectAsStateWithLifecycle()
 
     val scaffoldContext = LocalContext.current
+    val ioScope = rememberCoroutineScope()
     val driveConsentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
@@ -370,8 +380,15 @@ fun DolilMainScaffold(
         val intentSender = pendingDriveConsentIntent?.intentSender ?: return@LaunchedEffect
         runCatching {
             driveConsentLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
-        }.onFailure {
+        }.onFailure { err ->
             viewModel.clearPendingDriveConsentIntent()
+            viewModel.reportStatusMessage(
+                err.localizedMessage ?: if (preferences.language == AppLanguage.BN) {
+                    "Google Drive অনুমোদন ডায়ালগ খোলা যায়নি।"
+                } else {
+                    "Could not open the Google Drive consent prompt."
+                }
+            )
         }
     }
 
@@ -382,9 +399,33 @@ fun DolilMainScaffold(
         val json = pendingPortableJson
         pendingPortableJson = null
         if (uri != null && json != null) {
-            runCatching {
-                scaffoldContext.contentResolver.openOutputStream(uri)?.use { out ->
-                    out.write(json.toByteArray(Charsets.UTF_8))
+            ioScope.launch {
+                val writeResult = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val out = scaffoldContext.contentResolver.openOutputStream(uri)
+                            ?: throw IllegalStateException("Unable to open destination file")
+                        out.use { stream ->
+                            stream.write(json.toByteArray(Charsets.UTF_8))
+                            stream.flush()
+                        }
+                    }
+                }
+                writeResult.onSuccess {
+                    viewModel.reportStatusMessage(
+                        if (preferences.language == AppLanguage.BN) {
+                            "পোর্টেবল JSON ব্যাকআপ সফলভাবে সংরক্ষিত হয়েছে।"
+                        } else {
+                            "Portable JSON backup exported successfully."
+                        }
+                    )
+                }.onFailure { err ->
+                    viewModel.reportStatusMessage(
+                        err.localizedMessage ?: if (preferences.language == AppLanguage.BN) {
+                            "JSON ফাইল সংরক্ষণ করা যায়নি।"
+                        } else {
+                            "Failed to export JSON backup."
+                        }
+                    )
                 }
             }
         }
@@ -394,12 +435,40 @@ fun DolilMainScaffold(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
-            runCatching {
-                scaffoldContext.contentResolver.openInputStream(uri)?.use { input ->
-                    input.bufferedReader(Charsets.UTF_8).readText()
+            ioScope.launch {
+                val readResult = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val maxBytes = 10 * 1024 * 1024
+                        val input = scaffoldContext.contentResolver.openInputStream(uri)
+                            ?: throw IllegalStateException("Unable to open selected file")
+                        input.use { stream ->
+                            val buffer = ByteArrayOutputStream()
+                            val chunk = ByteArray(8192)
+                            var total = 0
+                            while (true) {
+                                val read = stream.read(chunk)
+                                if (read == -1) break
+                                total += read
+                                if (total > maxBytes) {
+                                    throw IllegalArgumentException("Backup file exceeds maximum supported size (10 MB).")
+                                }
+                                buffer.write(chunk, 0, read)
+                            }
+                            buffer.toString(Charsets.UTF_8.name())
+                        }
+                    }
                 }
-            }.getOrNull()?.let { rawJson ->
-                viewModel.importPortableBackupJson(rawJson)
+                readResult.onSuccess { rawJson ->
+                    viewModel.importPortableBackupJson(rawJson)
+                }.onFailure { err ->
+                    viewModel.reportStatusMessage(
+                        err.localizedMessage ?: if (preferences.language == AppLanguage.BN) {
+                            "নির্বাচিত ব্যাকআপ ফাইল পড়া যায়নি।"
+                        } else {
+                            "Could not read the selected backup file."
+                        }
+                    )
+                }
             }
         }
     }
@@ -719,28 +788,86 @@ fun DolilMainScaffold(
                                 arguments = listOf(navArgument("deedId") { type = NavType.StringType })
                             ) { entry ->
                                 val deedId = entry.arguments?.getString("deedId").orEmpty()
-                                val existing = (allDeedsState as? UiState.Success)?.data
+                                val currentDeedsState = allDeedsState
+                                val existing = (currentDeedsState as? UiState.Success)?.data
                                     ?.firstOrNull { it.id == deedId }
-                                DeedEntryScreen(
-                                    language = preferences.language,
-                                    userProfile = userProfile,
-                                    initialDeed = existing,
-                                    validationErrors = validationErrors,
-                                    duplicateCandidateId = duplicateCandidateId,
-                                    isSaving = isSaving,
-                                    savingAsDraft = savingAsDraft,
-                                    onSaveDeed = { deed, asDraft, ignoreDup ->
-                                        viewModel.saveDeed(deed, asDraft, ignoreDup) {
-                                            navController.popBackStack()
+                                when {
+                                    currentDeedsState is UiState.Loading -> {
+                                        Scaffold(
+                                            topBar = {
+                                                DolilTopBar(
+                                                    title = DolilStrings.editDeedTitle(preferences.language),
+                                                    onBack = { navController.popBackStack() }
+                                                )
+                                            }
+                                        ) { pad ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(pad),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator()
+                                            }
                                         }
-                                    },
-                                    onViewDuplicateDeed = { dupId ->
-                                        navController.navigate(DolilRoutes.deedDetails(dupId))
-                                    },
-                                    onClearValidationError = viewModel::clearValidationError,
-                                    onClearValidation = viewModel::clearValidationErrors,
-                                    onBack = { navController.popBackStack() }
-                                )
+                                    }
+                                    existing == null -> {
+                                        Scaffold(
+                                            topBar = {
+                                                DolilTopBar(
+                                                    title = DolilStrings.editDeedTitle(preferences.language),
+                                                    onBack = { navController.popBackStack() }
+                                                )
+                                            }
+                                        ) { pad ->
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(pad)
+                                                    .padding(DolilSpacing.Space4)
+                                                    .testTag("edit_deed_not_found"),
+                                                verticalArrangement = Arrangement.spacedBy(DolilSpacing.Space3, Alignment.CenterVertically),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text(
+                                                    text = if (preferences.language == AppLanguage.BN) {
+                                                        "সম্পাদনার জন্য দলিলটি পাওয়া যায়নি।"
+                                                    } else {
+                                                        "This deed could not be found for editing."
+                                                    },
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                                DolilPrimaryButton(
+                                                    text = if (preferences.language == AppLanguage.BN) "ফিরে যান" else "Go Back",
+                                                    onClick = { navController.popBackStack() },
+                                                    testTag = "edit_deed_not_found_back"
+                                                )
+                                            }
+                                        }
+                                    }
+                                    else -> {
+                                        DeedEntryScreen(
+                                            language = preferences.language,
+                                            userProfile = userProfile,
+                                            initialDeed = existing,
+                                            validationErrors = validationErrors,
+                                            duplicateCandidateId = duplicateCandidateId,
+                                            isSaving = isSaving,
+                                            savingAsDraft = savingAsDraft,
+                                            onSaveDeed = { deed, asDraft, ignoreDup ->
+                                                viewModel.saveDeed(deed, asDraft, ignoreDup) {
+                                                    navController.popBackStack()
+                                                }
+                                            },
+                                            onViewDuplicateDeed = { dupId ->
+                                                navController.navigate(DolilRoutes.deedDetails(dupId))
+                                            },
+                                            onClearValidationError = viewModel::clearValidationError,
+                                            onClearValidation = viewModel::clearValidationErrors,
+                                            onBack = { navController.popBackStack() }
+                                        )
+                                    }
+                                }
                             }
 
                             composable(DolilRoutes.RECORDS) {

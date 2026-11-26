@@ -2,12 +2,17 @@ package com.example.core.security
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.GetCredentialUnsupportedException
+import androidx.credentials.exceptions.NoCredentialException
 import com.example.domain.model.AppLanguage
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
@@ -184,6 +189,32 @@ object AuthManager {
         if (resId == 0) null else context.getString(resId).takeIf { it.isNotBlank() }
     }.getOrNull()
 
+    tailrec fun Context.findActivity(): Activity? = when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
+
+    fun mapGoogleSignInException(error: Throwable, language: AppLanguage): String = when (error) {
+        is NoCredentialException -> if (language == AppLanguage.BN) {
+            "ডিভাইসে সক্রিয় কোনো Google অ্যাকাউন্ট পাওয়া যায়নি বা অ্যাপের SHA-1/OAuth কনফিগারেশন মেলেনি। ডিভাইসে Google অ্যাকাউন্ট লগইন আছে কিনা এবং Firebase-এ রিলিজ SHA-1 ও Google Sign-In চালু আছে কিনা যাচাই করুন।"
+        } else {
+            "No eligible Google account credentials were found on this device, or the app's SHA-1/Web OAuth client in Firebase does not match this build."
+        }
+        is GetCredentialProviderConfigurationException -> if (language == AppLanguage.BN) {
+            "এই ডিভাইসে Google Play Services Credential Manager পাওয়া যায়নি বা কনফিগারেশন অসম্পূর্ণ।"
+        } else {
+            "Google Credential Manager provider is unavailable or misconfigured on this device (check Google Play Services)."
+        }
+        is GetCredentialUnsupportedException -> if (language == AppLanguage.BN) {
+            "এই ডিভাইস বা সিস্টেম সংস্করণে Credential Manager সমর্থিত নয়।"
+        } else {
+            "Credential Manager is not supported on this device."
+        }
+        is GetCredentialException -> AuthValidator.mapFirebaseException(error, language)
+        else -> AuthValidator.mapFirebaseException(error, language)
+    }
+
     fun attemptAutoSignIn(
         context: Context,
         credentialManager: CredentialManager,
@@ -205,6 +236,7 @@ object AuthManager {
             onUnauthenticated()
             return
         }
+        val targetContext = context.findActivity() ?: context
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true)
             .setServerClientId(clientId)
@@ -215,7 +247,7 @@ object AuthManager {
             .build()
         scope.launch {
             try {
-                val cred = credentialManager.getCredential(context, request).credential
+                val cred = credentialManager.getCredential(targetContext, request).credential
                 if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
                     auth.signInWithCredential(
@@ -233,36 +265,74 @@ object AuthManager {
         }
     }
 
+    private suspend fun requestInteractiveGoogleCredential(
+        activity: Activity,
+        credentialManager: CredentialManager,
+        clientId: String
+    ) = try {
+        val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()
+        val primaryRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(signInOption)
+            .build()
+        credentialManager.getCredential(activity, primaryRequest).credential
+    } catch (noCred: NoCredentialException) {
+        Log.w(AUTH_TAG, "GetSignInWithGoogleOption returned NoCredentialException; falling back to GetGoogleIdOption", noCred)
+        val fallbackOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(clientId)
+            .setAutoSelectEnabled(false)
+            .build()
+        val fallbackRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(fallbackOption)
+            .build()
+        credentialManager.getCredential(activity, fallbackRequest).credential
+    }
+
     fun onGoogleSignInClicked(
         context: Context,
         credentialManager: CredentialManager,
         scope: CoroutineScope,
+        language: AppLanguage = AppLanguage.BN,
         onAuthSuccess: () -> Unit,
         onAuthError: (String) -> Unit,
         onAuthCancelled: () -> Unit = {}
     ) {
         val auth = safeFirebaseAuth(context)
         if (auth == null) {
-            onAuthError("Firebase configuration missing: add app/google-services.json first.")
+            onAuthError(
+                if (language == AppLanguage.BN) {
+                    "Firebase কনফিগারেশন (google-services.json) পাওয়া যায়নি।"
+                } else {
+                    "Firebase configuration is missing for this build."
+                }
+            )
             return
         }
         val clientId = resolveDefaultWebClientId(context)
         if (clientId == null) {
-            onAuthError("Google Sign-In configuration missing: default_web_client_id not found.")
+            onAuthError(
+                if (language == AppLanguage.BN) {
+                    "Google Sign-In Web OAuth Client (default_web_client_id) কনফিগার করা নেই।"
+                } else {
+                    "Google Sign-In configuration missing: default_web_client_id was not generated."
+                }
+            )
             return
         }
-        val activity = context as? Activity
+        val activity = context.findActivity()
         if (activity == null) {
-            onAuthError("Activity context is required for Google Sign-In")
+            onAuthError(
+                if (language == AppLanguage.BN) {
+                    "Google Sign-In চালু করার জন্য সক্রিয় Activity পাওয়া যায়নি।"
+                } else {
+                    "Activity context is required for Google Sign-In."
+                }
+            )
             return
         }
-        val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()
-        val request = GetCredentialRequest.Builder()
-            .addCredentialOption(signInOption)
-            .build()
         scope.launch {
             try {
-                val cred = credentialManager.getCredential(activity, request).credential
+                val cred = requestInteractiveGoogleCredential(activity, credentialManager, clientId)
                 if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
                     auth.signInWithCredential(
@@ -270,7 +340,13 @@ object AuthManager {
                     ).await()
                     onAuthSuccess()
                 } else {
-                    onAuthError("Unexpected credential type returned by Google Sign-In.")
+                    onAuthError(
+                        if (language == AppLanguage.BN) {
+                            "Google Sign-In থেকে অপ্রত্যাশিত ক্রেডেনশিয়াল পাওয়া গেছে।"
+                        } else {
+                            "Unexpected credential type returned by Google Sign-In."
+                        }
+                    )
                 }
             } catch (e: GetCredentialCancellationException) {
                 Log.w(AUTH_TAG, "Google Sign-In cancelled or dismissed: ${e.message}", e)
@@ -279,7 +355,7 @@ object AuthManager {
                 throw e
             } catch (e: Exception) {
                 Log.e(AUTH_TAG, "Google Sign-In failed", e)
-                onAuthError(e.localizedMessage ?: "Google Sign-In failed")
+                onAuthError(mapGoogleSignInException(e, language))
             }
         }
     }
@@ -458,10 +534,7 @@ object AuthManager {
         val clientId = resolveDefaultWebClientId(activity)
             ?: return Result.failure(IllegalStateException("Missing default_web_client_id"))
         return try {
-            val request = GetCredentialRequest.Builder()
-                .addCredentialOption(GetSignInWithGoogleOption.Builder(clientId).build())
-                .build()
-            val cred = credentialManager.getCredential(activity, request).credential
+            val cred = requestInteractiveGoogleCredential(activity, credentialManager, clientId)
             if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
                 user.reauthenticate(GoogleAuthProvider.getCredential(token, null)).await()
@@ -472,7 +545,7 @@ object AuthManager {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Result.failure(IllegalStateException(AuthValidator.mapFirebaseException(e, language)))
+            Result.failure(IllegalStateException(mapGoogleSignInException(e, language)))
         }
     }
 

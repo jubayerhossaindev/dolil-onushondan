@@ -554,6 +554,15 @@ class DriveBackupEngine(
     ): Result<List<DriveDeviceRecord>> = withContext(Dispatchers.IO) {
         runCatching {
             val link = identityStore.getDriveLink(firebaseUid)
+            validatePreSyncIdentity(firebaseUid, accountInfo, link)?.let { failure ->
+                val message = when (failure) {
+                    is DriveSyncOutcome.Error -> failure.message
+                    is DriveSyncOutcome.AccountMismatch ->
+                        "Connected Google Drive account (${failure.actualEmail}) does not match linked account (${failure.expectedEmail})."
+                    else -> "Identity verification failed."
+                }
+                throw SecurityException(message)
+            }
             val folders = ensureFolderHierarchy(accessToken, firebaseUid, link.folderIds)
             val files = driveApi.listFilesInFolder(accessToken, folders.devicesFolderId)
             loadDeviceRecords(accessToken, files).sortedByDescending { it.lastSeenUtc }
@@ -563,15 +572,41 @@ class DriveBackupEngine(
     suspend fun retireDevice(
         accessToken: String,
         firebaseUid: String,
-        targetDeviceId: String
+        targetDeviceId: String,
+        accountInfo: DriveAccountInfo? = null
     ): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
+            require(firebaseUid.isNotBlank()) { "Authenticated Firebase UID is required." }
+            val cleanDeviceId = targetDeviceId.trim()
+            require(
+                cleanDeviceId.isNotEmpty() &&
+                    !cleanDeviceId.contains('/') &&
+                    !cleanDeviceId.contains('\\') &&
+                    !cleanDeviceId.contains("..")
+            ) { "Invalid device ID." }
+
             val link = identityStore.getDriveLink(firebaseUid)
+            val expectedNamespace = NamespaceHelper.computeAccountNamespaceId(firebaseUid)
+            if (link.accountNamespaceId.isNotBlank() && link.accountNamespaceId != expectedNamespace) {
+                throw SecurityException("Local account namespace validation failed.")
+            }
+            if (accountInfo != null) {
+                validatePreSyncIdentity(firebaseUid, accountInfo, link)?.let { failure ->
+                    val message = when (failure) {
+                        is DriveSyncOutcome.Error -> failure.message
+                        is DriveSyncOutcome.AccountMismatch ->
+                            "Connected Google Drive account (${failure.actualEmail}) does not match linked account (${failure.expectedEmail})."
+                        else -> "Identity verification failed."
+                    }
+                    throw SecurityException(message)
+                }
+            }
+
             val folders = ensureFolderHierarchy(accessToken, firebaseUid, link.folderIds)
             val files = driveApi.listFilesInFolder(
                 accessToken = accessToken,
                 parentFolderId = folders.devicesFolderId,
-                nameEquals = "device-$targetDeviceId.json"
+                nameEquals = "device-$cleanDeviceId.json"
             )
             val existing = files.firstOrNull() ?: return@runCatching Unit
             val raw = driveApi.downloadFileBytes(accessToken, existing.id).toString(Charsets.UTF_8)
@@ -641,11 +676,33 @@ class DriveBackupEngine(
         deviceId: String
     ): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
+            require(targetOwnerUid.isNotBlank()) { "Authenticated user ID is required for import." }
+            require(rawJson.length <= 10 * 1024 * 1024) { "Backup file exceeds maximum supported size (10 MB)." }
             val bundle = portableAdapter.fromJson(rawJson)
                 ?: throw IllegalArgumentException("Invalid portable backup JSON")
+            val providedSha = bundle.payloadSha256.trim().lowercase()
+            require(providedSha.matches(Regex("^[0-9a-f]{64}$"))) {
+                "Portable backup checksum is missing or invalid."
+            }
+            val canonicalPayload = DriveBackupPayload(
+                accountNamespaceId = "portable",
+                driveSubjectId = "portable",
+                exportedAtUtc = bundle.exportedAtUtc,
+                deeds = bundle.deeds,
+                auditLogs = bundle.auditLogs
+            )
+            val computedSha = crypto.sha256Hex(
+                payloadAdapter.toJson(canonicalPayload).toByteArray(Charsets.UTF_8)
+            ).lowercase()
+            if (computedSha != providedSha) {
+                throw SecurityException("Portable backup integrity check failed (SHA-256 mismatch).")
+            }
+
             val now = System.currentTimeMillis()
             val importedDeeds = bundle.deeds.map { deed ->
+                val safeId = deed.id.trim().ifBlank { UUID.randomUUID().toString() }
                 deed.copy(
+                    id = safeId,
                     ownerUid = targetOwnerUid,
                     createdBy = targetOwnerUid,
                     updatedBy = targetOwnerUid,

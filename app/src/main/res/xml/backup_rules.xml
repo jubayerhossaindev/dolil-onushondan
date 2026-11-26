@@ -13,4 +13,5 @@
     <exclude domain="database" path="dolil_guest_sandbox.db-wal" />
     <exclude domain="database" path="dolil_guest_sandbox.db-shm" />
     <exclude domain="file" path="datastore/dolil_user_preferences.preferences_pb" />
+    <exclude domain="sharedpref" path="dolil_device_identity.xml" />
 </full-backup-content>

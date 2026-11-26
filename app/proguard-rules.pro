@@ -19,3 +19,25 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Preserve Kotlin metadata & annotations for Moshi KotlinJsonAdapterFactory & Room
+-keepattributes Signature,InnerClasses,EnclosingMethod,RuntimeVisibleAnnotations,AnnotationDefault
+
+# Domain & Drive DTOs serialized via Moshi reflection
+-keep class com.example.domain.model.** { *; }
+-keep class com.example.data.drive.** { *; }
+-keep class com.example.data.local.*Entity { *; }
+-keep class com.example.data.local.LocalAccountProfile { *; }
+-keep class com.example.data.local.DriveLinkState { *; }
+-keep class com.example.data.local.DriveFolderIds { *; }
+-keep class com.example.data.local.DriveSyncStatus { *; }
+-keep class com.example.data.local.ConflictAuditRecord { *; }
+
+# Moshi reflection adapter
+-keep class com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory { *; }
+
+# Credential Manager & Play Services Auth
+-keep class androidx.credentials.** { *; }
+-keep class com.google.android.libraries.identity.googleid.** { *; }
+-dontwarn com.google.errorprone.annotations.**
+

@@ -9,7 +9,7 @@ Dolil Onusondhan uses **two distinct OAuth identity flows** on Android, with **n
 | Flow                           | Purpose                                  | SDK / API                                                                       | Credential Configuration                                                                                                      |
 | ------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | **Firebase Google Sign-In**    | User authentication (`FirebaseUser.uid`) | Jetpack `CredentialManager` (`GetSignInWithGoogleOption` / `GetGoogleIdOption`) | Android OAuth Client (Package + SHA-1) + Web OAuth Client (`default_web_client_id` generated from `app/google-services.json`) |
-| **Personal Google Drive Sync** | Personal visible backup folder access    | Google Play Services `AuthorizationClient` + Drive REST v3 + OIDC `userinfo`    | Native Android OAuth Client (`com.aistudio.dolilonusondhan.xkqmpz` + SHA-1). **Never embed Client Secret.**                   |
+| **Personal Google Drive Sync** | Personal visible backup folder access    | Google Play Services `AuthorizationClient` + Drive REST v3 + OIDC `userinfo`    | Native Android OAuth Client (`com.dolil.onushodan` + SHA-1). **Never embed Client Secret.**                   |
 
 Important security rule implemented in code:
 
@@ -49,7 +49,7 @@ Important security rule implemented in code:
 Go to **APIs & Services → Credentials**:
 
 1. **Android OAuth 2.0 Client ID (Debug):**
-   - **Package name:** `com.aistudio.dolilonusondhan.xkqmpz`
+   - **Package name:** `com.dolil.onushodan`
    - **SHA-1 certificate fingerprint:** Get from `debug.keystore`:
 
      ```bash
@@ -57,7 +57,7 @@ Go to **APIs & Services → Credentials**:
      ```
 
 2. **Android OAuth 2.0 Client ID (Release / Play App Signing):**
-   - **Package name:** `com.aistudio.dolilonusondhan.xkqmpz`
+   - **Package name:** `com.dolil.onushodan`
    - **SHA-1 certificate fingerprint:** Get both from your upload keystore and from **Google Play Console → Setup → App integrity → App signing key certificate**.
 3. **Web Application OAuth 2.0 Client ID:**
    - Created automatically by Firebase when **Google** sign-in is enabled in Firebase Authentication.

@@ -94,6 +94,7 @@ import com.example.core.designsystem.dolilColors
 import com.example.core.designsystem.dolilStr
 import com.example.core.designsystem.performSubtleTick
 import com.example.core.designsystem.tabularNumerals
+import com.example.core.security.AuthManager.findActivity
 import com.example.core.security.RolePermissions
 import com.example.data.drive.DriveBackupSummary
 import com.example.data.drive.DriveDeviceRecord
@@ -1533,6 +1534,7 @@ fun ProfileSettingsScreen(
                             ) {
                                 OutlinedButton(
                                     onClick = onDisconnectDrive,
+                                    enabled = !isDriveBusy,
                                     modifier = Modifier
                                         .weight(1f)
                                         .minimumInteractiveComponentSize()
@@ -1542,6 +1544,7 @@ fun ProfileSettingsScreen(
                                 }
                                 TextButton(
                                     onClick = { showRevokeDialog = true },
+                                    enabled = !isDriveBusy,
                                     modifier = Modifier
                                         .weight(1f)
                                         .minimumInteractiveComponentSize()
@@ -1905,6 +1908,7 @@ fun ProfileSettingsScreen(
                                         )
                                     }
                                     TextButton(
+                                        enabled = !isDriveBusy,
                                         onClick = {
                                             if (item.encrypted) {
                                                 restorePassphraseInput = ""
@@ -2009,7 +2013,10 @@ fun ProfileSettingsScreen(
                                         )
                                     }
                                     if (!dev.retired) {
-                                        TextButton(onClick = { onRetireDevice(dev.deviceId) }) {
+                                        TextButton(
+                                            enabled = !isDriveBusy,
+                                            onClick = { onRetireDevice(dev.deviceId) }
+                                        ) {
                                             Text(if (language == AppLanguage.BN) "অবসর" else "Retire")
                                         }
                                     }
@@ -2071,9 +2078,9 @@ fun ProfileSettingsScreen(
 
     if (showDeleteAccountDialog) {
         val usesPassword = "password" in userProfile.authProviderIds
-        val activity = context as? Activity
+        val activity = context.findActivity()
         AlertDialog(
-            onDismissRequest = { showDeleteAccountDialog = false },
+            onDismissRequest = { if (!isDriveBusy) showDeleteAccountDialog = false },
             title = {
                 Text(if (language == AppLanguage.BN) "অ্যাকাউন্ট স্থায়ীভাবে মুছুন" else "Delete Account Permanently")
             },
@@ -2093,12 +2100,16 @@ fun ProfileSettingsScreen(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            deleteDriveChoice = AccountDriveCleanupChoice.KEEP_DRIVE_BACKUPS
-                        }
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .minimumInteractiveComponentSize()
+                            .clickable(enabled = !isDriveBusy, role = Role.RadioButton) {
+                                deleteDriveChoice = AccountDriveCleanupChoice.KEEP_DRIVE_BACKUPS
+                            }
                     ) {
                         RadioButton(
                             selected = deleteDriveChoice == AccountDriveCleanupChoice.KEEP_DRIVE_BACKUPS,
+                            enabled = !isDriveBusy,
                             onClick = { deleteDriveChoice = AccountDriveCleanupChoice.KEEP_DRIVE_BACKUPS }
                         )
                         Column {
@@ -2120,12 +2131,16 @@ fun ProfileSettingsScreen(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            deleteDriveChoice = AccountDriveCleanupChoice.DELETE_DRIVE_BACKUPS
-                        }
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .minimumInteractiveComponentSize()
+                            .clickable(enabled = !isDriveBusy, role = Role.RadioButton) {
+                                deleteDriveChoice = AccountDriveCleanupChoice.DELETE_DRIVE_BACKUPS
+                            }
                     ) {
                         RadioButton(
                             selected = deleteDriveChoice == AccountDriveCleanupChoice.DELETE_DRIVE_BACKUPS,
+                            enabled = !isDriveBusy,
                             onClick = { deleteDriveChoice = AccountDriveCleanupChoice.DELETE_DRIVE_BACKUPS }
                         )
                         Text(
@@ -2138,10 +2153,13 @@ fun ProfileSettingsScreen(
                         OutlinedTextField(
                             value = deleteAccountPassword,
                             onValueChange = { deleteAccountPassword = it },
+                            enabled = !isDriveBusy,
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
                             label = { Text(if (language == AppLanguage.BN) "নিশ্চিত করতে বর্তমান পাসওয়ার্ড দিন" else "Current Password to Re-authenticate") },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("delete_account_password_input")
                         )
                     }
 
@@ -2152,7 +2170,16 @@ fun ProfileSettingsScreen(
             },
             confirmButton = {
                 TextButton(
+                    enabled = !isDriveBusy,
                     onClick = {
+                        if (usesPassword && deleteAccountPassword.isBlank()) {
+                            deleteAccountError = if (language == AppLanguage.BN) {
+                                "অ্যাকাউন্ট মুছতে বর্তমান পাসওয়ার্ড লিখুন।"
+                            } else {
+                                "Please enter your current password to confirm deletion."
+                            }
+                            return@TextButton
+                        }
                         deleteAccountError = null
                         onDeleteAccount(
                             deleteAccountPassword.takeIf { usesPassword },
@@ -2162,16 +2189,24 @@ fun ProfileSettingsScreen(
                             { showDeleteAccountDialog = false },
                             { err -> deleteAccountError = err }
                         )
-                    }
+                    },
+                    modifier = Modifier.testTag("delete_account_confirm_button")
                 ) {
-                    Text(
-                        text = if (language == AppLanguage.BN) "অ্যাকাউন্ট মুছুন" else "Delete Account",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    if (isDriveBusy) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            text = if (language == AppLanguage.BN) "অ্যাকাউন্ট মুছুন" else "Delete Account",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteAccountDialog = false }) {
+                TextButton(
+                    enabled = !isDriveBusy,
+                    onClick = { showDeleteAccountDialog = false }
+                ) {
                     Text(dolilStr(R.string.action_cancel))
                 }
             }

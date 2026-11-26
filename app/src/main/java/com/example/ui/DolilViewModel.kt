@@ -91,7 +91,9 @@ private enum class PendingDriveOperation {
     SYNC_NOW,
     FORCE_UPLOAD_SNAPSHOT,
     LIST_BACKUPS,
-    LIST_DEVICES
+    LIST_DEVICES,
+    RESTORE_BACKUP,
+    RETIRE_DEVICE
 }
 
 class DolilViewModel(
@@ -148,11 +150,7 @@ class DolilViewModel(
                 fullName = resolvedName,
                 email = authEmail,
                 phone = localProf?.phone.orEmpty(),
-                role = if (authEmail.equals("jubayerhossaingalaxy@gmail.com", ignoreCase = true)) {
-                    UserRole.PLATFORM_ADMIN
-                } else {
-                    UserRole.PUBLIC_USER
-                },
+                role = UserRole.PUBLIC_USER,
                 isEmailVerified = emailVerified,
                 authProviderIds = authProviderIds
             )
@@ -347,6 +345,9 @@ class DolilViewModel(
     val readinessReport: StateFlow<CredentialReadinessReport?> = _readinessReport.asStateFlow()
 
     private var pendingDriveOperation: PendingDriveOperation? = null
+    private var pendingRestoreSummary: DriveBackupSummary? = null
+    private var pendingRestorePassphrase: CharArray? = null
+    private var pendingRetireDeviceId: String? = null
     private var lastVerifiedDriveToken: String? = null
 
     init {
@@ -538,9 +539,8 @@ class DolilViewModel(
 
             val targetStatus = when {
                 saveAsDraft -> DeedStatus.DRAFT
-                RolePermissions.canApproveDeed(profile.role) -> DeedStatus.APPROVED
-                RolePermissions.canSubmitOfficeDeed(profile.role) -> DeedStatus.PENDING_REVIEW
-                else -> DeedStatus.DRAFT
+                profile.role == UserRole.OFFICE_DATA_ENTRY -> DeedStatus.PENDING_REVIEW
+                else -> DeedStatus.APPROVED
             }
             val targetVisibility = when {
                 targetStatus == DeedStatus.DRAFT -> DeedVisibility.PRIVATE_DRAFT
@@ -646,6 +646,9 @@ class DolilViewModel(
                         }
                     }
                 }
+                .onFailure { err ->
+                    _statusMessage.value = err.localizedMessage ?: "Failed to approve deed"
+                }
         }
     }
 
@@ -668,6 +671,9 @@ class DolilViewModel(
                         "Moved to archive."
                     }
                 }
+                .onFailure { err ->
+                    _statusMessage.value = err.localizedMessage ?: "Failed to archive deed"
+                }
         }
     }
 
@@ -688,19 +694,26 @@ class DolilViewModel(
                 _statusMessage.value = "Permission denied"
                 return@launch
             }
-            val targetStatus = if (RolePermissions.canApproveDeed(profile.role)) {
-                DeedStatus.APPROVED
-            } else {
-                DeedStatus.DRAFT
+            val targetStatus = when {
+                deed.visibility == DeedVisibility.PRIVATE_DRAFT -> DeedStatus.DRAFT
+                profile.role == UserRole.OFFICE_DATA_ENTRY -> DeedStatus.PENDING_REVIEW
+                else -> DeedStatus.APPROVED
             }
             syncRepo.restoreDeed(deed, profile, targetStatus)
-                .onSuccess {
-                    scheduleAutoBackupIfConnected()
-                    _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                        "চমৎকার! দলিলটি আবার ফিরিয়ে আনা হয়েছে।"
+                .onSuccess { outcome ->
+                    if (outcome is SaveDeedOutcome.Conflict) {
+                        _activeConflict.value = outcome.conflict
                     } else {
-                        "Great! Your deed has been restored."
+                        scheduleAutoBackupIfConnected()
+                        _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                            "চমৎকার! দলিলটি আবার ফিরিয়ে আনা হয়েছে।"
+                        } else {
+                            "Great! Your deed has been restored."
+                        }
                     }
+                }
+                .onFailure { err ->
+                    _statusMessage.value = err.localizedMessage ?: "Failed to restore deed"
                 }
         }
     }
@@ -743,6 +756,17 @@ class DolilViewModel(
     fun clearPendingDriveConsentIntent() {
         _pendingDriveConsentIntent.value = null
         _isDriveBusy.value = false
+        _isBackupsLoading.value = false
+        _isDevicesLoading.value = false
+        clearPendingDriveOperationState()
+    }
+
+    private fun clearPendingDriveOperationState() {
+        pendingDriveOperation = null
+        pendingRestoreSummary = null
+        pendingRestorePassphrase?.fill('\u0000')
+        pendingRestorePassphrase = null
+        pendingRetireDeviceId = null
     }
 
     private suspend fun handleDriveAuthResult(
@@ -751,6 +775,9 @@ class DolilViewModel(
     ) {
         val store = identityStore ?: run {
             _isDriveBusy.value = false
+            _isBackupsLoading.value = false
+            _isDevicesLoading.value = false
+            clearPendingDriveOperationState()
             return
         }
         when (result) {
@@ -761,6 +788,9 @@ class DolilViewModel(
                 // Separate repository notice if switching Drive account on the same Firebase UID
                 if (current.isConnected && current.driveSubjectId != result.accountInfo.subjectId && !switchAccount) {
                     _isDriveBusy.value = false
+                    _isBackupsLoading.value = false
+                    _isDevicesLoading.value = false
+                    clearPendingDriveOperationState()
                     _driveAccountMismatch.value = DriveSyncOutcome.AccountMismatch(
                         expectedSubjectId = current.driveSubjectId,
                         expectedEmail = current.driveEmail,
@@ -800,6 +830,26 @@ class DolilViewModel(
                 when (op) {
                     PendingDriveOperation.LIST_BACKUPS -> executeListBackups(result.accessToken, result.accountInfo)
                     PendingDriveOperation.LIST_DEVICES -> executeListDevices(result.accessToken, result.accountInfo)
+                    PendingDriveOperation.RESTORE_BACKUP -> {
+                        val summary = pendingRestoreSummary
+                        val pass = pendingRestorePassphrase
+                        pendingRestoreSummary = null
+                        pendingRestorePassphrase = null
+                        if (summary != null) {
+                            executeRestoreFromBackup(result.accessToken, result.accountInfo, summary, pass)
+                        } else {
+                            _isDriveBusy.value = false
+                        }
+                    }
+                    PendingDriveOperation.RETIRE_DEVICE -> {
+                        val targetId = pendingRetireDeviceId
+                        pendingRetireDeviceId = null
+                        if (!targetId.isNullOrBlank()) {
+                            executeRetireDevice(result.accessToken, result.accountInfo, targetId)
+                        } else {
+                            _isDriveBusy.value = false
+                        }
+                    }
                     PendingDriveOperation.FORCE_UPLOAD_SNAPSHOT -> executeDriveSync(result.accessToken, result.accountInfo, forceUpload = true)
                     else -> executeDriveSync(result.accessToken, result.accountInfo, forceUpload = false)
                 }
@@ -807,15 +857,21 @@ class DolilViewModel(
             is DriveAuthResult.NeedsResolution -> {
                 _pendingDriveConsentIntent.value = result.pendingIntent
                 _isDriveBusy.value = false
+                _isBackupsLoading.value = false
+                _isDevicesLoading.value = false
             }
             is DriveAuthResult.Cancelled -> {
                 _isDriveBusy.value = false
-                pendingDriveOperation = null
+                _isBackupsLoading.value = false
+                _isDevicesLoading.value = false
+                clearPendingDriveOperationState()
                 _statusMessage.value = result.reason
             }
             is DriveAuthResult.Error -> {
                 _isDriveBusy.value = false
-                pendingDriveOperation = null
+                _isBackupsLoading.value = false
+                _isDevicesLoading.value = false
+                clearPendingDriveOperationState()
                 if (result.isRevokedOrExpired) {
                     store.updateDriveSyncStatus(
                         currentUserId,
@@ -1072,56 +1128,72 @@ class DolilViewModel(
     }
 
     private suspend fun executeListBackups(accessToken: String, accountInfo: DriveAccountInfo) {
-        val localDao = dao ?: return
-        val store = identityStore ?: return
-        val engine = DriveBackupEngine(driveStorage, localDao, store)
-        engine.listAvailableBackups(accessToken, accountInfo, currentUserId)
-            .onSuccess { _availableBackups.value = it }
-            .onFailure { _statusMessage.value = it.localizedMessage ?: "Failed to load backups" }
-        _isBackupsLoading.value = false
-        _isDriveBusy.value = false
+        try {
+            val localDao = dao ?: return
+            val store = identityStore ?: return
+            val engine = DriveBackupEngine(driveStorage, localDao, store)
+            engine.listAvailableBackups(accessToken, accountInfo, currentUserId)
+                .onSuccess { _availableBackups.value = it }
+                .onFailure { _statusMessage.value = it.localizedMessage ?: "Failed to load backups" }
+        } finally {
+            _isBackupsLoading.value = false
+            _isDriveBusy.value = false
+        }
     }
 
     fun restoreFromBackup(summary: DriveBackupSummary, passphraseInput: String?) {
         val ctx = appContext ?: return
-        val localDao = dao ?: return
         val store = identityStore ?: return
         val link = store.getDriveLink(currentUserId)
         viewModelScope.launch {
             _isDriveBusy.value = true
+            pendingRestoreSummary = summary
+            pendingRestorePassphrase?.fill('\u0000')
+            pendingRestorePassphrase = passphraseInput?.toCharArray()
+            pendingDriveOperation = PendingDriveOperation.RESTORE_BACKUP
             val authRes = driveAuthGateway.requestInteractiveAuthorization(
                 context = ctx,
                 targetAccountEmail = link.driveEmail.ifBlank { null },
                 forceSelectAccount = false
             )
-            if (authRes is DriveAuthResult.Authorized) {
-                if (!passphraseInput.isNullOrBlank()) {
-                    SessionPassphraseVault.setPassphrase(currentUserId, passphraseInput)
+            handleDriveAuthResult(authRes, switchAccount = false)
+        }
+    }
+
+    private suspend fun executeRestoreFromBackup(
+        accessToken: String,
+        accountInfo: DriveAccountInfo,
+        summary: DriveBackupSummary,
+        passphraseInput: CharArray?
+    ) {
+        val pass = passphraseInput ?: SessionPassphraseVault.getPassphrase(currentUserId)
+        try {
+            val localDao = dao ?: return
+            val store = identityStore ?: return
+            if (passphraseInput != null) {
+                val str = String(passphraseInput)
+                if (str.isNotBlank()) {
+                    SessionPassphraseVault.setPassphrase(currentUserId, str)
                 }
-                val engine = DriveBackupEngine(driveStorage, localDao, store)
-                val pass = passphraseInput?.toCharArray() ?: SessionPassphraseVault.getPassphrase(currentUserId)
-                try {
-                    engine.restoreFromBackup(
-                        accessToken = authRes.accessToken,
-                        accountInfo = authRes.accountInfo,
-                        firebaseUid = currentUserId,
-                        backupFileId = summary.fileId,
-                        passphrase = pass
-                    ).onSuccess { count ->
-                        _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                            "ব্যাকআপ থেকে $count টি দলিল পুনরুদ্ধার হয়েছে!"
-                        } else {
-                            "Restored $count deed(s) from Drive backup!"
-                        }
-                    }.onFailure { err ->
-                        _statusMessage.value = err.localizedMessage ?: "Restore failed"
-                    }
-                } finally {
-                    pass?.fill('\u0000')
-                }
-            } else {
-                handleDriveAuthResult(authRes, switchAccount = false)
             }
+            val engine = DriveBackupEngine(driveStorage, localDao, store)
+            engine.restoreFromBackup(
+                accessToken = accessToken,
+                accountInfo = accountInfo,
+                firebaseUid = currentUserId,
+                backupFileId = summary.fileId,
+                passphrase = pass
+            ).onSuccess { count ->
+                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                    "ব্যাকআপ থেকে $count টি দলিল পুনরুদ্ধার হয়েছে!"
+                } else {
+                    "Restored $count deed(s) from Drive backup!"
+                }
+            }.onFailure { err ->
+                _statusMessage.value = err.localizedMessage ?: "Restore failed"
+            }
+        } finally {
+            pass?.fill('\u0000')
             _isDriveBusy.value = false
         }
     }
@@ -1144,43 +1216,58 @@ class DolilViewModel(
     }
 
     private suspend fun executeListDevices(accessToken: String, accountInfo: DriveAccountInfo) {
-        val localDao = dao ?: return
-        val store = identityStore ?: return
-        val engine = DriveBackupEngine(driveStorage, localDao, store)
-        engine.listDevices(accessToken, accountInfo, currentUserId)
-            .onSuccess { _connectedDevices.value = it }
-            .onFailure { _statusMessage.value = it.localizedMessage ?: "Failed to load devices" }
-        _isDevicesLoading.value = false
-        _isDriveBusy.value = false
+        try {
+            val localDao = dao ?: return
+            val store = identityStore ?: return
+            val engine = DriveBackupEngine(driveStorage, localDao, store)
+            engine.listDevices(accessToken, accountInfo, currentUserId)
+                .onSuccess { _connectedDevices.value = it }
+                .onFailure { _statusMessage.value = it.localizedMessage ?: "Failed to load devices" }
+        } finally {
+            _isDevicesLoading.value = false
+            _isDriveBusy.value = false
+        }
     }
 
     fun retireDevice(targetDeviceId: String) {
         val ctx = appContext ?: return
-        val localDao = dao ?: return
         val store = identityStore ?: return
         val link = store.getDriveLink(currentUserId)
         viewModelScope.launch {
             _isDriveBusy.value = true
+            pendingRetireDeviceId = targetDeviceId
+            pendingDriveOperation = PendingDriveOperation.RETIRE_DEVICE
             val authRes = driveAuthGateway.requestInteractiveAuthorization(
                 context = ctx,
                 targetAccountEmail = link.driveEmail.ifBlank { null },
                 forceSelectAccount = false
             )
-            if (authRes is DriveAuthResult.Authorized) {
-                val engine = DriveBackupEngine(driveStorage, localDao, store)
-                engine.retireDevice(authRes.accessToken, currentUserId, targetDeviceId)
-                    .onSuccess {
-                        _connectedDevices.value = _connectedDevices.value.map {
-                            if (it.deviceId == targetDeviceId) it.copy(retired = true) else it
-                        }
-                        _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                            "ডিভাইসটি অবসরপ্রাপ্ত (Retired) হিসেবে চিহ্নিত হয়েছে।"
-                        } else {
-                            "Device retired from active checkpoints."
-                        }
+            handleDriveAuthResult(authRes, switchAccount = false)
+        }
+    }
+
+    private suspend fun executeRetireDevice(
+        accessToken: String,
+        accountInfo: DriveAccountInfo,
+        targetDeviceId: String
+    ) {
+        try {
+            val localDao = dao ?: return
+            val store = identityStore ?: return
+            val engine = DriveBackupEngine(driveStorage, localDao, store)
+            engine.retireDevice(accessToken, currentUserId, targetDeviceId, accountInfo)
+                .onSuccess {
+                    _connectedDevices.value = _connectedDevices.value.map {
+                        if (it.deviceId == targetDeviceId) it.copy(retired = true) else it
                     }
-                    .onFailure { _statusMessage.value = it.localizedMessage ?: "Failed to retire device" }
-            }
+                    _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                        "ডিভাইসটি অবসরপ্রাপ্ত (Retired) হিসেবে চিহ্নিত হয়েছে।"
+                    } else {
+                        "Device retired from active checkpoints."
+                    }
+                }
+                .onFailure { _statusMessage.value = it.localizedMessage ?: "Failed to retire device" }
+        } finally {
             _isDriveBusy.value = false
         }
     }
@@ -1220,12 +1307,17 @@ class DolilViewModel(
     fun importLegacyLocalDeeds() {
         if (isGuestMode) return
         viewModelScope.launch {
-            syncRepo.migrateLegacyLocalDataToCurrentOwner()
-            scheduleAutoBackupIfConnected()
-            _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                "পুরোনো স্থানীয় দলিল আপনার অ্যাকাউন্টে যোগ করা হয়েছে।"
-            } else {
-                "Legacy local deeds have been imported into your account."
+            runCatching {
+                syncRepo.migrateLegacyLocalDataToCurrentOwner()
+            }.onSuccess {
+                scheduleAutoBackupIfConnected()
+                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                    "পুরোনো স্থানীয় দলিল আপনার অ্যাকাউন্টে যোগ করা হয়েছে।"
+                } else {
+                    "Legacy local deeds have been imported into your account."
+                }
+            }.onFailure { err ->
+                _statusMessage.value = err.localizedMessage ?: "Failed to import legacy local deeds"
             }
         }
     }
@@ -1234,22 +1326,27 @@ class DolilViewModel(
         if (isGuestMode) return
         val gDao = guestDao ?: return
         viewModelScope.launch {
-            val customDeeds = GuestSandboxSeeder.getUserCreatedGuestDeeds(gDao)
-            if (customDeeds.isEmpty()) {
-                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                    "Guest মোডে নিজস্ব কোনো দলিল পাওয়া যায়নি।"
-                } else {
-                    "No user-created deeds found in Guest Sandbox."
+            runCatching {
+                val customDeeds = GuestSandboxSeeder.getUserCreatedGuestDeeds(gDao)
+                if (customDeeds.isEmpty()) {
+                    _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                        "Guest মোডে নিজস্ব কোনো দলিল পাওয়া যায়নি।"
+                    } else {
+                        "No user-created deeds found in Guest Sandbox."
+                    }
+                    return@launch
                 }
-                return@launch
-            }
-            val imported = syncRepo.importDeedsIntoCurrentOwner(customDeeds, userProfile.value)
-            _customGuestDeedCount.value = 0
-            scheduleAutoBackupIfConnected()
-            _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                "Guest মোড থেকে $imported টি নিজস্ব দলিল ইমপোর্ট হয়েছে।"
-            } else {
-                "Imported $imported custom deed(s) from Guest Mode."
+                syncRepo.importDeedsIntoCurrentOwner(customDeeds, userProfile.value)
+            }.onSuccess { imported ->
+                _customGuestDeedCount.value = 0
+                scheduleAutoBackupIfConnected()
+                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                    "Guest মোড থেকে $imported টি নিজস্ব দলিল ইমপোর্ট হয়েছে।"
+                } else {
+                    "Imported $imported custom deed(s) from Guest Mode."
+                }
+            }.onFailure { err ->
+                _statusMessage.value = err.localizedMessage ?: "Failed to import guest deeds"
             }
         }
     }
@@ -1315,77 +1412,96 @@ class DolilViewModel(
 
     fun resolveConflictKeepLocal(conflict: DeedConflict) {
         viewModelScope.launch {
-            syncRepo.resolveConflictKeepLocal(conflict, userProfile.value)
-            identityStore?.appendConflictAudit(
-                ConflictAuditRecord(
-                    firebaseUid = currentUserId,
-                    deedId = conflict.deedId,
-                    deedNumber = conflict.localDeed.deedNumber,
-                    resolution = "KEEP_LOCAL",
-                    localRevisionId = conflict.localDeed.revisionId,
-                    remoteRevisionId = conflict.serverDeed.revisionId,
-                    remoteDeviceId = conflict.remoteDeviceId
+            runCatching {
+                syncRepo.resolveConflictKeepLocal(conflict, userProfile.value).getOrThrow()
+                identityStore?.appendConflictAudit(
+                    ConflictAuditRecord(
+                        firebaseUid = currentUserId,
+                        deedId = conflict.deedId,
+                        deedNumber = conflict.localDeed.deedNumber,
+                        resolution = "KEEP_LOCAL",
+                        localRevisionId = conflict.localDeed.revisionId,
+                        remoteRevisionId = conflict.serverDeed.revisionId,
+                        remoteDeviceId = conflict.remoteDeviceId
+                    )
                 )
-            )
-            _activeConflict.value = null
-            scheduleAutoBackupIfConnected()
-            _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                "স্থানীয় সংস্করণ রাখা হয়েছে ও সিঙ্কের জন্য প্রস্তুত।"
-            } else {
-                "Local changes kept and queued for Drive sync."
+            }.onSuccess {
+                _activeConflict.value = null
+                scheduleAutoBackupIfConnected()
+                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                    "স্থানীয় সংস্করণ রাখা হয়েছে ও সিঙ্কের জন্য প্রস্তুত।"
+                } else {
+                    "Local changes kept and queued for Drive sync."
+                }
+            }.onFailure { err ->
+                _statusMessage.value = err.localizedMessage ?: "Failed to resolve conflict"
             }
         }
     }
 
     fun resolveConflictAcceptServer(conflict: DeedConflict) {
         viewModelScope.launch {
-            syncRepo.resolveConflictAcceptServer(conflict)
-            identityStore?.appendConflictAudit(
-                ConflictAuditRecord(
-                    firebaseUid = currentUserId,
-                    deedId = conflict.deedId,
-                    deedNumber = conflict.serverDeed.deedNumber,
-                    resolution = "ACCEPT_DRIVE",
-                    localRevisionId = conflict.localDeed.revisionId,
-                    remoteRevisionId = conflict.serverDeed.revisionId,
-                    remoteDeviceId = conflict.remoteDeviceId
+            runCatching {
+                syncRepo.resolveConflictAcceptServer(conflict)
+                identityStore?.appendConflictAudit(
+                    ConflictAuditRecord(
+                        firebaseUid = currentUserId,
+                        deedId = conflict.deedId,
+                        deedNumber = conflict.serverDeed.deedNumber,
+                        resolution = "ACCEPT_DRIVE",
+                        localRevisionId = conflict.localDeed.revisionId,
+                        remoteRevisionId = conflict.serverDeed.revisionId,
+                        remoteDeviceId = conflict.remoteDeviceId
+                    )
                 )
-            )
-            _activeConflict.value = null
-            _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                "Google Drive সংস্করণ গ্রহণ করা হয়েছে।"
-            } else {
-                "Google Drive version accepted."
+            }.onSuccess {
+                _activeConflict.value = null
+                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                    "Google Drive সংস্করণ গ্রহণ করা হয়েছে।"
+                } else {
+                    "Google Drive version accepted."
+                }
+            }.onFailure { err ->
+                _statusMessage.value = err.localizedMessage ?: "Failed to apply Drive version"
             }
         }
     }
 
     fun resolveConflictKeepBoth(conflict: DeedConflict) {
         viewModelScope.launch {
-            syncRepo.resolveConflictKeepBoth(conflict, userProfile.value)
-            identityStore?.appendConflictAudit(
-                ConflictAuditRecord(
-                    firebaseUid = currentUserId,
-                    deedId = conflict.deedId,
-                    deedNumber = conflict.localDeed.deedNumber,
-                    resolution = "KEEP_BOTH",
-                    localRevisionId = conflict.localDeed.revisionId,
-                    remoteRevisionId = conflict.serverDeed.revisionId,
-                    remoteDeviceId = conflict.remoteDeviceId
+            runCatching {
+                syncRepo.resolveConflictKeepBoth(conflict, userProfile.value).getOrThrow()
+                identityStore?.appendConflictAudit(
+                    ConflictAuditRecord(
+                        firebaseUid = currentUserId,
+                        deedId = conflict.deedId,
+                        deedNumber = conflict.localDeed.deedNumber,
+                        resolution = "KEEP_BOTH",
+                        localRevisionId = conflict.localDeed.revisionId,
+                        remoteRevisionId = conflict.serverDeed.revisionId,
+                        remoteDeviceId = conflict.remoteDeviceId
+                    )
                 )
-            )
-            _activeConflict.value = null
-            scheduleAutoBackupIfConnected()
-            _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
-                "উভয় সংস্করণই সংরক্ষণ করা হয়েছে।"
-            } else {
-                "Both versions preserved cleanly."
+            }.onSuccess {
+                _activeConflict.value = null
+                scheduleAutoBackupIfConnected()
+                _statusMessage.value = if (preferences.value.language == AppLanguage.BN) {
+                    "উভয় সংস্করণই সংরক্ষণ করা হয়েছে।"
+                } else {
+                    "Both versions preserved cleanly."
+                }
+            }.onFailure { err ->
+                _statusMessage.value = err.localizedMessage ?: "Failed to keep both versions"
             }
         }
     }
 
     fun dismissConflict() {
         _activeConflict.value = null
+    }
+
+    fun reportStatusMessage(message: String) {
+        _statusMessage.value = message
     }
 
     fun clearStatusMessage() {
