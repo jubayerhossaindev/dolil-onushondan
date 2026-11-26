@@ -68,6 +68,20 @@ appId: com.dolil.onushodan
       id: entry_deed_number
     direction: UP
     timeout: 20000
+# Select the deed type before focusing a text field. The numeric IME reduces
+# the LazyColumn viewport and prevents off-screen FlowRow chips from composing.
+- scrollUntilVisible:
+    element:
+      id: deed_type_HEBA
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: deed_type_HEBA
+- scrollUntilVisible:
+    element:
+      id: entry_deed_number
+    direction: DOWN
+    timeout: 20000
 - tapOn:
     id: entry_deed_number
 - inputText: "E2E-FULL-2026-01"
@@ -79,13 +93,6 @@ appId: com.dolil.onushodan
     id: entry_deed_year
 - eraseText: 4
 - inputText: "2026"
-- scrollUntilVisible:
-    element:
-      id: deed_type_HEBA
-    direction: UP
-    timeout: 20000
-- tapOn:
-    id: deed_type_HEBA
 - scrollUntilVisible:
     element:
       id: entry_reg_date_calendar_button
