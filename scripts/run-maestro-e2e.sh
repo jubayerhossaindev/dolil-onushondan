@@ -252,7 +252,7 @@ set -e
 responsive_status=0
 if [[ "$test_status" -eq 0 ]]; then
   set +e
-  bash scripts/run-maestro-responsive-matrix.sh "$results_dir/responsive"
+  ANDROID_SERIAL="$serial" bash scripts/run-maestro-responsive-matrix.sh "$results_dir/responsive"
   responsive_status="$?"
   set -e
 fi
