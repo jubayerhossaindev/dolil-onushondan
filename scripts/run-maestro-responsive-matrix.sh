@@ -51,7 +51,7 @@ run_case() {
 run_case "phone-360dp" "1080x2400" "480" "1.0" "0"
 
 # Approximately 411dp phone with enlarged system text (1.3x).
-run_case "phone-411dp-font-1_3" "1080x2400" "420" "1.3" "0"
+run_case "phone-411dp-font-1_5" "1080x2400" "420" "1.5" "0"
 
 # Landscape phone; NavigationRail and expanded-width layouts become eligible.
 run_case "landscape-phone" "2400x1080" "440" "1.0" "1"
