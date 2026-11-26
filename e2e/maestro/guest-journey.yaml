@@ -95,7 +95,23 @@ appId: com.dolil.onushodan
 # Ensure the add-deed wizard is reachable in the real running app.
 - tapOn:
     id: add_deed_fab
+- extendedWaitUntil:
+    visible:
+      id: deed_entry_screen
+    timeout: 20000
 - assertVisible:
     id: deed_entry_screen
+- takeScreenshot: deed_entry_initial_viewport
+# The wizard footer is the last LazyColumn item and is not composed until scrolled into view.
+- scrollUntilVisible:
+    element:
+      id: wizard_next_button
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: deed_entry_next_button_visible
+- extendedWaitUntil:
+    visible:
+      id: wizard_next_button
+    timeout: 10000
 - assertVisible:
     id: wizard_next_button
