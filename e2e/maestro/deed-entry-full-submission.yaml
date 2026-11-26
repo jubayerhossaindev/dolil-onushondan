@@ -59,7 +59,7 @@ appId: com.dolil.onushodan
 - tapOn:
     id: wizard_next_button
 - assertVisible:
-    id: error_banner
+    text: "Please enter the deed number."
 - scrollUntilVisible:
     element:
       id: entry_deed_number
@@ -69,6 +69,8 @@ appId: com.dolil.onushodan
     id: entry_deed_number
 - inputText: "E2E-FULL-2026-01"
 - hideKeyboard
+- assertNotVisible:
+    text: "Please enter the deed number."
 - scrollUntilVisible:
     element:
       id: entry_deed_year
