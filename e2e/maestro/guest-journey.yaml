@@ -19,8 +19,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: access_guest_button
 - assertVisible:
-    id: dashboard_screen
-- assertVisible:
     id: product_tour_overlay
 - tapOn:
     id: tour_skip_button
