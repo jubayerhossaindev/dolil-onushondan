@@ -53,7 +53,8 @@ appId: com.dolil.onushodan
     id: records_screen
 - tapOn:
     id: records_tab_drafts
-- tapOn:
+# Guest accounts use PUBLIC_USER and must not see approval-only controls.
+- assertNotVisible:
     id: records_tab_pending
 - tapOn:
     id: records_tab_archive
