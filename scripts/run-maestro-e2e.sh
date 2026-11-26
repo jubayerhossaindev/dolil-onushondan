@@ -11,6 +11,7 @@ device_profile="${ANDROID_DEVICE_PROFILE:-pixel_5}"
 avd_name="maestro-api-${api_level}"
 emulator_port="${EMULATOR_PORT:-5554}"
 boot_timeout_seconds="${EMULATOR_BOOT_TIMEOUT_SECONDS:-1200}"
+first_boot_settle_seconds="${ANDROID_FIRST_BOOT_SETTLE_SECONDS:-75}"
 
 mkdir -p "$results_dir"
 
@@ -214,9 +215,12 @@ if adb -s "$serial" shell pm list packages com.google.android.googlequicksearchb
     }
 fi
 
-# Let first-boot system components settle. No key events are injected into the
-# launcher; Maestro will launch the target app directly.
-sleep 15
+# Google APIs images continue first-boot package and Play Services work after
+# sys.boot_completed becomes 1. Allow that first-boot workload to settle before
+# opening Maestro's driver connection. No key events are injected into the
+# launcher; Maestro launches the target app directly.
+log "Allowing ${first_boot_settle_seconds}s for first-boot Android services to settle."
+sleep "$first_boot_settle_seconds"
 adb -s "$serial" logcat -b events -d -t 12000 > "$results_dir/preflight-events-logcat.txt" 2>&1 || true
 adb -s "$serial" shell uiautomator dump /sdcard/preflight-hierarchy.xml \
   > "$results_dir/preflight-hierarchy-dump.txt" 2>&1 || true
@@ -233,44 +237,76 @@ if grep -Eqi "Pixel Launcher isn't responding|android:id/aerr_wait" \
 fi
 
 adb install -r "$apk_path"
-adb shell pm path "$app_id" > "$results_dir/installed-package.txt"
+adb -s "$serial" shell pm path "$app_id" > "$results_dir/installed-package.txt"
 maestro --version > "$results_dir/maestro-version.txt"
+
+# Do not start Maestro during the first-boot ADB instability window. Require
+# continuous shell-level responsiveness, not just an online transport state.
+if ! wait_for_adb_stable 240 30; then
+  fail "Android emulator ADB/package readiness did not stabilize before Maestro startup."
+fi
 
 debug_dir="$results_dir/debug-output"
 mkdir -p "$debug_dir"
 
-# A transient ADB disconnect can poison the remainder of a directory-level
-# Maestro run (Maestro issue #3720). Run each flow in a fresh CLI process so
-# a recovered emulator can be used by the next flow.
+# A transient ADB disconnect can poison a Maestro session (Maestro issue
+# #3720). Run each flow in a fresh CLI process. Before opening a driver session,
+# require both the ADB transport and Android's package manager to answer
+# continuously; get-state alone can report "device" during a short-lived
+# reconnect immediately before the next shell command fails.
 wait_for_adb_stable() {
-  local timeout_seconds="${1:-120}"
-  local required_seconds=5
+  local timeout_seconds="${1:-240}"
+  local required_seconds="${2:-30}"
+  local probe_interval_seconds=2
   local consecutive_seconds=0
   local elapsed_seconds=0
   local device_state=""
+  local boot_completed=""
+  local package_path=""
 
   while ((elapsed_seconds < timeout_seconds)); do
     device_state="$(adb -s "$serial" get-state 2>/dev/null || true)"
+    boot_completed=""
+    package_path=""
+
     if [[ "$device_state" == "device" ]]; then
-      consecutive_seconds=$((consecutive_seconds + 1))
+      boot_completed="$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+      package_path="$(adb -s "$serial" shell pm path "$app_id" 2>/dev/null | tr -d '\r' || true)"
+    fi
+
+    if [[ "$device_state" == "device" && "$boot_completed" == "1" && "$package_path" == package:* ]]; then
+      consecutive_seconds=$((consecutive_seconds + probe_interval_seconds))
       if ((consecutive_seconds >= required_seconds)); then
-        log "ADB device $serial remained online for ${required_seconds}s."
+        log "ADB, Android boot state, and installed package remained responsive for ${required_seconds}s."
         return 0
       fi
     else
+      if ((consecutive_seconds > 0)); then
+        log "ADB readiness probe reset (state=${device_state:-missing}, boot=${boot_completed:-missing}, package=${package_path:-missing})."
+      fi
       consecutive_seconds=0
     fi
 
-    sleep 1
-    elapsed_seconds=$((elapsed_seconds + 1))
+    sleep "$probe_interval_seconds"
+    elapsed_seconds=$((elapsed_seconds + probe_interval_seconds))
   done
 
-  log "ADB device $serial did not remain online for ${required_seconds}s within ${timeout_seconds}s."
+  log "ADB/package readiness was not stable for ${required_seconds}s within ${timeout_seconds}s."
   return 1
 }
 
+recover_adb_transport() {
+  log "Requesting reconnection of offline ADB transports."
+  adb reconnect offline > "$results_dir/adb-reconnect.txt" 2>&1 || true
+  timeout 180s adb -s "$serial" wait-for-device || {
+    log "ADB did not return to the device state after reconnect."
+    return 1
+  }
+  wait_for_adb_stable 240 30
+}
+
 flow_status=0
-if wait_for_adb_stable 60; then
+if wait_for_adb_stable 240 30; then
   for flow in e2e/maestro/*.yaml; do
     [[ -f "$flow" ]] || continue
     flow_name="$(basename "$flow" .yaml)"
@@ -308,12 +344,12 @@ if wait_for_adb_stable 60; then
       if [[ "$attempt" -eq 1 ]] && grep -RIEq \
         'DeviceServerDiedException|StatusRuntimeException: UNAVAILABLE|device[[:space:]].*(offline|not found)|host:transport:.*(offline|not found)' \
         "$attempt_dir" "$attempt_debug_dir" "$HOME/.maestro/tests" 2>/dev/null; then
-        log "Detected an ADB transport failure in $flow_name; waiting for 5 seconds of stable ADB before one isolated retry."
-        if wait_for_adb_stable 120; then
+        log "Detected an ADB transport failure in $flow_name; reconnecting and requiring 30 seconds of responsive ADB/package-manager checks before one isolated retry."
+        if recover_adb_transport; then
           attempt=2
           continue
         fi
-        log "ADB did not recover; $flow_name cannot be retried safely."
+        log "ADB did not recover to a stable state; $flow_name cannot be retried safely."
       fi
 
       break
@@ -331,10 +367,13 @@ if wait_for_adb_stable 60; then
       log "Maestro flow passed: $flow_name."
     fi
 
-    if ! wait_for_adb_stable 120; then
-      flow_status=1
-      log "Stopping the remaining flows because the Android emulator did not recover its ADB connection."
-      break
+    if ! wait_for_adb_stable 180 15; then
+      log "ADB became unstable after $flow_name; attempting explicit offline-device recovery."
+      if ! recover_adb_transport; then
+        flow_status=1
+        log "Stopping the remaining flows because Android ADB/package readiness did not recover."
+        break
+      fi
     fi
   done
 else
