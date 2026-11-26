@@ -80,6 +80,11 @@ class QaWorkflowAndEdgeCaseRobolectricTest {
 
     @After
     fun tearDown() {
+        runBlocking {
+            prefsStore.setUseDynamicColor(false)
+            prefsStore.setLanguage(AppLanguage.BN)
+            prefsStore.setThemeMode(ThemeMode.SYSTEM)
+        }
         db.close()
     }
 
@@ -215,6 +220,7 @@ class QaWorkflowAndEdgeCaseRobolectricTest {
             vm.softDeleteDeed(
                 DeedRecord(
                     id = liveRecord.id,
+                    ownerUid = liveRecord.ownerUid,
                     createdBy = liveRecord.createdBy,
                     officeId = liveRecord.officeId,
                     organizationId = liveRecord.organizationId,
@@ -228,7 +234,15 @@ class QaWorkflowAndEdgeCaseRobolectricTest {
                 runBlocking { dao.getDeedById("QA_TEST_2026_DEED_1")?.status == DeedStatus.SOFT_DELETED.name }
             }
 
-            vm.restoreDeed(validDeed.copy(status = DeedStatus.SOFT_DELETED))
+            val archivedDeed = runBlocking { dao.getDeedById("QA_TEST_2026_DEED_1")!! }
+            vm.restoreDeed(
+                validDeed.copy(
+                    ownerUid = archivedDeed.ownerUid,
+                    createdBy = archivedDeed.createdBy,
+                    status = DeedStatus.SOFT_DELETED,
+                    visibility = DeedVisibility.valueOf(archivedDeed.visibility)
+                )
+            )
             awaitCondition {
                 runBlocking { dao.getDeedById("QA_TEST_2026_DEED_1")?.status == DeedStatus.APPROVED.name }
             }

@@ -125,8 +125,8 @@ class AuthDriveSyncAndSettingsTest {
 
     @Test
     fun `version number matches BuildConfig and renders ONLY in Settings section 5`() {
-        assertEquals("1.0.0", AppVersionInfo.versionName)
-        assertEquals("v1.0.0", AppVersionInfo.formattedVersion)
+        assertEquals("1.0.1", AppVersionInfo.versionName)
+        assertEquals("v1.0.1", AppVersionInfo.formattedVersion)
 
         var screenMode by mutableIntStateOf(0)
         val sampleDeed = DeedRecord(
@@ -203,11 +203,11 @@ class AuthDriveSyncAndSettingsTest {
             }
         }
 
-        // Settings Screen MUST display v1.0.0 in Section 5
+        // Settings Screen MUST display v1.0.1 in Section 5
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("profile_screen").performScrollToNode(hasTestTag("section_app_info"))
         composeRule.onNodeWithTag("section_app_info").assertIsDisplayed()
-        composeRule.onAllNodesWithText("v1.0.0", substring = true).assertCountEquals(1)
+        composeRule.onAllNodesWithText("v1.0.1", substring = true).assertCountEquals(1)
 
         // Dashboard MUST NOT display version text
         screenMode = 1
