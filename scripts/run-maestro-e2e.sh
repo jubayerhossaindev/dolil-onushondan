@@ -236,15 +236,9 @@ if grep -Eqi "Pixel Launcher isn't responding|android:id/aerr_wait" \
   fail "Android system ANR dialog is visible before app launch. See preflight-hierarchy.xml."
 fi
 
-adb install -r "$apk_path"
+adb -s "$serial" install -r "$apk_path"
 adb -s "$serial" shell pm path "$app_id" > "$results_dir/installed-package.txt"
 maestro --version > "$results_dir/maestro-version.txt"
-
-# Do not start Maestro during the first-boot ADB instability window. Require
-# continuous shell-level responsiveness, not just an online transport state.
-if ! wait_for_adb_stable 240 30; then
-  fail "Android emulator ADB/package readiness did not stabilize before Maestro startup."
-fi
 
 debug_dir="$results_dir/debug-output"
 mkdir -p "$debug_dir"
@@ -305,6 +299,12 @@ recover_adb_transport() {
   wait_for_adb_stable 240 30
 }
 
+# Do not start Maestro during the first-boot ADB instability window. Require
+# continuous shell-level responsiveness, not just an online transport state.
+if ! wait_for_adb_stable 240 30; then
+  fail "Android emulator ADB/package readiness did not stabilize before Maestro startup."
+fi
+
 flow_status=0
 if wait_for_adb_stable 240 30; then
   for flow in e2e/maestro/*.yaml; do
@@ -343,7 +343,7 @@ if wait_for_adb_stable 240 30; then
       # app assertions, validation failures, or other deterministic UI defects.
       if [[ "$attempt" -eq 1 ]] && grep -RIEq \
         'DeviceServerDiedException|StatusRuntimeException: UNAVAILABLE|device[[:space:]].*(offline|not found)|host:transport:.*(offline|not found)' \
-        "$attempt_dir" "$attempt_debug_dir" "$HOME/.maestro/tests" 2>/dev/null; then
+        "$attempt_dir" "$attempt_debug_dir" 2>/dev/null; then
         log "Detected an ADB transport failure in $flow_name; reconnecting and requiring 30 seconds of responsive ADB/package-manager checks before one isolated retry."
         if recover_adb_transport; then
           attempt=2
