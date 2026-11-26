@@ -310,13 +310,14 @@ class ProductionAuditAndSecurityRobolectricTest {
                 saved != null
             }
 
-            assertEquals(DeedStatus.APPROVED, saved!!.status)
-            assertEquals(DeedVisibility.PUBLIC, saved!!.visibility)
-            assertTrue(RolePermissions.canEditDeed(vm.userProfile.value, saved!!))
-            assertTrue(RolePermissions.canSoftDeleteDeed(vm.userProfile.value, saved!!))
+            val savedDeed = requireNotNull(saved)
+            assertEquals(DeedStatus.APPROVED, savedDeed.status)
+            assertEquals(DeedVisibility.PUBLIC, savedDeed.visibility)
+            assertTrue(RolePermissions.canEditDeed(vm.userProfile.value, savedDeed))
+            assertTrue(RolePermissions.canSoftDeleteDeed(vm.userProfile.value, savedDeed))
 
             // Cross-owner deed must still be blocked for PUBLIC_USER
-            val foreignApproved = saved!!.copy(ownerUid = "someone-else", createdBy = "someone-else")
+            val foreignApproved = savedDeed.copy(ownerUid = "someone-else", createdBy = "someone-else")
             assertFalse(RolePermissions.canEditDeed(vm.userProfile.value, foreignApproved))
             assertFalse(RolePermissions.canSoftDeleteDeed(vm.userProfile.value, foreignApproved))
         } finally {

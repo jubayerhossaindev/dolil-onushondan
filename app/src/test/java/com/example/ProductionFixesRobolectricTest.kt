@@ -84,14 +84,19 @@ class ProductionFixesRobolectricTest {
         val localizedWrapper = ContextWrapper(ContextWrapper(realActivity))
         assertEquals(realActivity, localizedWrapper.findActivity())
 
-        // When google-services.json is absent locally (gitignored), Firebase helpers fail closed gracefully;
-        // when present in CI/release builds, web client ID resolves from resources.
+        // Locally (without gitignored google-services.json), Firebase is unconfigured -> safeFirebaseAuth returns null.
+        // In CI (dummy google-services.json with empty oauth_client), FirebaseApp initializes -> safeFirebaseAuth is non-null while webClientId is null.
+        // In full builds with Web OAuth client, webClientId also resolves to *.apps.googleusercontent.com.
         val configured = AuthManager.isFirebaseConfigured(appContext)
         val webClientId = AuthManager.resolveDefaultWebClientId(appContext)
-        if (configured && webClientId != null) {
-            assertTrue(webClientId.endsWith(".apps.googleusercontent.com"))
+        if (!configured) {
+            assertNull(AuthManager.safeFirebaseAuth(appContext))
+            assertNull(webClientId)
         } else {
-            assertEquals(null, AuthManager.safeFirebaseAuth(appContext))
+            assertNotNull(AuthManager.safeFirebaseAuth(appContext))
+            if (webClientId != null) {
+                assertTrue(webClientId.endsWith(".apps.googleusercontent.com"))
+            }
         }
 
         // Verify localized Credential Manager diagnostics
