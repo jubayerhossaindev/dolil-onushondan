@@ -45,6 +45,25 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Set up Android SDK, emulator, and API 35 system image
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: 'platform-tools emulator system-images;android-35;google_apis;x86_64'
+
+      - name: Verify Android SDK emulator tools
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${ANDROID_HOME:?ANDROID_HOME is not set}"
+          command -v adb
+          command -v sdkmanager
+          command -v avdmanager
+          test -x "$ANDROID_HOME/emulator/emulator"
+
+          adb version
+          "$ANDROID_HOME/emulator/emulator" -version
+
       - name: Set up Gradle dependency and build cache
         uses: gradle/actions/setup-gradle@v5
         with:
