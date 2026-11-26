@@ -50,6 +50,9 @@ appId: com.dolil.onushodan
       id: deed_entry_screen
     timeout: 20000
 
+# Keep the IME open while moving between controls. Maestro Android hideKeyboard sends KEYCODE_BACK;
+# this screen's dirty-form BackHandler treats that as an exit request and opens the discard dialog.
+# Tapping the next field/control or scrolling the content avoids that navigation event.
 # Step 1/5: required-field validation, deed type, date picker, and general data.
 - scrollUntilVisible:
     element:
@@ -68,7 +71,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: entry_deed_number
 - inputText: "E2E-FULL-2026-01"
-- hideKeyboard
 - assertNotVisible:
     text: "Please enter the deed number."
 # Deed number and year are side by side in the same visible row.
@@ -77,7 +79,6 @@ appId: com.dolil.onushodan
     id: entry_deed_year
 - eraseText: 4
 - inputText: "2026"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: deed_type_HEBA
@@ -118,7 +119,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantor_name_0
 - inputText: "E2E Grantor One"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: grantor_father_0
@@ -127,7 +127,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantor_father_0
 - inputText: "E2E Grantor Parent"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: grantor_optional_toggle_0
@@ -143,7 +142,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantor_mother_0
 - inputText: "E2E Grantor Mother"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: add_grantor_button
@@ -158,7 +156,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantor_name_1
 - inputText: "E2E Temporary Grantor"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: remove_grantor_1
@@ -184,7 +181,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantee_name_0
 - inputText: "E2E Grantee One"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: grantee_optional_toggle_0
@@ -200,7 +196,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantee_father_0
 - inputText: "E2E Grantee Parent"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: add_grantee_button
@@ -215,7 +210,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: grantee_name_1
 - inputText: "E2E Temporary Grantee"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: remove_grantee_1
@@ -241,7 +235,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: entry_upazila
 - inputText: "Fatulla Revenue Circle"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: entry_mouza
@@ -250,7 +243,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: entry_mouza
 - inputText: "Deulpara"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: entry_jl_number
@@ -259,7 +251,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: entry_jl_number
 - inputText: "149"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: wizard_next_button
@@ -276,7 +267,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: parcel_khatian_0
 - inputText: "501"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: parcel_dag_0
@@ -285,7 +275,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: parcel_dag_0
 - inputText: "902"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: parcel_unit_0_KATHA
@@ -301,7 +290,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: parcel_area_0
 - inputText: "2"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: parcel_optional_toggle_0
@@ -317,7 +305,6 @@ appId: com.dolil.onushodan
 - tapOn:
     id: parcel_boundary_0
 - inputText: "North: E2E boundary test"
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: add_parcel_button
