@@ -112,8 +112,8 @@ appId: com.dolil.onushodan
 - inputText: "E2E-FULL-2026-01"
 - assertNotVisible:
     text: "Please enter the deed number."
-# Dismissing the number field's IME with Enter (not Back) restores the
-# LazyColumn viewport so the adjacent year field remains available to Maestro.
+# The number field explicitly maps Enter to IME Next. The app moves focus
+# to the year field and requests it into the LazyColumn viewport.
 - pressKey: Enter
 - assertVisible:
     id: entry_deed_year
@@ -121,8 +121,8 @@ appId: com.dolil.onushodan
     id: entry_deed_year
 - eraseText: 4
 - inputText: "2026"
-# Complete the numeric IME's Enter/Done action. Unlike hideKeyboard (Back),
-# this does not trigger the dirty-form discard BackHandler.
+# The year field explicitly maps Enter to IME Done and clears focus. This hides
+# the keyboard without dispatching Back to the dirty-form BackHandler.
 - pressKey: Enter
 - scrollUntilVisible:
     element:
